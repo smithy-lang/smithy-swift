@@ -14,7 +14,7 @@ class ContentMd5MiddlewareTests {
     @Test
     fun `generates ContentMD5 middleware`() {
         val context = setupTests("Isolated/contentmd5checksum.smithy", "aws.protocoltests.restxml#RestXml")
-        val contents = getFileContents(context.manifest, "Sources/RestXml/RestXmlProtocolClient.swift")
+        val contents = getFileContents(context.manifest, "RestXml/Sources/RestXml/RestXmlProtocolClient.swift")
         val expectedContents = """
         builder.interceptors.add(ClientRuntime.ContentMD5Middleware<IdempotencyTokenWithStructureInput, IdempotencyTokenWithStructureOutput>())
 """

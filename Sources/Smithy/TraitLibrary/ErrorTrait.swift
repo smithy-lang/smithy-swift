@@ -7,8 +7,10 @@
 
 /// https://smithy.io/2.0/spec/type-refinement-traits.html#error-trait
 @_spi(SchemaBasedSerde)
-public struct ErrorTrait: Trait {
+public final class ErrorTrait: RuntimeTrait {
     public static var id: ShapeID { .init("smithy.api", "error") }
+
+    public static let uniqueIndex = traitUniqueIndexCounter.getNextIndex()
 
     public var node: Node { [:] }
 

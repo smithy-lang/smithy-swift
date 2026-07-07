@@ -64,7 +64,14 @@ public enum Prelude {
     }
 
     public static var documentSchema: Schema {
-        Schema(id: .init("smithy.api", "Document"), type: .document)
+        Schema(id: .init("smithy.api", "Document"), type: .document, members: [
+            // Since document can be a list or map of documents, among other types, it has the members for both
+            // Map key/value comes first, then list member
+            // Providing these members allows a map- or list-type document to be handled as any list or map would
+            .init(id: .init("smithy.api", "Document", "key"), type: .string, containerType: .document),
+            .init(id: .init("smithy.api", "Document", "value"), type: .document, containerType: .document),
+            .init(id: .init("smithy.api", "Document", "member"), type: .document, containerType: .document),
+        ])
     }
 
     public static var primitiveBooleanSchema: Schema {
@@ -93,21 +100,5 @@ public enum Prelude {
 
     public static var primitiveDoubleSchema: Schema {
         Schema(id: .init("smithy.api", "PrimitiveDouble"), type: .double, traits: [DefaultTrait(0.0)])
-    }
-
-    // The following schemas aren't strictly part of Smithy's prelude, but are used when deserializing a
-    // list or map contained in a Smithy document.
-
-    public static var listDocumentSchema: Schema {
-        Schema(id: .init("swift.synthetic", "ListDocument"), type: .list, members: [
-            .init(id: .init("swift.synthetic", "ListDocument", "member"), type: .document),
-        ])
-    }
-
-    public static var mapDocumentSchema: Schema {
-        Schema(id: .init("swift.synthetic", "MapDocument"), type: .map, members: [
-            .init(id: .init("swift.synthetic", "MapDocument", "key"), type: .string),
-            .init(id: .init("swift.synthetic", "MapDocument", "value"), type: .document),
-        ])
     }
 }

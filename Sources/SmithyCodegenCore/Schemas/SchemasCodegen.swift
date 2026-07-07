@@ -5,14 +5,14 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
-@_spi(SchemaBasedSerde)
-import let Smithy.allSupportedTraitIDs
 import enum Smithy.Node
+@_spi(SchemaBasedSerde)
+import protocol Smithy.RuntimeTrait
 @_spi(SchemaBasedSerde)
 import struct Smithy.ShapeID
 import enum Smithy.ShapeType
 @_spi(SchemaBasedSerde)
-import func Smithy.traitType
+import protocol Smithy.Trait
 
 /// A generator for the `Schemas.swift`
 package struct SchemasCodegen {
@@ -24,10 +24,10 @@ package struct SchemasCodegen {
     /// - Returns: The contents of the `Schemas.swift` source file.
     package func generate(ctx: GenerationContext) throws -> String {
         let writer = SwiftWriter()
+        // Many runtime trait types will likely be instantiated in this file,
+        // along with other fundamental types in Smithy.  So import entire module.
         writer.write("@_spi(SchemaBasedSerde)")
-        writer.write("import struct Smithy.Schema")
-        writer.write("@_spi(SchemaBasedSerde)")
-        writer.write("import enum Smithy.Prelude")
+        writer.write("import Smithy")
         writer.write("")
 
         // Get all operations, sorted
@@ -42,49 +42,63 @@ package struct SchemasCodegen {
         // Combine shapes in order: service, operations sorted, models sorted
         let allShapes = [ctx.service] + sortedOperationShapes + sortedModelShapes
 
+        // Render each shape's schema, followed by a separate schema for each of its members, if any
         for shape in allShapes {
+            // First, render a schema var for the shape itself
+            try writeSchema(ctx: ctx, writer: writer, shape: shape, containerType: nil, index: nil, scope: "")
 
-            // Render an internal-scoped, computed var in the global namespace for this schema.
-            try writer.openBlock("var \(shape.schemaVarName): Smithy.Schema {", "}") { writer in
-                try writeSchema(writer: writer, shape: shape, containerType: nil, index: nil)
-                writer.unwrite(",")
-            }
-            writer.write("")
-
-            // If a schema has a member that targets the schema itself, we avoid a compile warning for
-            // self-reference by generating a duplicate schema var that references this schema, and we
-            // will target the duplicate instead.
-            //
-            // This happens ~20 times in AWS models so it is not so frequent that the extra var will bloat
-            // service clients.
-            if let hm = shape as? HasMembers, try hm.members.contains(where: { $0.targetID == shape.id }) {
-                try writer.openBlock("var dup_of_\(shape.schemaVarName): Smithy.Schema {", "}") { writer in
-                    try writer.write(shape.schemaVarName)
-                }
-                writer.write("")
+            // Then render a schema var for each of the shape's members, if any
+            guard let memberShapes = try (shape as? HasMembers)?.members else { continue }
+            for (index, member) in memberShapes.enumerated() {
+                try writeSchema(
+                    ctx: ctx,
+                    writer: writer,
+                    shape: member,
+                    containerType: shape.type,
+                    index: index,
+                    scope: "private "
+                )
             }
         }
+        // Get rid of last trailing whitespace
         writer.unwrite("\n")
         return writer.contents
     }
 
-    private func writeSchema(writer: SwiftWriter, shape: Shape, containerType: ShapeType?, index: Int?) throws {
+    private func writeSchema(
+        ctx: GenerationContext,
+        writer: SwiftWriter,
+        shape: Shape,
+        containerType: ShapeType?,
+        index: Int?,
+        scope: String
+    ) throws {
+        // Assign to a global var & open the initializer.
+        // If the type is not made explicit, a schema can get a "circular reference" compile error
+        // when schema target causes a reference cycle.
+        // This must be a vagary of the Swift expression type checking system
 
-        // Open the initializer
-        try writer.openBlock(".init(", "),") { writer in
+        let varName = try shape.schemaVarName
+        try writer.openBlock("\(scope)let \(varName): Smithy.Schema = Smithy.Schema(", ")") { writer in
 
             // Write the id: and type: params.  All schemas will have this
             writer.write("id: \(shape.id.rendered),")
             writer.write("type: .\(try shapeType(for: shape)),")
 
-            // Get the ShapeID-to-Node pairs for this shape's traits
+            // Get the TraitType-to-Node pairs for this shape's traits
             let traitPairs = try traitPairs(for: shape)
 
             // If there are any traits, write the traits: param
             if !traitPairs.isEmpty {
                 writer.openBlock("traits: [", "],") { writer in
-                    for (traitID, node) in traitPairs {
-                        writer.write("\(traitID.rendered): \(node.rendered),")
+                    for (TraitType, node) in traitPairs {
+                        // Traits are initialized using try? to convert any thrown error to nil.
+                        // In practice, a trait should never throw at runtime, because every
+                        // trait was already successfully constructed by the code generator
+                        // while processing the model.
+                        // The TraitCollection initializes from this array of optional Traits;
+                        // nil elements are simply compacted out.
+                        writer.write("try? Smithy.\(TraitType)(node: \(node.rendered)),")
                     }
                 }
             }
@@ -93,11 +107,12 @@ package struct SchemasCodegen {
             let members = try (shape as? HasMembers)?.members ?? []
 
             // If there are any members, write the members param
+            // Members are rendered to separate schema vars, and those vars are referenced here
+            // Not in-lining the member schemas reduces the expression type-checking burden at compile time
             if !members.isEmpty {
                 try writer.openBlock("members: [", "],") { writer in
-                    for (index, member) in members.enumerated() {
-                        // Make a recursive call to this method to render the member
-                        try writeSchema(writer: writer, shape: member, containerType: shape.type, index: index)
+                    for member in members {
+                        try writer.write("\(member.schemaVarName),")
                     }
                 }
             }
@@ -107,13 +122,7 @@ package struct SchemasCodegen {
                 if let containerType {
                     writer.write("containerType: .\(containerType),")
                 }
-
-                let target = try member.target
-
-                // If this schema's target is the same as itself, target the duplicate
-                // (see above) to avoid a self-reference compile warning.
-                let prefix = target.id == member.containerID ? "dup_of_" : ""
-                writer.write(try "target: \(prefix)\(target.schemaVarName),")
+                try writer.write("target: \(member.target.schemaVarName),")
             }
 
             // Write the index: param if one was passed.  Only members will have an index.
@@ -125,6 +134,8 @@ package struct SchemasCodegen {
             // method param trailing comma.
             writer.unwrite(",")
         }
+        // Add whitespace before the next schema
+        writer.write("")
     }
 
     private func shapeType(for shape: Shape) throws -> ShapeType {
@@ -134,29 +145,45 @@ package struct SchemasCodegen {
         return shape.type
     }
 
-    private func traitPairs(for shape: Shape) throws -> [(ShapeID, Node)] {
+    private func traitPairs(for shape: Shape) throws -> [(any Trait.Type, Node)] {
         if let memberShape = shape as? MemberShape {
-            // Get all the trait IDs that apply to this member & sort
-            let memberTraitIDs = Set(memberShape.traits.traitDict.keys)
-            let targetTraitIDs = Set(try memberShape.target.traits.traitDict.keys)
-            let allTraitIDs = Array(memberTraitIDs.union(targetTraitIDs)).smithySorted()
+            let memberTraitDict = memberShape.traits.traitDict
+            let targetTraitDict = try memberShape.target.traits.traitDict
 
-            var pairs = [(ShapeID, Node)]()
+            // Get all the trait IDs that apply to this member & sort
+            // Only take runtime traits, others aren't used at runtime
+            let memberTraitIDs = memberTraitDict.filter { $0.value is any RuntimeTrait }.keys
+            let targetTraitIDs = targetTraitDict.filter { $0.value is any RuntimeTrait }.keys
+            let allTraitIDs = Array(Set(Array(memberTraitIDs) + targetTraitIDs)).smithySorted()
+
+            // Iterate over every trait ID appearing in either the member or target
+            var pairs = [(any Trait.Type, Node)]()
             for traitID in allTraitIDs {
-                let TraitType = traitType(for: traitID)
-                if let resolvedNode = try TraitType?.resolvedMemberTrait(
-                    member: memberShape.traits.traitDict[traitID],
-                    target: memberShape.target.traits.traitDict[traitID]
+                // Force-unwrap used here since this trait must be present in 1 of the 2 (member or target)
+                let trait = memberTraitDict[traitID] ?? targetTraitDict[traitID]!
+
+                // Call the resolvedMemberTrait method for the type of trait involved
+                // If a node is resolved, add it into the pairs, along with this trait type
+                let TraitType = type(of: trait)
+                if let resolvedNode = try TraitType.resolvedMemberTrait(
+                    member: memberTraitDict[traitID]?.node,
+                    target: targetTraitDict[traitID]?.node
                 ) {
-                    pairs.append((traitID, resolvedNode))
+                    pairs.append((TraitType, resolvedNode))
                 }
             }
             return pairs
         } else {
-            // Get the trait IDs for traits that are allow-listed for the schema & sort
-            let traitIDs = Array(shape.traits.schemaTraits.traitDict.keys).smithySorted()
+            let traitDict = shape.traits.traitDict
+
+            // Get the trait IDs for runtime traits & sort
+            let traitIDs = Array(traitDict.filter { $0.value is any RuntimeTrait }.keys).smithySorted()
             // Map sorted IDs into tuples with their node value
-            return traitIDs.map { ($0, shape.traits.traitDict[$0]!) }
+            return traitIDs.map { traitID in
+                let trait = traitDict[traitID]!
+                let TraitType = type(of: trait)
+                return (TraitType, trait.node)
+            }
         }
     }
 }
@@ -169,9 +196,9 @@ extension ShapeID {
         let nameLiteral = name.literal
         if let member {
             let memberLiteral = member.literal
-            return ".init(\(namespaceLiteral), \(nameLiteral), \(memberLiteral))"
+            return "Smithy.ShapeID(\(namespaceLiteral), \(nameLiteral), \(memberLiteral))"
         } else {
-            return ".init(\(namespaceLiteral), \(nameLiteral))"
+            return "Smithy.ShapeID(\(namespaceLiteral), \(nameLiteral))"
         }
     }
 }

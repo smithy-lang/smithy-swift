@@ -3,6 +3,8 @@ excluded:
   - Sources/SmithyTestUtil/*
   - Tests/*
   - test-sdks/*
+  - Package.swift
+  - serde-benchmark/*
 
 analyzer_rules:
   - unused_import

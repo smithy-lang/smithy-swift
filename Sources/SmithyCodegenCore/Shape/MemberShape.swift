@@ -31,7 +31,9 @@ public class MemberShape: Shape {
 
     public var target: Shape {
         get throws {
-            guard let target = model.shapes[targetID] ?? Shape.prelude[targetID] else {
+            // Check the prelude before the model, this prevents a crash when resolving a
+            // target on the prelude Document
+            guard let target = Shape.prelude[targetID] ?? model.shapes[targetID] else {
                 throw ModelError("Member \(id): target \(targetID) does not exist")
             }
             return target

@@ -8,11 +8,9 @@
 @_spi(SchemaBasedSerde)
 import enum Smithy.Prelude
 @_spi(SchemaBasedSerde)
-import struct Smithy.Schema
+import class Smithy.Schema
 @_spi(SchemaBasedSerde)
 import protocol SmithySerialization.DeserializableStruct
-@_spi(SchemaBasedSerde)
-import typealias SmithySerialization.ReadStructConsumer
 @_spi(SchemaBasedSerde)
 import protocol SmithySerialization.ShapeDeserializer
 
@@ -51,18 +49,16 @@ extension BaseError: DeserializableStruct {
         )
     }
 
-    public static var readConsumer: SmithySerialization.ReadStructConsumer<Self> {
-        { memberSchema, value, deserializer in
-            switch memberSchema.index {
-            case 0:
-                value.__type = try deserializer.readString(memberSchema)
-            case 1:
-                value.code = try deserializer.readString(memberSchema)
-            case 2:
-                value.message = try deserializer.readString(memberSchema)
-            default:
-                break
-            }
+    public mutating func deserializeMember(_ memberSchema: Schema, _ deserializer: any ShapeDeserializer) throws {
+        switch memberSchema.index {
+        case 0:
+            self.__type = try deserializer.readString(memberSchema)
+        case 1:
+            self.code = try deserializer.readString(memberSchema)
+        case 2:
+            self.message = try deserializer.readString(memberSchema)
+        default:
+            break
         }
     }
 

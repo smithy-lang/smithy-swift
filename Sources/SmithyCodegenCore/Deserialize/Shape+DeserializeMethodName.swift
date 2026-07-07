@@ -8,7 +8,7 @@
 @_spi(SchemaBasedSerde)
 import struct Smithy.ShapeID
 @_spi(SchemaBasedSerde)
-import struct Smithy.StreamingTrait
+import class Smithy.StreamingTrait
 
 extension Shape {
 

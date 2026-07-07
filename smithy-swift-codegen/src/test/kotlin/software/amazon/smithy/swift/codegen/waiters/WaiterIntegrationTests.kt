@@ -42,7 +42,7 @@ class WaiterIntegrationTests {
     fun `renders waiters swift file for service with waiters`() {
         val context = setupTests("waiters.smithy", "com.test#TestHasWaiters")
         val filePaths = context.manifest.files
-        filePaths.shouldContain(Path("/Sources/Test/Waiters.swift"))
+        filePaths.shouldContain(Path("/Test/Sources/Test/Waiters.swift"))
     }
 
     @Test

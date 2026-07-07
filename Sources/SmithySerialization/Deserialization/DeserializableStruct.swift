@@ -6,12 +6,13 @@
 //
 
 @_spi(SchemaBasedSerde)
-import struct Smithy.Schema
-
-@_spi(SchemaBasedSerde)
-public typealias ReadStructConsumer<T> = (Schema, inout T, any ShapeDeserializer) throws -> Void
+import class Smithy.Schema
 
 @_spi(SchemaBasedSerde)
 public protocol DeserializableStruct: DeserializableShape {
-    static var readConsumer: ReadStructConsumer<Self> { get }
+
+    mutating func deserializeMember(
+        _ memberSchema: Schema,
+        _ deserializer: any ShapeDeserializer
+    ) throws
 }

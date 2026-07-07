@@ -9,13 +9,13 @@ import struct Foundation.Locale
 import struct Foundation.NSRange
 import class Foundation.NSRegularExpression
 @_spi(SchemaBasedSerde)
-import struct Smithy.ErrorTrait
+import class Smithy.ErrorTrait
 @_spi(SchemaBasedSerde)
-import struct Smithy.ServiceTrait
+import class Smithy.ServiceTrait
 @_spi(SchemaBasedSerde)
 import struct Smithy.ShapeID
 @_spi(SchemaBasedSerde)
-import struct Smithy.StreamingTrait
+import class Smithy.StreamingTrait
 
 @_spi(SchemaBasedSerde)
 public struct SymbolProvider {

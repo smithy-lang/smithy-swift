@@ -14,6 +14,7 @@ import software.amazon.smithy.swift.codegen.model.expectTrait
 import software.amazon.smithy.swift.codegen.model.hasTrait
 import software.amazon.smithy.swift.codegen.swiftmodules.ClientRuntimeTypes
 import software.amazon.smithy.swift.codegen.swiftmodules.FoundationTypes
+import software.amazon.smithy.swift.codegen.utils.SDKFileUtils
 import software.amazon.smithy.swift.codegen.utils.toLowerCamelCase
 import kotlin.jvm.optionals.getOrNull
 
@@ -34,7 +35,8 @@ open class SmokeTestGenerator(
             val operationShapeIdToTestCases = getOperationShapeIdToTestCasesMapping(serviceName)
             val testCaseNames = operationShapeIdToTestCases.values.flatten().map { it.id.toLowerCamelCase() }
             if (testCaseNames.isNotEmpty()) {
-                ctx.delegator.useFileWriter("SmokeTests/$testRunnerName/$testRunnerName.swift") { writer ->
+                val filePath = SDKFileUtils(ctx.settings).rootDirFilePath("SmokeTests/$testRunnerName/$testRunnerName")
+                ctx.delegator.useFileWriter(filePath) { writer ->
                     renderPrefixContent(serviceName, writer)
                     addEmptyLine(writer)
                     writer.write("@main")

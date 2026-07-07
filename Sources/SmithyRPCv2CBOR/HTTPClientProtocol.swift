@@ -11,15 +11,15 @@ import protocol ClientRuntime.ServiceError
 import struct ClientRuntime.UnknownHTTPServiceError
 import struct Foundation.Data
 @_spi(SchemaBasedSerde)
-import struct Smithy.AWSQueryCompatibleTrait
+import class Smithy.AWSQueryCompatibleTrait
 @_spi(SchemaBasedSerde)
-import struct Smithy.AWSQueryErrorTrait
+import class Smithy.AWSQueryErrorTrait
 import enum Smithy.ByteStream
 import enum Smithy.ClientError
 import class Smithy.Context
-import struct Smithy.Schema
+import class Smithy.Schema
 import struct Smithy.ShapeID
-import struct Smithy.TargetsUnitTrait
+import class Smithy.TargetsUnitTrait
 import class SmithyHTTPAPI.HTTPRequest
 import class SmithyHTTPAPI.HTTPRequestBuilder
 import class SmithyHTTPAPI.HTTPResponse
@@ -97,10 +97,10 @@ public struct HTTPClientProtocol: SmithySerialization.ClientProtocol, Sendable {
 
             if let queryCompatibleErrorCode = try response.queryCompatibleErrorCode(for: operation) {
                 // This is a query-compatible service providing a query-compatible error code.
-                registryEntry = try errorTypeRegistry.find { entry in
+                registryEntry = errorTypeRegistry.find { entry in
                     // Try to match x-amzn-query-error on the name in the AWSQueryError trait, else on a shape name.
                     // This matches previous error matching behavior; see ErrorShapeName.kt
-                    let queryErrorCode = try entry.schema.getTrait(AWSQueryErrorTrait.self)?.code
+                    let queryErrorCode = entry.schema.getTrait(AWSQueryErrorTrait.self)?.code
                     let shapeName = entry.schema.id.name
                     return queryCompatibleErrorCode == queryErrorCode ?? shapeName
                 }

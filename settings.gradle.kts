@@ -20,12 +20,12 @@ pluginManagement {
         id("org.jetbrains.dokka") version dokkaVersion
         id("org.jetbrains.kotlin.jvm") version kotlinVersion
         id("org.jetbrains.kotlinx.benchmark") version kotlinxBenchmarkVersion
-        id("software.amazon.smithy") version smithyGradleVersion
+        id("software.amazon.smithy.gradle.smithy-base") version smithyGradleVersion
     }
 }
 
 rootProject.name = "smithy-swift"
 
 include("test-sdks")
+include("serde-benchmark")
 include("smithy-swift-codegen")
-include("smithy-swift-codegen-test")

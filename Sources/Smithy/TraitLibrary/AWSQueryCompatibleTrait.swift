@@ -7,8 +7,10 @@
 
 /// https://smithy.io/2.0/aws/protocols/aws-query-protocol.html#aws-protocols-awsquerycompatible-trait
 @_spi(SchemaBasedSerde)
-public struct AWSQueryCompatibleTrait: Trait {
+public final class AWSQueryCompatibleTrait: RuntimeTrait {
     public static var id: ShapeID { .init("aws.protocols", "awsQueryCompatible") }
+
+    public static let uniqueIndex = traitUniqueIndexCounter.getNextIndex()
 
     public var node: Node { [:] }
 

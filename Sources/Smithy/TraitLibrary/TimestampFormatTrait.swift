@@ -6,15 +6,17 @@
 //
 
 @_spi(SchemaBasedSerde)
-public struct TimestampFormatTrait: Trait {
+public final class TimestampFormatTrait: RuntimeTrait {
 
-    public enum Format: String {
+    public enum Format: String, Sendable {
         case dateTime = "date-time"
         case httpDate = "http-date"
         case epochSeconds = "epoch-seconds"
     }
 
     public static var id: ShapeID { .init("smithy.api", "timestampFormat") }
+
+    public static let uniqueIndex = traitUniqueIndexCounter.getNextIndex()
 
     public let format: Format
 

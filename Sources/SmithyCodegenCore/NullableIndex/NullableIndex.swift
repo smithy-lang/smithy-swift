@@ -6,18 +6,18 @@
 //
 
 @_spi(SchemaBasedSerde)
-import struct Smithy.AddedDefaultTrait
+import class Smithy.AddedDefaultTrait
 @_spi(SchemaBasedSerde)
-import struct Smithy.ClientOptionalTrait
+import class Smithy.ClientOptionalTrait
 @_spi(SchemaBasedSerde)
-import struct Smithy.DefaultTrait
+import class Smithy.DefaultTrait
 @_spi(SchemaBasedSerde)
-import struct Smithy.InputTrait
+import class Smithy.InputTrait
 @_spi(SchemaBasedSerde)
 import struct Smithy.ShapeID
 import enum Smithy.ShapeType
 @_spi(SchemaBasedSerde)
-import struct Smithy.SparseTrait
+import class Smithy.SparseTrait
 
 struct NullableIndex {
 
@@ -66,8 +66,8 @@ struct NullableIndex {
         guard allowedTypes.contains(target.type) else { return false }
 
         // Check if there is a default trait with a zero/false value.  If so, member is non-optional.
-        let memberDefaultTrait = try memberShape.getTrait(DefaultTrait.self)
-        let targetDefaultTrait = try target.getTrait(DefaultTrait.self)
+        let memberDefaultTrait = memberShape.getTrait(DefaultTrait.self)
+        let targetDefaultTrait = target.getTrait(DefaultTrait.self)
         guard let defaultNode = (memberDefaultTrait ?? targetDefaultTrait)?.node else {
             return false
         }

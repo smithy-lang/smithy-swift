@@ -13,7 +13,8 @@ class RecursiveShapesDecodeXMLGenerationTests {
     @Test
     fun `decode recursive shape`() {
         val context = setupTests("Isolated/Restxml/xml-recursive.smithy", "aws.protocoltests.restxml#RestXml")
-        val contents = getFileContents(context.manifest, "Sources/RestXml/models/XmlRecursiveShapesOutput+HttpResponseBinding.swift")
+        val contents =
+            getFileContents(context.manifest, "RestXml/Sources/RestXml/models/XmlRecursiveShapesOutput+HttpResponseBinding.swift")
         val expectedContents = """
 extension XmlRecursiveShapesOutput {
 
@@ -33,7 +34,8 @@ extension XmlRecursiveShapesOutput {
     @Test
     fun `decode recursive nested shape`() {
         val context = setupTests("Isolated/Restxml/xml-recursive-nested.smithy", "aws.protocoltests.restxml#RestXml")
-        val contents = getFileContents(context.manifest, "Sources/RestXml/models/XmlNestedRecursiveShapesOutput+HttpResponseBinding.swift")
+        val contents =
+            getFileContents(context.manifest, "RestXml/Sources/RestXml/models/XmlNestedRecursiveShapesOutput+HttpResponseBinding.swift")
         val expectedContents = """
 extension XmlNestedRecursiveShapesOutput {
 

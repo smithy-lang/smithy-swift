@@ -49,7 +49,7 @@ internal class RecursiveShapeBoxerTests {
 
         val recursiveShapesInput =
             manifest
-                .getFileString("Sources/example/models/RecursiveShapesInput.swift")
+                .getFileString("example/Sources/example/models/RecursiveShapesInput.swift")
                 .get()
         Assertions.assertNotNull(recursiveShapesInput)
         val expected = """
@@ -67,7 +67,7 @@ public struct RecursiveShapesInput: Swift.Sendable {
 
         val recursiveShapesOutput =
             manifest
-                .getFileString("Sources/example/models/RecursiveShapesOutput.swift")
+                .getFileString("example/Sources/example/models/RecursiveShapesOutput.swift")
                 .get()
         Assertions.assertNotNull(recursiveShapesOutput)
         val expected2 = """
@@ -85,7 +85,7 @@ public struct RecursiveShapesOutput: Swift.Sendable {
 
         val recursiveShapesInputOutputNested1 =
             manifest
-                .getFileString("Sources/example/models/RecursiveShapesInputOutputNested1.swift")
+                .getFileString("example/Sources/example/models/RecursiveShapesInputOutputNested1.swift")
                 .get()
         Assertions.assertNotNull(recursiveShapesInputOutputNested1)
         val expected3 = """
@@ -109,7 +109,7 @@ extension ExampleClientTypes {
 
         val recursiveShapesInputOutputNested2 =
             manifest
-                .getFileString("Sources/example/models/RecursiveShapesInputOutputNested2.swift")
+                .getFileString("example/Sources/example/models/RecursiveShapesInputOutputNested2.swift")
                 .get()
         Assertions.assertNotNull(recursiveShapesInputOutputNested2)
         val expected4 = """
