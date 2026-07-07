@@ -45,12 +45,19 @@ package struct SchemasCodegen {
         // Render each shape's schema, followed by a separate schema for each of its members, if any
         for shape in allShapes {
             // First, render a schema var for the shape itself
-            try writeSchema(ctx: ctx, writer: writer, shape: shape, containerType: nil, index: nil)
+            try writeSchema(ctx: ctx, writer: writer, shape: shape, containerType: nil, index: nil, scope: "")
 
             // Then render a schema var for each of the shape's members, if any
             guard let memberShapes = try (shape as? HasMembers)?.members else { continue }
             for (index, member) in memberShapes.enumerated() {
-                try writeSchema(ctx: ctx, writer: writer, shape: member, containerType: shape.type, index: index)
+                try writeSchema(
+                    ctx: ctx,
+                    writer: writer,
+                    shape: member,
+                    containerType: shape.type,
+                    index: index,
+                    scope: "private "
+                )
             }
         }
         // Get rid of last trailing whitespace
@@ -63,14 +70,16 @@ package struct SchemasCodegen {
         writer: SwiftWriter,
         shape: Shape,
         containerType: ShapeType?,
-        index: Int?
+        index: Int?,
+        scope: String
     ) throws {
         // Assign to a global var & open the initializer.
         // If the type is not made explicit, a schema can get a "circular reference" compile error
         // when schema target causes a reference cycle.
         // This must be a vagary of the Swift expression type checking system
+
         let varName = try shape.schemaVarName
-        try writer.openBlock("let \(varName): Smithy.Schema = Smithy.Schema(", ")") { writer in
+        try writer.openBlock("\(scope)let \(varName): Smithy.Schema = Smithy.Schema(", ")") { writer in
 
             // Write the id: and type: params.  All schemas will have this
             writer.write("id: \(shape.id.rendered),")
