@@ -4,6 +4,7 @@
  */
 package software.amazon.smithy.swift.codegen.integration
 
+import software.amazon.smithy.codegen.core.Symbol
 import software.amazon.smithy.model.shapes.StructureShape
 import software.amazon.smithy.protocoltests.traits.HttpRequestTestCase
 import software.amazon.smithy.rulesengine.traits.EndpointRuleSetTrait
@@ -24,7 +25,7 @@ import java.util.Base64
 open class HttpProtocolUnitTestRequestGenerator protected constructor(
     builder: Builder,
 ) : HttpProtocolUnitTestGenerator<HttpRequestTestCase>(builder) {
-    override val baseTestClassName = "HttpRequestTestBase"
+    override val baseTestClassSymbol = SmithyTestUtilTypes.HttpRequestTestBase
 
     override fun renderTestBody(test: HttpRequestTestCase) {
         renderExpectedBlock(test)
