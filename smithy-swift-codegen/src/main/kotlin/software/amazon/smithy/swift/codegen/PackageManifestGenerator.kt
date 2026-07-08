@@ -44,6 +44,7 @@ class PackageManifestGenerator(
 
                 val dependenciesByTarget =
                     externalDependencies
+                        .filter { it.targetName != "SmithyTestUtil" }
                         .distinctBy { it.targetName + it.packageName }
                         .sortedBy { it.targetName }
 
@@ -60,11 +61,13 @@ class PackageManifestGenerator(
                             }
                         }
                     }
-                    writer.openBlock(".testTarget(", ")") {
-                        writer.write("name: \$S,", ctx.settings.testModuleName)
-                        writer.openBlock("dependencies: [", "]") {
-                            writer.write("\$S,", ctx.settings.moduleName)
-                            SwiftDependency.SMITHY_TEST_UTIL.dependencies.forEach { writeTargetDependency(writer, it) }
+                    if (externalDependencies.any { it.targetName == "SmithyTestUtil" }) {
+                        writer.openBlock(".testTarget(", ")") {
+                            writer.write("name: \$S,", ctx.settings.testModuleName)
+                            writer.openBlock("dependencies: [", "]") {
+                                writer.write("\$S,", ctx.settings.moduleName)
+                                SwiftDependency.SMITHY_TEST_UTIL.dependencies.forEach { writeTargetDependency(writer, it) }
+                            }
                         }
                     }
                 }
