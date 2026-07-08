@@ -6,6 +6,6 @@
 //
 
 @_spi(SchemaBasedSerde)
-public protocol DeserializableShape {
+public protocol DeserializableShape: Sendable {
     static func deserialize(_ deserializer: ShapeDeserializer) throws -> Self
 }
