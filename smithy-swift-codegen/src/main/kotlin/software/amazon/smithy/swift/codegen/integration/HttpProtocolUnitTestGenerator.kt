@@ -4,6 +4,7 @@
  */
 package software.amazon.smithy.swift.codegen.integration
 
+import software.amazon.smithy.codegen.core.Symbol
 import software.amazon.smithy.codegen.core.SymbolProvider
 import software.amazon.smithy.model.Model
 import software.amazon.smithy.model.shapes.OperationShape
@@ -30,7 +31,7 @@ abstract class HttpProtocolUnitTestGenerator<T : HttpMessageTestCase>
         protected val httpProtocolCustomizable = builder.httpProtocolCustomizable!!
         protected val httpBindingResolver = builder.httpBindingResolver!!
         protected val serviceName: String = builder.serviceName!!
-        abstract val baseTestClassName: String
+        abstract val baseTestClassSymbol: Symbol
 
         /**
          * Render a test class and unit tests for the specified [testCases]
@@ -38,10 +39,10 @@ abstract class HttpProtocolUnitTestGenerator<T : HttpMessageTestCase>
         fun renderTestClass(testClassName: String) {
             writer.write("")
             writer.openBlock(
-                "class \$L: \$L {",
+                "class \$L: \$N {",
                 "}",
                 testClassName,
-                baseTestClassName,
+                baseTestClassSymbol,
             ) {
                 testCases.forEach { renderTestFunction(it) }
             }

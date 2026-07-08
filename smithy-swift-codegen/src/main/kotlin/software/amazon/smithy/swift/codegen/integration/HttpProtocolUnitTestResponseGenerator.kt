@@ -38,7 +38,7 @@ import java.util.Base64
 open class HttpProtocolUnitTestResponseGenerator protected constructor(
     builder: Builder,
 ) : HttpProtocolUnitTestGenerator<HttpResponseTestCase>(builder) {
-    override val baseTestClassName = "HttpResponseTestBase"
+    override val baseTestClassSymbol = SmithyTestUtilTypes.HttpResponseTestBase
 
     protected open val inputShape: Shape?
         get() {

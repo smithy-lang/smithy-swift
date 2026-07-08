@@ -24,7 +24,7 @@ import java.util.Base64
 open class HttpProtocolUnitTestRequestGenerator protected constructor(
     builder: Builder,
 ) : HttpProtocolUnitTestGenerator<HttpRequestTestCase>(builder) {
-    override val baseTestClassName = "HttpRequestTestBase"
+    override val baseTestClassSymbol = SmithyTestUtilTypes.HttpRequestTestBase
 
     override fun renderTestBody(test: HttpRequestTestCase) {
         renderExpectedBlock(test)

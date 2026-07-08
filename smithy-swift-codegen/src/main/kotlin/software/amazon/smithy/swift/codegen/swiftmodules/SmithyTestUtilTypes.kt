@@ -12,6 +12,8 @@ object SmithyTestUtilTypes {
     val ProtocolTestRetryStrategyOptions = runtimeSymbol("ProtocolTestRetryStrategyOptions", SwiftDeclaration.ENUM)
     val SerdeBenchmarker = runtimeSymbol("SerdeBenchmarker", SwiftDeclaration.STRUCT)
     val SerdeBenchmarkTelemetryProvider = runtimeSymbol("SerdeBenchmarkTelemetryProvider", SwiftDeclaration.CLASS)
+    val HttpRequestTestBase = runtimeSymbol("HttpRequestTestBase", SwiftDeclaration.CLASS)
+    val HttpResponseTestBase = runtimeSymbol("HttpResponseTestBase", SwiftDeclaration.CLASS)
 }
 
 private fun runtimeSymbol(
