@@ -63,7 +63,7 @@ class PackageManifestGenerator(
                         }
                     }
                     val service = ctx.model.expectShape(ctx.settings.service) as ServiceShape
-                    if (dependenciesByTarget.any { it.targetName == "SmithyTestUtil" }) {
+                    if (externalDependencies.any { it.targetName == "SmithyTestUtil" }) {
                         writer.openBlock(".testTarget(", ")") {
                             writer.write("name: \$S,", ctx.settings.testModuleName)
                             writer.openBlock("dependencies: [", "]") {
