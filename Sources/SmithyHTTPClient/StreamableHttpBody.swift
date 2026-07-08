@@ -14,7 +14,7 @@ import struct Smithy.SwiftLogger
 
 /// A class that implements the `IStreamable` protocol for `ByteStream`.
 /// It acts as a bridge between AWS SDK and CRT.
-class StreamableHttpBody: IStreamable {
+final class StreamableHttpBody: IStreamable {
 
     /// The index of the data being transferred.
     ///
