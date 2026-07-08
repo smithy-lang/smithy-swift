@@ -7,14 +7,14 @@
 
 @testable import WaitersTestSDK
 
-extension GetWidgetInput: Equatable {
+extension WaitersTestSDK.GetWidgetInput: @retroactive Equatable {
 
     public static func ==(lhs: GetWidgetInput, rhs: GetWidgetInput) -> Bool {
         return lhs.stringProperty == rhs.stringProperty
     }
 }
 
-extension GetWidgetOutput: Equatable {
+extension WaitersTestSDK.GetWidgetOutput: @retroactive Equatable {
 
     public static func ==(lhs: GetWidgetOutput, rhs: GetWidgetOutput) -> Bool {
         return lhs.booleanArrayProperty == rhs.booleanArrayProperty &&
@@ -26,14 +26,14 @@ extension GetWidgetOutput: Equatable {
     }
 }
 
-extension WaitersClientTypes.Child: Equatable {
+extension WaitersTestSDK.WaitersClientTypes.Child: @retroactive Equatable {
 
     public static func ==(lhs: WaitersClientTypes.Child, rhs: WaitersClientTypes.Child) -> Bool {
         return lhs.grandchildren == rhs.grandchildren
     }
 }
 
-extension WaitersClientTypes.Grandchild: Equatable {
+extension WaitersTestSDK.WaitersClientTypes.Grandchild: @retroactive Equatable {
 
     public static func ==(lhs: WaitersClientTypes.Grandchild, rhs: WaitersClientTypes.Grandchild) -> Bool {
         return lhs.name == rhs.name && lhs.number == rhs.number
