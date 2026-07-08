@@ -6,7 +6,7 @@
 //
 
 @_spi(SchemaBasedSerde)
-import struct Smithy.ClientOptionalTrait
+import class Smithy.ClientOptionalTrait
 @_spi(SchemaBasedSerde)
 import struct Smithy.ShapeID
 
@@ -28,7 +28,7 @@ extension Model {
                 targetID: member.targetID
             )
         }
-        return Model(version: self.version, metadata: self.metadata, shapes: newShapes)
+        return Model(version: self.version, metadata: self.metadata, shapes: newShapes, traitTypes: self.traitTypes)
     }
 }
 

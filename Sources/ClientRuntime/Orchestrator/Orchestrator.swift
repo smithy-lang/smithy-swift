@@ -5,6 +5,12 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
+#if canImport(Darwin)
+// swiftlint:disable:next unused_import
+import Darwin
+#elseif canImport(Glibc)
+import Glibc
+#endif
 import struct Foundation.Date
 import struct Foundation.TimeInterval
 import struct Smithy.AttributeKey
@@ -220,10 +226,13 @@ public struct Orchestrator<
                 let builder = RequestType.RequestBuilderType()
 
                 // START - smithy.client.call.serialization_duration
-                let serializeStart = Date().timeIntervalSinceReferenceDate
+                var startTimespec = timespec()
+                var endTimespec = timespec()
+                clock_gettime(CLOCK_MONOTONIC_RAW, &startTimespec)
                 try serialize(finalizedInput, builder, context.getAttributes())
+                clock_gettime(CLOCK_MONOTONIC_RAW, &endTimespec)
                 telemetry.serializationDuration.record(
-                    value: Date().timeIntervalSinceReferenceDate - serializeStart,
+                    value: timeInterval(startTimespec: startTimespec, endTimespec: endTimespec),
                     attributes: telemetry.metricsAttributes,
                     context: telemetryContext)
                 // END - smithy.client.call.serialization_duration
@@ -345,6 +354,7 @@ public struct Orchestrator<
         }
     }
 
+    // swiftlint:disable:next function_body_length
     private func attempt(context: InterceptorContextType, attemptCount: Int) async {
         // If anything in here fails, the attempt short-circuits and we go to modifyBeforeAttemptCompletion,
         // with the thrown error in context.result
@@ -448,10 +458,13 @@ public struct Orchestrator<
                 try await interceptors.readBeforeDeserialization(context: context)
 
                 // START - smithy.client.call.deserialization_duration
-                let deserializeStart = Date().timeIntervalSinceReferenceDate
+                var startTimespec = timespec()
+                var endTimespec = timespec()
+                clock_gettime(CLOCK_MONOTONIC_RAW, &startTimespec)
                 let output = try await deserialize(context.getResponse(), context.getAttributes())
+                clock_gettime(CLOCK_MONOTONIC_RAW, &endTimespec)
                 telemetry.deserializationDuration.record(
-                    value: Date().timeIntervalSinceReferenceDate - deserializeStart,
+                    value: timeInterval(startTimespec: startTimespec, endTimespec: endTimespec),
                     attributes: telemetry.metricsAttributes,
                     context: telemetryContext
                 )
@@ -501,6 +514,12 @@ public struct Orchestrator<
                 context: telemetry.contextManager.current())
             throw error
         }
+    }
+
+    private func timeInterval(startTimespec: timespec, endTimespec: timespec) -> TimeInterval {
+        let nsec = 1_000_000_000 * (endTimespec.tv_sec - startTimespec.tv_sec) +
+            endTimespec.tv_nsec - startTimespec.tv_nsec
+        return TimeInterval(nsec) * 1.0E-9
     }
 }
 

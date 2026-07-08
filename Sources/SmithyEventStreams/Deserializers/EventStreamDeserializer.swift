@@ -7,12 +7,12 @@
 
 import struct Foundation.Data
 import struct Foundation.Date
-import struct Smithy.Document
 import protocol Smithy.ResponseMessage
 @_spi(SchemaBasedSerde)
-import struct Smithy.Schema
+import class Smithy.Schema
+import protocol Smithy.SmithyDocument
 @_spi(SchemaBasedSerde)
-import struct Smithy.StreamingTrait
+import class Smithy.StreamingTrait
 import typealias SmithyEventStreamsAPI.UnmarshalClosure
 @_spi(SchemaBasedSerde)
 import protocol SmithySerialization.Codec
@@ -47,10 +47,12 @@ public struct EventStreamDeserializer: ShapeDeserializer {
 
         // Call the read consumer with the streaming member and this same deserializer.
         // The readEventStream method immediately below will be called to deserialize the event stream.
-        try T.readConsumer(member, &value, self)
+        try value.deserializeMember(member, self)
     }
 
-    public func readEventStream<E: DeserializableStruct>(_ schema: Schema) throws -> AsyncThrowingStream<E, any Error> {
+    public func readEventStream<E: DeserializableStruct & Sendable>(
+        _ schema: Schema
+    ) throws -> AsyncThrowingStream<E, any Error> {
         // Get the ReadableStream carrying the event stream data
         guard case .stream(let stream) = response.body else {
             throw SerializerError("Not a streaming body")
@@ -124,7 +126,7 @@ public struct EventStreamDeserializer: ShapeDeserializer {
         throw notImplemented
     }
 
-    public func readDocument(_ schema: Schema) throws -> Document {
+    public func readDocument(_ schema: Schema) throws -> any SmithyDocument {
         throw notImplemented
     }
 

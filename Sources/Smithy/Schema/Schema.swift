@@ -10,7 +10,7 @@
 /// Typically, the Schema contains only modeled info & properties that are relevant to
 /// serialization, transport bindings, and other functions performed by the SDK.
 @_spi(SchemaBasedSerde)
-public struct Schema: Sendable {
+public final class Schema: Sendable {
 
     /// The Smithy shape ID for the shape described by this schema.
     public let id: ShapeID
@@ -36,7 +36,7 @@ public struct Schema: Sendable {
     ///
     /// When this schema is itself a Member, it returns the target's members.
     public var members: [Schema] {
-        _containerType != nil ? _target()!._members : _members
+        containerType != nil ? _target()!._members : _members
     }
 
     /// The members of this schema.
@@ -64,10 +64,13 @@ public struct Schema: Sendable {
     ///
     /// Only returns a name for structure & union members.  Collection & enumeration members return `nil`.
     public var memberName: String? {
-        [ShapeType.structure, .union].contains(_containerType) ? id.member! : nil
+        [ShapeType.structure, .union].contains(containerType) ? id.member! : nil
     }
 
-    private var _containerType: ShapeType?
+    /// The type of the shape containing this schema, if this schema is a member schema.
+    ///
+    /// Will be `nil` for any schema other than a member.
+    public let containerType: ShapeType?
 
     /// Creates a new Schema using the passed parameters.
     ///
@@ -86,7 +89,7 @@ public struct Schema: Sendable {
         self.type = type
         self.traits = traits
         self._members = members
-        self._containerType = containerType
+        self.containerType = containerType
         self._target = target
         self.index = index
     }
@@ -101,28 +104,29 @@ public struct Schema: Sendable {
     /// Gets a trait from the schema.
     /// - Parameter type: The trait to be retrieved.
     /// - Returns: The requested trait, or `nil` if the schema doesn't have that trait.
-    public func getTrait<T: Trait>(_ type: T.Type) throws -> T? {
-        try traits.getTrait(type)
+    public func getTrait<T: Trait>(_ type: T.Type) -> T? {
+        traits.getTrait(type)
     }
 
     /// Returns the member for a List's element.
     ///
-    /// Only access this property on a schema of type `.list`.
+    /// Only access this property on a schema of type `.list` or `.document`.
     public var member: Schema {
-        members[0] // `member` will be the only member in a list schema
+        // `member` will be the only member in a list schema, the third in a document schema
+        members[type == .document ? 2 : 0]
     }
 
     /// Returns the key member for a Map's key.
     ///
-    /// Only access this property on a schema of type `.map`.
+    /// Only access this property on a schema of type `.map` or `.document`.
     public var key: Schema {
-        members[0] // `key` will be the first member in a map schema, before `value`
+        members[0] // `key` will be the first member in a map or document schema, before `value`
     }
 
     /// Returns the value member for a Map's value.
     ///
-    /// Only access this property on a schema of type `.map`.
+    /// Only access this property on a schema of type `.map` or `.document`.
     public var value: Schema {
-        members[1] // `value` will be the second / last member in a map schema, after `key`
+        members[1] // `value` will be the second member in a map or document schema, after `key`
     }
 }

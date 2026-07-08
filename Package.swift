@@ -26,7 +26,7 @@ let package = Package(
         .macOS(.v12),
         .iOS(.v13),
         .tvOS(.v13),
-        .watchOS(.v6)
+        .watchOS(.v6),
     ],
     products: [
         .library(name: "Smithy", targets: ["Smithy"]),
@@ -38,6 +38,7 @@ let package = Package(
         .library(name: "SmithyRetries", targets: ["SmithyRetries"]),
         .library(name: "SmithyReadWrite", targets: ["SmithyReadWrite"]),
         .library(name: "SmithyXML", targets: ["SmithyXML"]),
+        .library(name: "SmithyCBOR", targets: ["SmithyCBOR"]),
         .library(name: "SmithyJSON", targets: ["SmithyJSON"]),
         .library(name: "SmithyFormURL", targets: ["SmithyFormURL"]),
         .library(name: "SmithyTimestamps", targets: ["SmithyTimestamps"]),
@@ -62,7 +63,7 @@ let package = Package(
     ],
     dependencies: {
         var dependencies: [Package.Dependency] = [
-            .package(url: "https://github.com/awslabs/aws-crt-swift.git", exact: "0.61.1"),
+            crtDependency,
             .package(url: "https://github.com/apple/swift-argument-parser.git", from: "1.1.0"),
             .package(url: "https://github.com/apple/swift-log.git", from: "1.0.0"),
             .package(url: "https://github.com/swift-server/async-http-client.git", from: "1.22.0"),
@@ -76,6 +77,15 @@ let package = Package(
     }(),
     targets: runtimeTargets + runtimeTestTargets
 )
+
+var crtDependency: Package.Dependency {
+    let useCRTFromMain = ProcessInfo.processInfo.environment["AWS_SWIFT_SDK_USE_PRERELEASE_CRT"] != nil
+    return if useCRTFromMain {
+        .package(url: "https://github.com/awslabs/aws-crt-swift", branch: "main")
+    } else {
+        .package(url: "https://github.com/awslabs/aws-crt-swift", from: "0.63.0")
+    }
+}
 
 var runtimeTargets: [PackageDescription.Target] {
     [
@@ -184,7 +194,7 @@ var runtimeTargets: [PackageDescription.Target] {
         ),
         .target(
             name: "SmithyTestUtil",
-            dependencies: ["ClientRuntime", "SmithyHTTPAPI", "SmithyIdentity", "SmithyCBOR"]
+            dependencies: ["ClientRuntime", "SmithyHTTPAPI", "SmithyIdentity", "SmithyCBOR", "SmithyTelemetryAPI"]
         ),
         .target(
             name: "SmithyIdentity",
@@ -323,14 +333,11 @@ var runtimeTargets: [PackageDescription.Target] {
 }
 
 var runtimeTestTargets: [PackageDescription.Target] {
-    let baseTests: [PackageDescription.Target] = [
+    return [
         .testTarget(
             name: "SmithyTests",
             dependencies: ["Smithy"]
         ),
-    ]
-    guard ProcessInfo.processInfo.environment["AWS_SWIFT_SDK_ENABLE_UNIT_TESTS"] != nil else { return baseTests }
-    return baseTests + [
         .testTarget(
             name: "ClientRuntimeTests",
             dependencies: [
@@ -371,10 +378,6 @@ var runtimeTestTargets: [PackageDescription.Target] {
             dependencies: ["SmithyHTTPAuthAPI", "Smithy", "ClientRuntime"]
         ),
         .testTarget(
-            name: "SmithyJSONTests",
-            dependencies: ["SmithySerialization", "SmithyJSON", "ClientRuntime", "SmithyTestUtil"]
-        ),
-        .testTarget(
             name: "SmithyFormURLTests",
             dependencies: ["SmithyFormURL", "ClientRuntime"]
         ),
@@ -393,10 +396,6 @@ var runtimeTestTargets: [PackageDescription.Target] {
         .testTarget(
             name: "SmithyIdentityTests",
             dependencies: ["Smithy", "SmithyIdentity"]
-        ),
-        .testTarget(
-            name: "SmithyWaitersTests",
-            dependencies: ["Smithy", "SmithyWaitersAPI", "WaitersTestSDK"]
         ),
         .testTarget(
             name: "SmithyWaitersAPITests",
@@ -418,47 +417,6 @@ var runtimeTestTargets: [PackageDescription.Target] {
             name: "SmithyCodegenCoreTests",
             dependencies: ["SmithyCodegenCore"],
             resources: [ .process("Resources") ]
-        ),
-        .testTarget(
-            name: "SmithyCBORTests",
-            dependencies: [
-                "Smithy",
-                "SmithyCBOR",
-                .product(name: "AwsCommonRuntimeKit", package: "aws-crt-swift"),
-                "RPCv2CBORTestSDK",
-            ]
-        ),
-        .target(
-            name: "RPCv2CBORTestSDK",
-            dependencies: [
-                "ClientRuntime",
-                "SmithyHTTPAPI",
-                "SmithyHTTPAuthAPI",
-                "SmithyIdentity",
-                "SmithyRPCv2CBOR",
-                "SmithyRetries",
-                "SmithyRetriesAPI",
-            ],
-            path: "test-sdks/build/smithyprojections/test-sdks/rpcv2cbor/swift-codegen/Sources/RPCv2CBORTestSDK",
-            plugins: ["SmithyCodeGeneratorPlugin"]
-        ),
-        .target(
-            name: "WaitersTestSDK",
-            dependencies: [
-                "ClientRuntime",
-                "SmithyHTTPAPI",
-                "SmithyHTTPAuthAPI",
-                "SmithyIdentity",
-                "SmithyRPCv2CBOR",
-                "SmithyRetries",
-                "SmithyRetriesAPI",
-            ],
-            path: "test-sdks/build/smithyprojections/test-sdks/waiters/swift-codegen/Sources/WaitersTestSDK",
-            plugins: ["SmithyCodeGeneratorPlugin"]
-        ),
-        .testTarget(
-            name: "SmithySerializationTests",
-            dependencies: ["SmithySerialization", "RPCv2CBORTestSDK"]
         ),
     ]
 }

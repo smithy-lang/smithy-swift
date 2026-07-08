@@ -8,19 +8,18 @@
 import class AwsCommonRuntimeKit.CBORDecoder
 import struct Foundation.Data
 import struct Foundation.Date
-import struct Smithy.Document
 @_spi(SchemaBasedSerde)
-import struct Smithy.Schema
+import class Smithy.Schema
 import protocol Smithy.SmithyDocument
 @_spi(SchemaBasedSerde)
 import protocol SmithySerialization.DeserializableStruct
-@_spi(SchemaBasedSerde)
-import typealias SmithySerialization.ReadStructConsumer
 @_spi(SchemaBasedSerde)
 import typealias SmithySerialization.ReadValueConsumer
 import struct SmithySerialization.SerializerError
 @_spi(SchemaBasedSerde)
 import protocol SmithySerialization.ShapeDeserializer
+@_spi(SchemaBasedSerde)
+import struct SmithySerialization.UnexpectedNullError
 
 @_spi(SchemaBasedSerde)
 public class Deserializer: ShapeDeserializer {
@@ -204,7 +203,7 @@ public class Deserializer: ShapeDeserializer {
         return value
     }
 
-    public func readDocument(_ schema: Schema) throws -> Document {
+    public func readDocument(_ schema: Schema) throws -> any SmithyDocument {
         throw SerializerError("Document type not implemented in CBOR")
     }
 
@@ -264,11 +263,11 @@ public class Deserializer: ShapeDeserializer {
                 }
                 do {
                     if let member = structureSchema.members.first(where: { $0.id.member == memberName }) {
-                        try T.readConsumer(member, &value, self)
+                        try value.deserializeMember(member, self)
                     } else {
                         try skipValue()
                     }
-                } catch is DecodedNull {
+                } catch is UnexpectedNullError {
                     // skip null
                 }
                 guard decoder.hasNext() else {
@@ -288,11 +287,11 @@ public class Deserializer: ShapeDeserializer {
 
                 do {
                     if let member = structureSchema.members.first(where: { $0.id.member == memberName }) {
-                        try T.readConsumer(member, &value, self)
+                        try value.deserializeMember(member, self)
                     } else {
                         try skipValue()
                     }
-                } catch is DecodedNull {
+                } catch is UnexpectedNullError {
                     // skip null
                 }
             }
@@ -353,7 +352,7 @@ public class Deserializer: ShapeDeserializer {
                 do {
                     let nextElement = try consumer(self)
                     list.append(nextElement)
-                } catch is DecodedNull {
+                } catch is UnexpectedNullError {
                     // skip the null
                 }
                 guard decoder.hasNext() else {
@@ -367,7 +366,7 @@ public class Deserializer: ShapeDeserializer {
                 do {
                     let nextElement = try consumer(self)
                     list.append(nextElement)
-                } catch is DecodedNull {
+                } catch is UnexpectedNullError {
                     // skip the null
                 }
             }
@@ -400,7 +399,7 @@ public class Deserializer: ShapeDeserializer {
                 do {
                     let value = try consumer(self)
                     map[key] = value
-                } catch is DecodedNull {
+                } catch is UnexpectedNullError {
                     // skip the null
                 }
                 guard decoder.hasNext() else {
@@ -417,7 +416,7 @@ public class Deserializer: ShapeDeserializer {
                 do {
                     let value = try consumer(self)
                     map[key] = value
-                } catch is DecodedNull {
+                } catch is UnexpectedNullError {
                     // skip the null
                 }
             }
@@ -433,7 +432,7 @@ public class Deserializer: ShapeDeserializer {
     private func nullCheck() throws {
         if try decoder.isNull() {
             _ = try decoder.popNext()
-            throw DecodedNull()
+            throw UnexpectedNullError()
         }
     }
 }

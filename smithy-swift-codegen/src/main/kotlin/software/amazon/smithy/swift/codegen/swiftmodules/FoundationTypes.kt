@@ -15,6 +15,7 @@ object FoundationTypes {
     val URL = builtInSymbol("URL", SwiftDeclaration.STRUCT)
     val URLRequest = builtInNetworkingSymbol("URLRequest", SwiftDeclaration.STRUCT)
     val ProcessInfo = builtInSymbol("ProcessInfo", SwiftDeclaration.CLASS)
+    val FileManager = builtInSymbol("FileManager", SwiftDeclaration.CLASS)
 }
 
 private fun builtInSymbol(

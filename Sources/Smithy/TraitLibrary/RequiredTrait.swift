@@ -6,8 +6,10 @@
 //
 
 @_spi(SchemaBasedSerde)
-public struct RequiredTrait: Trait {
+public final class RequiredTrait: RuntimeTrait {
     public static var id: ShapeID { .init("smithy.api", "required") }
+
+    public static let uniqueIndex = traitUniqueIndexCounter.getNextIndex()
 
     public var node: Node { [:] }
 

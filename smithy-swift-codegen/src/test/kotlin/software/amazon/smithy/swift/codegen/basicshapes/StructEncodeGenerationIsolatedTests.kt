@@ -17,26 +17,26 @@ class StructEncodeGenerationIsolatedTests {
     @Test
     fun `BlobInput`() {
         val context = setupTests("Isolated/BlobInput.smithy", "com.test#Example")
-        Assertions.assertTrue(context.manifest.hasFile("Sources/example/models/BlobInputInput+Write.swift"))
+        Assertions.assertTrue(context.manifest.hasFile("example/Sources/example/models/BlobInputInput+Write.swift"))
     }
 
     @Test
     fun `BlobInput Contents`() {
         val context = setupTests("Isolated/BlobInput.smithy", "com.test#Example")
-        val contents = getModelFileContents("Sources/example", "BlobInputInput+Write.swift", context.manifest)
+        val contents = getModelFileContents("example/Sources/example", "BlobInputInput+Write.swift", context.manifest)
         contents.shouldSyntacticSanityCheck()
     }
 
     @Test
     fun `EnumInput`() {
         val testContext = setupTests("Isolated/EnumInput.smithy", "com.test#Example")
-        Assertions.assertTrue(testContext.manifest.hasFile("Sources/example/models/EnumInputInput+Write.swift"))
+        Assertions.assertTrue(testContext.manifest.hasFile("example/Sources/example/models/EnumInputInput+Write.swift"))
     }
 
     @Test
     fun `EnumInput Contents`() {
         val context = setupTests("Isolated/EnumInput.smithy", "com.test#Example")
-        val contents = getFileContents(context.manifest, "Sources/example/models/EnumInputInput.swift")
+        val contents = getFileContents(context.manifest, "example/Sources/example/models/EnumInputInput.swift")
         contents.shouldSyntacticSanityCheck()
         val expectedContents = """
 public struct EnumInputInput: Swift.Sendable {
@@ -59,7 +59,7 @@ public struct EnumInputInput: Swift.Sendable {
     fun `it can handle nested string lists`() {
         val context = setupTests("Isolated/NestedStringList.smithy", "com.test#Example")
         print(context.manifest.files)
-        val contents = getFileContents(context.manifest, "Sources/example/models/JsonListsInput+Write.swift")
+        val contents = getFileContents(context.manifest, "example/Sources/example/models/JsonListsInput+Write.swift")
         contents.shouldSyntacticSanityCheck()
 
         val expectedContents = """

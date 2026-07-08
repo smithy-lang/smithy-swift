@@ -14,7 +14,7 @@ class StructDecodeXMLGenerationTests {
     fun `XmlWrappedListOutputBody decodable`() {
         val context = setupTests("Isolated/Restxml/xml-lists-wrapped.smithy", "aws.protocoltests.restxml#RestXml")
 
-        val contents = getFileContents(context.manifest, "Sources/RestXml/models/XmlWrappedListOutput+HttpResponseBinding.swift")
+        val contents = getFileContents(context.manifest, "RestXml/Sources/RestXml/models/XmlWrappedListOutput+HttpResponseBinding.swift")
         val expectedContents = """
 extension XmlWrappedListOutput {
 
@@ -35,7 +35,8 @@ extension XmlWrappedListOutput {
     fun `SimpleScalarPropertiesOutputBody decodable`() {
         val context = setupTests("Isolated/Restxml/xml-scalar.smithy", "aws.protocoltests.restxml#RestXml")
 
-        val contents = getFileContents(context.manifest, "Sources/RestXml/models/SimpleScalarPropertiesOutput+HttpResponseBinding.swift")
+        val contents =
+            getFileContents(context.manifest, "RestXml/Sources/RestXml/models/SimpleScalarPropertiesOutput+HttpResponseBinding.swift")
         val expectedContents = """
 extension SimpleScalarPropertiesOutput {
 
@@ -68,7 +69,7 @@ extension SimpleScalarPropertiesOutput {
     fun `nestednested wrapped list deserialization`() {
         val context = setupTests("Isolated/Restxml/xml-lists-nestednested-wrapped.smithy", "aws.protocoltests.restxml#RestXml")
         val contents =
-            getFileContents(context.manifest, "Sources/RestXml/models/XmlNestedNestedWrappedListOutput+HttpResponseBinding.swift")
+            getFileContents(context.manifest, "RestXml/Sources/RestXml/models/XmlNestedNestedWrappedListOutput+HttpResponseBinding.swift")
         val expectedContents = """
 extension XmlNestedNestedWrappedListOutput {
 
@@ -88,7 +89,7 @@ extension XmlNestedNestedWrappedListOutput {
     @Test
     fun `empty lists decode`() {
         val context = setupTests("Isolated/Restxml/xml-lists-empty.smithy", "aws.protocoltests.restxml#RestXml")
-        val contents = getFileContents(context.manifest, "Sources/RestXml/models/XmlEmptyListsOutput+HttpResponseBinding.swift")
+        val contents = getFileContents(context.manifest, "RestXml/Sources/RestXml/models/XmlEmptyListsOutput+HttpResponseBinding.swift")
         val expectedContents = """
 extension XmlEmptyListsOutput {
 

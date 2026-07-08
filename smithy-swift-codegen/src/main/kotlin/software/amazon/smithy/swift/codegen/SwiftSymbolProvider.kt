@@ -63,7 +63,7 @@ import software.amazon.smithy.swift.codegen.swiftmodules.FoundationTypes
 import software.amazon.smithy.swift.codegen.swiftmodules.SmithyTimestampsTypes
 import software.amazon.smithy.swift.codegen.swiftmodules.SmithyTypes
 import software.amazon.smithy.swift.codegen.swiftmodules.SwiftTypes
-import software.amazon.smithy.swift.codegen.utils.ModelFileUtils
+import software.amazon.smithy.swift.codegen.utils.SDKFileUtils
 import software.amazon.smithy.swift.codegen.utils.toLowerCamelCase
 import software.amazon.smithy.utils.StringUtils.lowerCase
 import java.util.logging.Logger
@@ -303,7 +303,7 @@ class SwiftSymbolProvider(
         createSymbolBuilder(shape, typeName, declaration, boxed)
             .namespace(namespace, ".")
 
-    private fun formatModuleName(name: String): String = ModelFileUtils.filename(swiftSettings, name)
+    private fun formatModuleName(name: String): String = SDKFileUtils(swiftSettings).modelFilePath(name)
 
     /**
      * Resolve default value for a given shape and save it as a property in symbol builder if needed.
@@ -324,10 +324,18 @@ class SwiftSymbolProvider(
     ): Symbol.Builder {
         // Skip if the current shape is a member shape with @clientOptional trait
         if (shape.hasTrait<ClientOptionalTrait>()) return builder
-        // Skip if the current shape doesn't have default trait. Otherwise, get the default value as literal string
-        val defaultValueLiteral = shape.getTrait<DefaultTrait>()?.toNode()?.toString() ?: return builder
-        // If default value is "null", it is explicit notation for no default value. Return unmodified builder.
-        if (defaultValueLiteral == "null") return builder
+        // Skip if the current shape doesn't have default trait.
+        val node = shape.getTrait<DefaultTrait>()?.toNode() ?: return builder
+        // A `@default: null` node means the member has NO default value: it drops the default it would
+        // otherwise inherit from its target shape. Check the node type rather than its string form, since a
+        // string default of "null" also stringifies to "null" but is a real default. Clear any default
+        // already copied from the reused target symbol builder so the member emits `= nil`, not `= false`.
+        if (node.isNullNode) {
+            builder.removeProperty(SymbolProperty.DEFAULT_VALUE_KEY)
+            builder.removeProperty(SymbolProperty.DEFAULT_VALUE_CLOSURE_KEY)
+            return builder
+        }
+        val defaultValueLiteral = node.toString()
 
         // The current shape may be a member shape or a root level shape.
         val targetShape =
@@ -339,7 +347,6 @@ class SwiftSymbolProvider(
                 }
                 else -> shape
             }
-        val node = shape.getTrait<DefaultTrait>()!!.toNode()
 
         return when (targetShape) {
             is ListShape -> builder.defaultValue("[]")

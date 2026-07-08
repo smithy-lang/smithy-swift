@@ -11,6 +11,7 @@ import software.amazon.smithy.swift.codegen.SwiftDelegator
 import software.amazon.smithy.swift.codegen.core.SwiftCodegenContext
 import software.amazon.smithy.swift.codegen.integration.ProtocolGenerator
 import software.amazon.smithy.swift.codegen.model.expectShape
+import software.amazon.smithy.swift.codegen.utils.SDKFileUtils
 import software.amazon.smithy.waiters.WaitableTrait
 
 /**
@@ -26,7 +27,7 @@ class WaiterGenerator(
         val service = ctx.model.expectShape<ServiceShape>(ctx.settings.service)
 
         // Open a new file Waiters.swift to hold the waiter definitions for this service
-        val waiterFilename = "Sources/${ctx.settings.moduleName}/Waiters.swift"
+        val waiterFilename = SDKFileUtils(ctx.settings).sourcesDirFilePath("Waiters")
         delegator.useFileWriter(waiterFilename) { writer ->
             val serviceSymbol = ctx.symbolProvider.toSymbol(service)
 

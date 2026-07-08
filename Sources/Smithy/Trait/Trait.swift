@@ -10,7 +10,7 @@
 /// All traits have a ``Node`` associated with them, but will typically provide their properties
 /// with convenient, type-safe accessors.
 @_spi(SchemaBasedSerde)
-public protocol Trait {
+public protocol Trait: Sendable, UniquelyIndexedByType {
     static var id: ShapeID { get }
 
     var node: Node { get }
@@ -39,3 +39,11 @@ public extension Trait {
         member ?? target
     }
 }
+
+/// A "marker" protocol that designates a trait that will be used at runtime, versus one that is
+/// for codegen use only.
+@_spi(SchemaBasedSerde)
+public protocol RuntimeTrait: Trait {}
+
+@_spi(SchemaBasedSerde)
+public let traitUniqueIndexCounter = UniqueIndexCounter()

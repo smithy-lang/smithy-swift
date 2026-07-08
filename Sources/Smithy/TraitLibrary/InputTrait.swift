@@ -7,8 +7,10 @@
 
 /// https://smithy.io/2.0/spec/type-refinement-traits.html#input-trait
 @_spi(SchemaBasedSerde)
-public struct InputTrait: Trait {
+public final class InputTrait: RuntimeTrait {
     public static var id: ShapeID { .init("smithy.api", "input") }
+
+    public static let uniqueIndex = traitUniqueIndexCounter.getNextIndex()
 
     public var node: Node { [:] }
 

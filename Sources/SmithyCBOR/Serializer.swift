@@ -9,7 +9,7 @@ import class AwsCommonRuntimeKit.CBOREncoder
 import struct Foundation.Data
 import struct Foundation.Date
 @_spi(SchemaBasedSerde)
-import struct Smithy.Schema
+import class Smithy.Schema
 import protocol Smithy.SmithyDocument
 @_spi(SchemaBasedSerde)
 import protocol SmithySerialization.SerializableStruct
@@ -32,9 +32,7 @@ public final class Serializer: ShapeSerializer {
     public func writeStruct<S: SerializableStruct>(_ schema: Schema, _ value: S) throws {
         writeMember(schema: schema)
         encoder.encode(.indef_map_start)
-        for member in schema.members {
-            try S.writeConsumer(member, value, self)
-        }
+        try value.serializeMembers(schema, self)
         encoder.encode(.indef_break)
     }
 

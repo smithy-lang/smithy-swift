@@ -8,6 +8,7 @@
 import enum Smithy.Node
 @_spi(SchemaBasedSerde)
 import struct Smithy.ShapeID
+import protocol Smithy.Trait
 
 /// An in-memory representation of a Smithy model, suitable for use in code generation.
 @_spi(SchemaBasedSerde)
@@ -25,18 +26,27 @@ public class Model {
     /// An array of all shapes in the model, in Smithy-sorted order.
     public let allShapesSorted: [Shape]
 
-    /// Creates a new model.
+    /// All trait types that are used in this model.
     ///
+    /// These are added to Smithy builtin trait types, and this code generator's internal traits,
+    /// for use in codegen and at runtime.  All trait types must have a unique Shape ID or a codegen-time
+    /// error will result.
+    public let traitTypes: [any Trait.Type]
+
+    /// Creates a new model.
+    /// 
     /// When a ``Model`` is created from another model, the shapes are updated to point to the new model
     /// for reference resolution.  The old model should no longer be used once a new model is created from it.
     /// - Parameters:
     ///   - version: The Smithy version that the model conforms to.
     ///   - metadata: The model metadata.
     ///   - shapes: A dictionary of all shapes in the model, keyed by their absolute Shape IDs.
-    init(version: String, metadata: Node?, shapes: [ShapeID: Shape]) {
+    ///   - traitTypes: The Swift trait types that are to be used in this model.  Any unmodeled traits will be ignored.
+    init(version: String, metadata: Node?, shapes: [ShapeID: Shape], traitTypes: [any Trait.Type]) {
         self.version = version
         self.metadata = metadata
         self.shapes = shapes
+        self.traitTypes = traitTypes
 
         // Sort the shapes in the dictionary & store them in an array.
         self.allShapesSorted = Array(shapes.values).smithySorted()

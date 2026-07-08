@@ -7,8 +7,10 @@
 
 /// https://smithy.io/2.0/spec/streaming.html#smithy-api-streaming-trait
 @_spi(SchemaBasedSerde)
-public struct StreamingTrait: Trait {
+public final class StreamingTrait: RuntimeTrait {
     public static var id: ShapeID { .init("smithy.api", "streaming") }
+
+    public static let uniqueIndex = traitUniqueIndexCounter.getNextIndex()
 
     public var node: Node { [:] }
 

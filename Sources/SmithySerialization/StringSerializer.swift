@@ -9,9 +9,9 @@ import struct Foundation.Data
 import struct Foundation.Date
 import class Foundation.ISO8601DateFormatter
 @_spi(SchemaBasedSerde)
-import struct Smithy.Schema
+import class Smithy.Schema
 @_spi(SchemaBasedSerde)
-import struct Smithy.SensitiveTrait
+import class Smithy.SensitiveTrait
 @_spi(SchemaBasedSerde)
 import struct Smithy.ShapeID
 import protocol Smithy.SmithyDocument
@@ -31,10 +31,7 @@ public class StringSerializer: ShapeSerializer {
         let storedIsFirstElement = isFirstElement
         isFirstElement = true
         string += "\(type(of: value))("
-        let structMembers = schema.members
-        for member in structMembers {
-            try S.writeConsumer(member, value, self)
-        }
+        try value.serializeMembers(schema, self)
         string += ")"
         isFirstElement = storedIsFirstElement
     }

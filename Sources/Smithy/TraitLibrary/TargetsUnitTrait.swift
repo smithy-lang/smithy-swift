@@ -10,8 +10,10 @@
 ///
 /// This trait is applied using a model transform, prior to code generation.
 @_spi(SchemaBasedSerde)
-public struct TargetsUnitTrait: Trait {
+public final class TargetsUnitTrait: RuntimeTrait {
     public static var id: ShapeID { .init("swift.synthetic", "targetsUnit") }
+
+    public static let uniqueIndex = traitUniqueIndexCounter.getNextIndex()
 
     public var node: Node { [:] }
 

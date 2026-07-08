@@ -11,19 +11,35 @@ import Smithy
 
 final class TraitCollectionTests: XCTestCase {
 
-    func test_adding_mergesTraits() async throws {
+    func test_init_createsTraitCollectionWithListOfTraits() throws {
+        let subject: TraitCollection = [
+            InputTrait(),
+            OutputTrait(),
+            DefaultTrait("abc"),
+        ]
+
+        XCTAssertEqual(subject, [DefaultTrait("abc"), InputTrait(), OutputTrait()])
+    }
+
+    func test_init_createsTraitCollectionWithShapeIDToNodeMapAndListOfTraitTypes() throws {
+        let subject = try TraitCollection(traitDict: [
+            InputTrait.id: [:],
+            OutputTrait.id: [:],
+            DefaultTrait.id: "abc",
+        ], traitTypes: [
+            DefaultTrait.self,
+            OutputTrait.self,
+            InputTrait.self,
+        ])
+
+        XCTAssertEqual(subject, [DefaultTrait("abc"), InputTrait(), OutputTrait()])
+    }
+
+    func test_adding_mergesTraits() throws {
         let original: TraitCollection = [InputTrait()]
         let new: TraitCollection = [OutputTrait()]
         let combined = original.adding(new)
 
         XCTAssertEqual(combined, [InputTrait(), OutputTrait()])
-    }
-
-    func test_add_addsATrait() async throws {
-        var subject: TraitCollection = [InputTrait()]
-        subject.add(OutputTrait())
-
-        XCTAssert(subject.hasTrait(InputTrait.self))
-        XCTAssert(subject.hasTrait(OutputTrait.self))
     }
 }

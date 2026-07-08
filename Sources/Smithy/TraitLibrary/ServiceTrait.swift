@@ -7,8 +7,10 @@
 
 /// https://smithy.io/2.0/aws/aws-core.html#aws-api-service-trait
 @_spi(SchemaBasedSerde)
-public struct ServiceTrait: Trait {
+public final class ServiceTrait: RuntimeTrait {
     public static var id: ShapeID { .init("aws.api", "service") }
+
+    public static let uniqueIndex = traitUniqueIndexCounter.getNextIndex()
 
     public let node: Node
     public let sdkId: String

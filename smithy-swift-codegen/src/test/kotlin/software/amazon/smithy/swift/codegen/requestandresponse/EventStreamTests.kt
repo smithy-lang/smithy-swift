@@ -18,7 +18,7 @@ class EventStreamTests {
     fun `test MessageMarshallable`() {
         val context = setupTests("eventstream.smithy", "aws.protocoltests.restjson#TestService")
         println(context.manifest.files)
-        val contents = getFileContents(context.manifest, "Sources/Example/models/TestStream+MessageMarshallable.swift")
+        val contents = getFileContents(context.manifest, "Example/Sources/Example/models/TestStream+MessageMarshallable.swift")
         val expected = """
 extension EventStreamTestClientTypes.TestStream {
     static var marshal: SmithyEventStreamsAPI.MarshalClosure<EventStreamTestClientTypes.TestStream> {
@@ -105,7 +105,7 @@ extension EventStreamTestClientTypes.TestStream {
     @Test
     fun `test MessageUnmarshallable`() {
         val context = setupTests("eventstream.smithy", "aws.protocoltests.restjson#TestService")
-        val contents = getFileContents(context.manifest, "Sources/Example/models/TestStream+MessageUnmarshallable.swift")
+        val contents = getFileContents(context.manifest, "Example/Sources/Example/models/TestStream+MessageUnmarshallable.swift")
         val expected = """
 extension EventStreamTestClientTypes.TestStream {
     static var unmarshal: SmithyEventStreamsAPI.UnmarshalClosure<EventStreamTestClientTypes.TestStream> {
@@ -209,7 +209,7 @@ extension EventStreamTestClientTypes.TestStream {
     fun `operation stack`() {
         val context = setupTests("eventstream.smithy", "aws.protocoltests.restjson#TestService")
         println(context.manifest.files)
-        val contents = getFileContents(context.manifest, "Sources/Example/EventStreamTestClient.swift")
+        val contents = getFileContents(context.manifest, "Example/Sources/Example/EventStreamTestClient.swift")
         val expected = """
     public func testStreamOp(input: TestStreamOpInput) async throws -> TestStreamOpOutput {
         let context = Smithy.ContextBuilder()

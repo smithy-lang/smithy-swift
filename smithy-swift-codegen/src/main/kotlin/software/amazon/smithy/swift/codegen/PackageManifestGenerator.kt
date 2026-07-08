@@ -6,12 +6,14 @@ package software.amazon.smithy.swift.codegen
 
 import software.amazon.smithy.codegen.core.SymbolDependency
 import software.amazon.smithy.swift.codegen.core.GenerationContext
+import software.amazon.smithy.swift.codegen.utils.SDKFileUtils
 
 class PackageManifestGenerator(
     val ctx: GenerationContext,
 ) {
     fun writePackageManifest(dependencies: List<SymbolDependency>) {
-        ctx.writerDelegator().useFileWriter("Package.swift") { writer ->
+        val filename = SDKFileUtils(ctx.settings).rootDirFilePath("Package")
+        ctx.writerDelegator().useFileWriter(filename) { writer ->
             writer.write("// swift-tools-version: \$L", ctx.settings.swiftVersion)
             writer.write("")
             writer.write("import PackageDescription")
@@ -21,7 +23,7 @@ class PackageManifestGenerator(
                 writer.write("name: \$S,", ctx.settings.moduleName)
 
                 writer.openBlock("platforms: [", "],") {
-                    writer.write(".macOS(.v12), .iOS(.v13)")
+                    writer.write(".macOS(.v12), .iOS(.v13), .tvOS(.v13), .watchOS(.v6)")
                 }
 
                 writer.openBlock("products: [", "],") {
@@ -48,8 +50,14 @@ class PackageManifestGenerator(
                 writer.openBlock("targets: [", "]") {
                     writer.openBlock(".target(", "),") {
                         writer.write("name: \$S,", ctx.settings.moduleName)
-                        writer.openBlock("dependencies: [", "]") {
+                        writer.openBlock("dependencies: [", "],") {
                             dependenciesByTarget.forEach { writeTargetDependency(writer, it) }
+                        }
+                        writer.openBlock("plugins: [", "]") {
+                            writer.openBlock(".plugin(", "),") {
+                                writer.write("name: \$S,", "SmithyCodeGeneratorPlugin")
+                                writer.write("package: \$S", "smithy-swift")
+                            }
                         }
                     }
                     writer.openBlock(".testTarget(", ")") {
@@ -68,10 +76,13 @@ class PackageManifestGenerator(
         writer: SwiftWriter,
         dependency: SymbolDependency,
     ) {
-        writer.openBlock(".package(", "),") {
+        if (ctx.settings.localDevelopment) {
+            // Use local smithy-swift for local development
+            writer.write(".package(path: \$S),", "../../../../../../../../smithy-swift")
+        } else {
+            // For other generated clients, use stable, published smithy-swift
             val url = dependency.expectProperty("url", String::class.java)
-            writer.write("url: \$S,", url)
-            writer.write("exact: \$S", dependency.version)
+            writer.write(".package(url: \$S, exact: \$S),", url, dependency.version)
         }
     }
 

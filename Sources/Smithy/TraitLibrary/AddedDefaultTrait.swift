@@ -7,8 +7,10 @@
 
 /// https://smithy.io/2.0/spec/type-refinement-traits.html#addeddefault-trait
 @_spi(SchemaBasedSerde)
-public struct AddedDefaultTrait: Trait {
+public final class AddedDefaultTrait: RuntimeTrait {
     public static var id: ShapeID { .init("smithy.api", "addedDefault") }
+
+    public static let uniqueIndex = traitUniqueIndexCounter.getNextIndex()
 
     public var node: Node { [:] }
 

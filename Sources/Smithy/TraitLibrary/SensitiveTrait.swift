@@ -7,8 +7,10 @@
 
 /// https://smithy.io/2.0/spec/documentation-traits.html#smithy-api-sensitive-trait
 @_spi(SchemaBasedSerde)
-public struct SensitiveTrait: Trait {
+public final class SensitiveTrait: RuntimeTrait {
     public static var id: ShapeID { .init("smithy.api", "sensitive") }
+
+    public static let uniqueIndex = traitUniqueIndexCounter.getNextIndex()
 
     public var node: Node { [:] }
 
