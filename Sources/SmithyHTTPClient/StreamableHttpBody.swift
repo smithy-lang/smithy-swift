@@ -14,8 +14,7 @@ import struct Smithy.SwiftLogger
 
 /// A class that implements the `IStreamable` protocol for `ByteStream`.
 /// It acts as a bridge between AWS SDK and CRT.
-@_spi(SmithyStreams)
-public class StreamableHttpBody: IStreamable {
+class StreamableHttpBody: IStreamable {
 
     /// The index of the data being transferred.
     ///
@@ -26,7 +25,7 @@ public class StreamableHttpBody: IStreamable {
     let body: ByteStream
     let logger: SwiftLogger
 
-    public init(body: ByteStream) {
+    init(body: ByteStream) {
         self.body = body
 
         switch body {
@@ -44,7 +43,7 @@ public class StreamableHttpBody: IStreamable {
     /// Returns the length of the stream
     /// - Returns: The length of the stream
     /// if not available, returns 0
-    public func length() throws -> UInt64 {
+    func length() throws -> UInt64 {
         switch body {
         case .data(let data):
             return UInt64(data?.count ?? 0)
@@ -59,7 +58,7 @@ public class StreamableHttpBody: IStreamable {
     /// - Parameters:
     ///   - offset: offset to seek to
     ///   - streamSeekType: type of seek
-    public func seek(offset: Int64, streamSeekType: AwsCommonRuntimeKit.StreamSeekType) throws {
+    func seek(offset: Int64, streamSeekType: AwsCommonRuntimeKit.StreamSeekType) throws {
         guard streamSeekType == .begin else {
             throw StreamError.notSupported("Seeking from end is not supported."
                                            + " Only seeking from beginning is supported.")
@@ -85,7 +84,7 @@ public class StreamableHttpBody: IStreamable {
         }
     }
 
-    public func read(buffer: UnsafeMutableBufferPointer<UInt8>) throws -> Int? {
+    func read(buffer: UnsafeMutableBufferPointer<UInt8>) throws -> Int? {
         switch body {
         case .data(let data):
             guard let data = data else { return nil }
@@ -111,7 +110,7 @@ public class StreamableHttpBody: IStreamable {
         }
     }
 
-    public func isEndOfStream() -> Bool {
+    func isEndOfStream() -> Bool {
         switch body {
         case .data(let data):
             guard let data = data else { return true }
