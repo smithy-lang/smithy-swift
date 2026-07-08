@@ -5,7 +5,13 @@
 package software.amazon.smithy.swift.codegen
 
 import software.amazon.smithy.codegen.core.SymbolDependency
+import software.amazon.smithy.model.shapes.OperationShape
+import software.amazon.smithy.model.shapes.ServiceShape
+import software.amazon.smithy.protocoltests.traits.HttpRequestTestsTrait
+import software.amazon.smithy.protocoltests.traits.HttpResponseTestsTrait
 import software.amazon.smithy.swift.codegen.core.GenerationContext
+import software.amazon.smithy.swift.codegen.integration.ProtocolGenerator
+import software.amazon.smithy.swift.codegen.model.hasTrait
 import software.amazon.smithy.swift.codegen.utils.SDKFileUtils
 
 class PackageManifestGenerator(
@@ -44,6 +50,7 @@ class PackageManifestGenerator(
 
                 val dependenciesByTarget =
                     externalDependencies
+                        .filter { it.targetName != "SmithyTestUtil" }
                         .distinctBy { it.targetName + it.packageName }
                         .sortedBy { it.targetName }
 
@@ -60,11 +67,14 @@ class PackageManifestGenerator(
                             }
                         }
                     }
-                    writer.openBlock(".testTarget(", ")") {
-                        writer.write("name: \$S,", ctx.settings.testModuleName)
-                        writer.openBlock("dependencies: [", "]") {
-                            writer.write("\$S,", ctx.settings.moduleName)
-                            SwiftDependency.SMITHY_TEST_UTIL.dependencies.forEach { writeTargetDependency(writer, it) }
+                    val service = ctx.model.expectShape(ctx.settings.service) as ServiceShape
+                    if (service.hasTests(ctx)) {
+                        writer.openBlock(".testTarget(", ")") {
+                            writer.write("name: \$S,", ctx.settings.testModuleName)
+                            writer.openBlock("dependencies: [", "]") {
+                                writer.write("\$S,", ctx.settings.moduleName)
+                                SwiftDependency.SMITHY_TEST_UTIL.dependencies.forEach { writeTargetDependency(writer, it) }
+                            }
                         }
                     }
                 }
@@ -99,3 +109,10 @@ class PackageManifestGenerator(
 
 val SymbolDependency.targetName: String
     get() = expectProperty("target", String::class.java)
+
+fun ServiceShape.hasTests(ctx: GenerationContext): Boolean {
+    return allOperations.any {
+        val operation = ctx.model.expectShape(it)
+        return operation.hasTrait<HttpRequestTestsTrait>() || operation.hasTrait<HttpResponseTestsTrait>()
+    }
+}

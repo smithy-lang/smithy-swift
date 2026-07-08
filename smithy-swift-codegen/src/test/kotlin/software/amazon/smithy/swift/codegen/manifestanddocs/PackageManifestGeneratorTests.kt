@@ -108,6 +108,7 @@ class PackageManifestGeneratorTests {
             }
         testContext.generationCtx.delegator.useFileWriter("xyz.swift") { writer ->
             writer.addDependency(SwiftDependency.CLIENT_RUNTIME)
+            writer.addDependency(SwiftDependency.SMITHY_TEST_UTIL)
         }
         PackageManifestGenerator(testContext.context).writePackageManifest(testContext.generationCtx.delegator.dependencies)
         testContext.generationCtx.delegator.flushWriters()

@@ -2,6 +2,7 @@ $version: "1.0"
 namespace smithy.example
 
 use aws.protocols#awsJson1_1
+use smithy.test#httpRequestTests
 
 @awsJson1_1
 service Example {
@@ -9,6 +10,9 @@ service Example {
     operations: [GetFoo]
 }
 
+@httpRequestTests([
+    { id: "SomeTest", protocol: "aws.protocols#restJson1", method: "GET", uri: "/" }
+])
 operation GetFoo {
     input: GetFooInput,
     output: GetFooOutput,
