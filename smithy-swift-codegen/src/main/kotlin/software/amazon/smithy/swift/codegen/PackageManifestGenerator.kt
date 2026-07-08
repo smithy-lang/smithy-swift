@@ -5,7 +5,6 @@
 package software.amazon.smithy.swift.codegen
 
 import software.amazon.smithy.codegen.core.SymbolDependency
-import software.amazon.smithy.model.shapes.ServiceShape
 import software.amazon.smithy.swift.codegen.core.GenerationContext
 import software.amazon.smithy.swift.codegen.utils.SDKFileUtils
 
@@ -62,7 +61,6 @@ class PackageManifestGenerator(
                             }
                         }
                     }
-                    val service = ctx.model.expectShape(ctx.settings.service) as ServiceShape
                     if (externalDependencies.any { it.targetName == "SmithyTestUtil" }) {
                         writer.openBlock(".testTarget(", ")") {
                             writer.write("name: \$S,", ctx.settings.testModuleName)
