@@ -189,13 +189,13 @@ public final class Serializer: ShapeSerializer {
         // escaping, so they are copied through verbatim by the default case.
         // Open and close the string with double quotes.
         _data.append(Self.doubleQuote)
-        let utf8view = value.utf8
-        var copyStartIndex = utf8view.startIndex
-        for index in utf8view.indices {
-            let byte = utf8view[index]
+        let data = value.data(using: .utf8) ?? Data()
+        var copyStartIndex = data.startIndex
+        for index in data.indices {
+            let byte = data[index]
             if byte < 32 || byte == Self.doubleQuote || byte == Self.backslash {
-                _data.append(contentsOf: utf8view[copyStartIndex..<index])
-                copyStartIndex = utf8view.index(after: index)
+                _data.append(contentsOf: data[copyStartIndex..<index])
+                copyStartIndex = index + 1
                 switch byte {
                 case Self.doubleQuote:
                     appendEscaped(ascii: Self.doubleQuote)
@@ -220,7 +220,7 @@ public final class Serializer: ShapeSerializer {
                 }
             }
         }
-        _data.append(contentsOf: value.utf8[copyStartIndex..<utf8view.endIndex])
+        _data.append(contentsOf: data[copyStartIndex...])
         _data.append(Self.doubleQuote)
     }
 
