@@ -318,6 +318,7 @@ var runtimeTargets: [PackageDescription.Target] {
                 "Smithy",
                 "SmithySerialization",
                 "SmithyJSON",
+                "SmithyHTTPAPI",
             ]
         ),
         .target(
@@ -327,6 +328,7 @@ var runtimeTargets: [PackageDescription.Target] {
                 "Smithy",
                 "SmithySerialization",
                 "SmithyJSON",
+                "SmithyHTTPAPI",
                 "SmithyEventStreams",
             ]
         ),
@@ -337,6 +339,7 @@ var runtimeTargets: [PackageDescription.Target] {
                 "Smithy",
                 "SmithySerialization",
                 "SmithyCBOR",
+                "SmithyHTTPAPI",
             ]
         ),
     ].compactMap { $0 }
