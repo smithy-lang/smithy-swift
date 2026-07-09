@@ -227,28 +227,24 @@ public final class Deserializer: ShapeDeserializer {
         try nullCheck()
         let timestampFormat = schema.getTrait(TimestampFormatTrait.self)?.format ?? .epochSeconds
         switch timestampFormat {
-        case .dateTime:
-            guard case .string(let string) = value else {
-                throw SerializerError("Expected string for dateTime timestamp")
-            }
-            guard let date = TimestampFormatter(format: .dateTime).date(from: string) else {
-                throw SerializerError("Timestamp string \"\(string)\" is invalid for type dateTime")
-            }
-            return date
-        case .httpDate:
-            guard case .string(let string) = value else {
-                throw SerializerError("Expected string for httpDate timestamp")
-            }
-            guard let date = TimestampFormatter(format: .httpDate).date(from: string) else {
-                throw SerializerError("Timestamp string \"\(string)\" is invalid for type httpDate")
-            }
-            return date
+        case .dateTime, .httpDate:
+            return try readTimestampString(format: timestampFormat, value: self.value)
         case .epochSeconds:
             guard case .number(let number) = value else {
                 throw SerializerError("Expected number for epochSeconds timestamp")
             }
             return Date(timeIntervalSince1970: number.doubleValue)
         }
+    }
+
+    private func readTimestampString(format: TimestampFormat, value: JSONValue) throws -> Date {
+        guard case .string(let string) = value else {
+            throw SerializerError("Expected string for timestamp format \(format)")
+        }
+        guard let date = TimestampFormatter(format: format).date(from: string) else {
+            throw SerializerError("Timestamp string \"\(string)\" is invalid for type \(format)")
+        }
+        return date
     }
 
     public func readNull<T>(_ schema: Schema) throws -> T? {

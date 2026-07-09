@@ -191,7 +191,8 @@ var runtimeTargets: [PackageDescription.Target] {
         ),
         libXML2TargetOrNil,
         .target(
-            name: "SmithyTimestamps"
+            name: "SmithyTimestamps",
+            dependencies: ["Smithy"]
         ),
         .target(
             name: "SmithyTestUtil",

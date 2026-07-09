@@ -70,21 +70,51 @@ operation SerdeOperation {
 
 structure SerdeOperationInput {
     structure: SerdeOperationStructure
+
     union: SerdeOperationUnion
+
     string: String
+
     blob: Blob
+
     list: IntegerList
+
     map: IntegerMap
+
     double: Double
+
     boolean: Boolean
+
     sparseList: SparseIntegerList
+
     document: Document
+
     myDocument: MyDocument
+
     nestedMap: OuterNestedMap
+
     nestedList: OuterNestedList
+
+    @timestampFormat("date-time")
+    dateTimeTimestamp: Timestamp
+
+    @timestampFormat("http-date")
+    httpDateTimestamp: Timestamp
+
+    @timestampFormat("epoch-seconds")
+    epochSecondsTimestamp: Timestamp
 }
 
-structure SerdeOperationOutput {}
+structure SerdeOperationOutput {
+    @timestampFormat("date-time")
+    dateTimeTimestamp: Timestamp
+
+    @timestampFormat("http-date")
+    httpDateTimestamp: Timestamp
+
+    @timestampFormat("epoch-seconds")
+    epochSecondsTimestamp: Timestamp
+}
 
 structure SerdeOperationStructure {
     a: String

@@ -13,6 +13,8 @@ import Smithy
 import SmithyJSON
 @_spi(SchemaBasedSerde)
 import SmithySerialization
+@_spi(SmithyTimestamps)
+import SmithyTimestamps
 @_spi(SchemaBasedSerde) import AWSJSONTestSDK
 
 final class SerializerTests: XCTestCase {
@@ -229,6 +231,44 @@ final class SerializerTests: XCTestCase {
 
         let json = String(data: try subject.data, encoding: .utf8)
         XCTAssertEqual(json, #"{"double":"-Infinity"}"#)
+    }
+
+    // MARK: - timestamps
+
+    func test_writeTimestamp_writesTimestampAsHttpDate() throws {
+        let subject = SmithyJSON.Serializer(usesJSONNameTrait: false)
+
+        let httpDate = "Thu, 09 Jul 2026 17:24:18.769 GMT"
+        let date = TimestampFormatter(format: .httpDate).date(from: httpDate)
+        let input = SerdeOperationInput(httpDateTimestamp: date)
+        try input.serialize(subject)
+
+        let json = String(data: try subject.data, encoding: .utf8)
+        XCTAssertEqual(json, "{\"httpDateTimestamp\":\"\(httpDate)\"}")
+    }
+
+    func test_writeTimestamp_writesTimestampAsDateTime() throws {
+        let subject = SmithyJSON.Serializer(usesJSONNameTrait: false)
+
+        let dateTime = "2026-07-09T17:28:41.990Z"
+        let date = TimestampFormatter(format: .dateTime).date(from: dateTime)
+        let input = SerdeOperationInput(dateTimeTimestamp: date)
+        try input.serialize(subject)
+
+        let json = String(data: try subject.data, encoding: .utf8)
+        XCTAssertEqual(json, "{\"dateTimeTimestamp\":\"\(dateTime)\"}")
+    }
+
+    func test_writeTimestamp_writesTimestampAsEpochSeconds() throws {
+        let subject = SmithyJSON.Serializer(usesJSONNameTrait: false)
+
+        let epochSeconds = 1783618892.951
+        let date = Date(timeIntervalSince1970: epochSeconds)
+        let input = SerdeOperationInput(epochSecondsTimestamp: date)
+        try input.serialize(subject)
+
+        let json = String(data: try subject.data, encoding: .utf8)
+        XCTAssertEqual(json, "{\"epochSecondsTimestamp\":\(epochSeconds)}")
     }
 
     // MARK: - null
