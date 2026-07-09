@@ -241,7 +241,7 @@ public final class Deserializer: ShapeDeserializer {
         guard case .string(let string) = value else {
             throw SerializerError("Expected string for timestamp format \(format)")
         }
-        guard let date = TimestampFormatter(format: .dateTime).date(from: string) else {
+        guard let date = TimestampFormatter(format: format).date(from: string) else {
             throw SerializerError("Timestamp string \"\(string)\" is invalid for type \(format)")
         }
         return date
