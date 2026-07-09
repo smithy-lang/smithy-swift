@@ -60,6 +60,7 @@ let package = Package(
                 .product(name: "SmithyJSON", package: "smithy-swift"),
                 .product(name: "SmithySerialization", package: "smithy-swift"),
                 .product(name: "ClientRuntime", package: "smithy-swift"),
+                .product(name: "SmithyTimestamps", package: "smithy-swift"),
                 .product(name: "SmithyTestUtil", package: "smithy-swift"),
                 .product(name: "AWSJSONTestSDK", package: "AWSJSONTestSDK"),
             ]

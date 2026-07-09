@@ -12,9 +12,6 @@ class ModelWriter {
         manifest: FileManifest,
         settings: SwiftSettings,
     ) {
-        // If a model path was added to SwiftSettings, skip writing the model
-        if (settings.modelPath != null) return
-
         // Convert the Model to a Node, then to pretty-printed JSON,
         // then write the JSON into the manifest
         val defaultPath = SDKFileUtils(settings).sourcesDirFilePath("model", "json")
