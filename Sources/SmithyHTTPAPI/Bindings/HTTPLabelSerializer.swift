@@ -112,7 +112,7 @@ public final class HTTPLabelSerializer: ShapeSerializer {
     public func writeNull(_ schema: Schema) throws {
         // no operation
     }
-    
+
     /// Returns a UTF-8 representation of the URI.
     public var data: Data {
         Data(transformed.utf8)
