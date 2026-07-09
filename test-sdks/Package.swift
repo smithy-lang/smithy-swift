@@ -11,9 +11,15 @@ let package = Package(
         .watchOS(.v6),
     ],
     dependencies: [
+        // Use local smithy-swift and latest unreleased (main branch) aws-crt-swift
         .package(name: "smithy-swift", path: ".."),
         .package(url: "https://github.com/awslabs/aws-crt-swift.git", branch: "main"),
+
+        // ClientRuntime tests use swift-log.  Keep this spec same as in smithy-swift
         .package(url: "https://github.com/apple/swift-log.git", from: "1.0.0"),
+
+        // Generated test SDKs.  Models are in build/model.  Use them where Smithy generates them.
+        // Run bash script ./scripts/codegen.sh from smithy-swift root to generate or regenerate these files
         .package(
             name: "AWSJSONTestSDK",
             path: "build/smithyprojections/test-sdks/awsjson-test-sdk/swift-codegen/AWSJSONTestSDK"
