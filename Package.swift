@@ -31,6 +31,7 @@ let package = Package(
     products: [
         .library(name: "Smithy", targets: ["Smithy"]),
         .library(name: "SmithySerialization", targets: ["SmithySerialization"]),
+        .library(name: "SmithyRestJSON1", targets: ["SmithyRestJSON1"]),
         .library(name: "SmithyAWSJSON", targets: ["SmithyAWSJSON"]),
         .library(name: "SmithyRPCv2CBOR", targets: ["SmithyRPCv2CBOR"]),
         .library(name: "ClientRuntime", targets: ["ClientRuntime"]),
@@ -210,7 +211,7 @@ var runtimeTargets: [PackageDescription.Target] {
         ),
         .target(
             name: "SmithyHTTPAPI",
-            dependencies: ["Smithy"]
+            dependencies: ["Smithy", "SmithySerialization"]
         ),
         .target(
             name: "SmithyHTTPClient",
@@ -307,6 +308,16 @@ var runtimeTargets: [PackageDescription.Target] {
             resources: [ .process("Resources") ]
         ),
         .target(
+            name: "SmithyRestJSON1",
+            dependencies: [
+                "ClientRuntime",
+                "Smithy",
+                "SmithySerialization",
+                "SmithyJSON",
+                "SmithyEventStreams",
+            ]
+        ),
+        .target(
             name: "SmithyAWSJSON",
             dependencies: [
                 "ClientRuntime",
@@ -331,3 +342,4 @@ var runtimeTargets: [PackageDescription.Target] {
 var runtimeTestTargets: [PackageDescription.Target] {
     [.testTarget(name: "SmithySwiftTests")]
 }
+

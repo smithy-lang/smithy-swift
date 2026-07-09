@@ -58,6 +58,7 @@ class SwiftSettings(
     val operations: List<String>,
     val modelPath: String?,
     val localDevelopment: Boolean,
+    val forceSchemaBased: Boolean,
 ) {
     companion object {
         const val SERVICE = "service"
@@ -78,6 +79,7 @@ class SwiftSettings(
         const val OPERATIONS = "operations"
         const val MODEL_PATH = "modelPath"
         const val LOCAL_DEVELOPMENT = "localDevelopment"
+        const val FORCE_SCHEMA_BASED = "forceSchemaBased"
 
         private val LOGGER: Logger = Logger.getLogger(SwiftSettings::class.java.name)
 
@@ -111,6 +113,7 @@ class SwiftSettings(
                     OPERATIONS,
                     MODEL_PATH,
                     LOCAL_DEVELOPMENT,
+                    FORCE_SCHEMA_BASED,
                 ),
             )
 
@@ -140,6 +143,7 @@ class SwiftSettings(
             val operations = config.getArrayMember(OPERATIONS).getOrElse { Node.arrayNode() }.map { it.expectStringNode().value }
             val modelPath = config.getStringMember(MODEL_PATH).getOrNull()?.toString()
             val localDevelopment = config.getBooleanMemberOrDefault(LOCAL_DEVELOPMENT)
+            val forceSchemaBased = config.getBooleanMemberOrDefault(FORCE_SCHEMA_BASED)
 
             return SwiftSettings(
                 serviceId,
@@ -158,6 +162,7 @@ class SwiftSettings(
                 operations,
                 modelPath,
                 localDevelopment,
+                forceSchemaBased,
             )
         }
 

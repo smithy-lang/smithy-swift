@@ -18,6 +18,8 @@ public let allRuntimeTraitTypes: [any Trait.Type] = [
     ErrorTrait.self,
     EventHeaderTrait.self,
     EventPayloadTrait.self,
+    HTTPLabelTrait.self,
+    HTTPTrait.self,
     InputTrait.self,
     JSONNameTrait.self,
     OutputTrait.self,
