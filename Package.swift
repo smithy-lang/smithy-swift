@@ -59,6 +59,7 @@ let package = Package(
         .library(name: "SmithySwiftNIO", targets: ["SmithySwiftNIO"]),
         .library(name: "SmithyTelemetryAPI", targets: ["SmithyTelemetryAPI"]),
         .library(name: "SmithyHTTPClientAPI", targets: ["SmithyHTTPClientAPI"]),
+        .library(name: "SmithyCodegenCore", targets: ["SmithyCodegenCore"]),
         .plugin(name: "SmithyCodeGeneratorPlugin", targets: ["SmithyCodeGeneratorPlugin"]),
     ],
     dependencies: {
@@ -328,90 +329,5 @@ var runtimeTargets: [PackageDescription.Target] {
 }
 
 var runtimeTestTargets: [PackageDescription.Target] {
-    return [
-        .testTarget(
-            name: "SmithyTests",
-            dependencies: ["Smithy"]
-        ),
-        .testTarget(
-            name: "ClientRuntimeTests",
-            dependencies: [
-                "ClientRuntime",
-                "SmithyTestUtil",
-                "SmithyStreams",
-                .product(name: "Logging", package: "swift-log"),
-            ],
-            resources: [ .process("Resources") ]
-        ),
-        .testTarget(
-            name: "SmithySwiftNIOTests",
-            dependencies: [
-                "SmithySwiftNIO",
-                "SmithyTestUtil",
-            ]
-        ),
-        .testTarget(
-            name: "SmithyHTTPClientTests",
-            dependencies: [
-                "SmithyHTTPClient",
-                "SmithyHTTPAPI",
-                "Smithy",
-                "SmithyTestUtil",
-                .product(name: "AwsCommonRuntimeKit", package: "aws-crt-swift")
-            ]
-        ),
-        .testTarget(
-            name: "SmithyXMLTests",
-            dependencies: ["SmithySerialization", "SmithyXML", "ClientRuntime"]
-        ),
-        .testTarget(
-            name: "SmithyHTTPAuthTests",
-            dependencies: ["SmithyHTTPAuth", "SmithyHTTPAPI", "Smithy", "SmithyIdentity", "ClientRuntime"]
-        ),
-        .testTarget(
-            name: "SmithyHTTPAuthAPITests",
-            dependencies: ["SmithyHTTPAuthAPI", "Smithy", "ClientRuntime"]
-        ),
-        .testTarget(
-            name: "SmithyFormURLTests",
-            dependencies: ["SmithyFormURL", "ClientRuntime"]
-        ),
-        .testTarget(
-            name: "SmithyTimestampsTests",
-            dependencies: ["SmithyTimestamps"]
-        ),
-        .testTarget(
-            name: "SmithyTestUtilTests",
-            dependencies: ["SmithyTestUtil"]
-        ),
-        .testTarget(
-            name: "SmithyEventStreamsTests",
-            dependencies: ["SmithyEventStreams"]
-        ),
-        .testTarget(
-            name: "SmithyIdentityTests",
-            dependencies: ["Smithy", "SmithyIdentity"]
-        ),
-        .testTarget(
-            name: "SmithyWaitersAPITests",
-            dependencies: ["Smithy", "SmithyWaitersAPI"]
-        ),
-        .testTarget(
-            name: "SmithyRetriesTests",
-            dependencies: ["ClientRuntime", "SmithyRetriesAPI", "SmithyRetries", "SmithyTestUtil"]
-        ),
-        .testTarget(
-            name: "SmithyHTTPAPITests",
-            dependencies: ["SmithyHTTPAPI"]
-        ),
-        .testTarget(
-            name: "SmithyStreamsTests",
-            dependencies: ["SmithyStreams", "Smithy"]
-        ),
-        .testTarget(
-            name: "SmithyCodegenCoreTests",
-            dependencies: ["SmithyCodegenCore"],
-            resources: [ .process("Resources") ]
-        ),
-    ]
+    [.testTarget(name: "SmithySwiftTests")]
 }
