@@ -93,7 +93,8 @@ class SwiftCodegenPlugin : SmithyBuildPlugin {
         val enabledIntegrations = getEnabledIntegrations(context.model, swiftSettings)
 
         // Write the model as JSON AST, before any preprocessing occurs
-        if (SerdeUtils.useSchemaBased(swiftSettings, context.model)) {
+        // Only write JSON model if schema-based is in use and JSON model wasn't provided
+        if (SerdeUtils.useSchemaBased(swiftSettings, context.model) && swiftSettings.modelPath == null) {
             ModelWriter().write(context.model, context.fileManifest, swiftSettings)
         }
 
