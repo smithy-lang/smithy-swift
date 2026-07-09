@@ -8,22 +8,84 @@ use aws.protocols#restJson1
 service RestJSON1Service {
     version: "2022-11-30"
     operations: [
-        GetWidget
+        BooleanHTTPLabel
+        IntegerHTTPLabel
+        StringHTTPLabel
+        GreedyStringHTTPLabel
+        TimestampHTTPLabel
+        FormattedTimestampHTTPLabel
     ]
 }
 
-@http(method: "GET", uri: "/{tidbit}")
-operation GetWidget {
-    input: GetWidgetInput
-    output: GetWidgetOutput
+@http(method: "GET", uri: "/boolean/{answer}")
+operation BooleanHTTPLabel {
+    input: BooleanHTTPLabelInput
 }
 
 @input
-structure GetWidgetInput {
+structure BooleanHTTPLabelInput {
     @httpLabel
     @required
-    tidbit: String
+    answer: Boolean
 }
 
-@output
-structure GetWidgetOutput {}
+@http(method: "GET", uri: "/integer/{quantity}")
+operation IntegerHTTPLabel {
+    input: IntegerHTTPLabelInput
+}
+
+@input
+structure IntegerHTTPLabelInput {
+    @httpLabel
+    @required
+    quantity: Integer
+}
+
+@http(method: "GET", uri: "/string/{word}")
+operation StringHTTPLabel {
+    input: StringHTTPLabelInput
+}
+
+@input
+structure StringHTTPLabelInput {
+    @httpLabel
+    @required
+    word: String
+}
+
+@http(method: "GET", uri: "/greedyString/{word+}")
+operation GreedyStringHTTPLabel {
+    input: GreedyStringHTTPLabelInput
+}
+
+@input
+structure GreedyStringHTTPLabelInput {
+    @httpLabel
+    @required
+    word: String
+}
+
+@http(method: "GET", uri: "/timestamp/{moment}")
+operation TimestampHTTPLabel {
+    input: TimestampHTTPLabelInput
+}
+
+@input
+structure TimestampHTTPLabelInput {
+    @httpLabel
+    @required
+    moment: Timestamp
+}
+
+@http(method: "GET", uri: "/formattedTimestamp/{moment}")
+operation FormattedTimestampHTTPLabel {
+    input: FormattedTimestampHTTPLabelInput
+}
+
+@input
+structure FormattedTimestampHTTPLabelInput {
+    @httpLabel
+    @required
+    @timestampFormat("http-date")
+    moment: Timestamp
+}

@@ -184,6 +184,8 @@ let package = Package(
             name: "SmithyHTTPAPITests",
             dependencies: [
                 .product(name: "SmithyHTTPAPI", package: "smithy-swift"),
+                .product(name: "Smithy", package: "smithy-swift"),
+                .product(name: "SmithyTimestamps", package: "smithy-swift"),
                 .product(name: "RestJSON1TestSDK", package: "RestJSON1TestSDK"),
             ]
         ),

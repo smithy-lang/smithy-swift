@@ -212,7 +212,11 @@ var runtimeTargets: [PackageDescription.Target] {
         ),
         .target(
             name: "SmithyHTTPAPI",
-            dependencies: ["Smithy", "SmithySerialization"]
+            dependencies: [
+                "Smithy",
+                "SmithySerialization",
+                "SmithyTimestamps",
+            ]
         ),
         .target(
             name: "SmithyHTTPClient",
