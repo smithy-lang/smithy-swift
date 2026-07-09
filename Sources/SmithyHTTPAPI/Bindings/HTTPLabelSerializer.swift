@@ -13,6 +13,9 @@ import class Smithy.Schema
 @_spi(SchemaBasedSerde)
 import SmithySerialization
 
+/// Serializes members of a structure into a URI template.
+///
+/// This serializer is a no-op for all types except string, boolean, timestamp, and numbers.
 @_spi(SchemaBasedSerde)
 public final class HTTPLabelSerializer: ShapeSerializer {
     private var transformed: String
@@ -21,7 +24,7 @@ public final class HTTPLabelSerializer: ShapeSerializer {
         self.transformed = uri
     }
 
-    public func writeStruct<S>(_ schema: Schema, _ value: S) throws where S: SerializableStruct {
+    public func writeStruct<S: SerializableStruct>(_ schema: Schema, _ value: S) throws {
         // no operation
     }
 
@@ -78,9 +81,14 @@ public final class HTTPLabelSerializer: ShapeSerializer {
     }
 
     public func writeString(_ schema: Schema, _ value: String) throws {
+        // Only continue if this schema is a member & it has the httpLabel trait
         guard schema.hasTrait(HTTPLabelTrait.self), let label = schema.id.member else { return }
+
+        // Make templates for matching
         let nongreedyTemplate = "{\(label)}"
         let greedyTemplate = "{\(label)+}"
+
+        // Try matching the nongreedy, then greedy template, and substitute
         if let nongreedyTemplateRange = transformed.range(of: nongreedyTemplate) {
             // URL-encode the value, also encoding '/' characters, and put in in the URI
             let pathComponent = URLEncodingUtils.urlPercentEncodedForQuery(value)
@@ -104,9 +112,10 @@ public final class HTTPLabelSerializer: ShapeSerializer {
     public func writeNull(_ schema: Schema) throws {
         // no operation
     }
-
+    
+    /// Returns a UTF-8 representation of the URI.
     public var data: Data {
-        Data()
+        Data(transformed.utf8)
     }
 
     public var uri: String { transformed }

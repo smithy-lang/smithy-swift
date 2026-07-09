@@ -310,11 +310,9 @@ var runtimeTargets: [PackageDescription.Target] {
         .target(
             name: "SmithyRestJSON1",
             dependencies: [
-                "ClientRuntime",
                 "Smithy",
                 "SmithySerialization",
                 "SmithyJSON",
-                "SmithyEventStreams",
             ]
         ),
         .target(
@@ -342,4 +340,3 @@ var runtimeTargets: [PackageDescription.Target] {
 var runtimeTestTargets: [PackageDescription.Target] {
     [.testTarget(name: "SmithySwiftTests")]
 }
-
