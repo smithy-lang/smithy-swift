@@ -110,6 +110,4 @@ public final class HTTPLabelSerializer: ShapeSerializer {
     }
 
     public var uri: String { transformed }
-
-    private var notImplemented: SerializerError { .init("Not implemented") }
 }
