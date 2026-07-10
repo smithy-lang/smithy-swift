@@ -34,6 +34,28 @@ final class HTTPLabelSerializerTests: XCTestCase {
 
     // MARK: - numeric HTTP labels
 
+    func test_byte_serializesByteIntoURI() throws {
+        let operation = RestJSON1TestSDK.RestJSON1ServiceClient.byteHTTPLabelOperation
+        let uri = try XCTUnwrap(operation.schema.getTrait(HTTPTrait.self)?.uri)
+        let subject = HTTPLabelSerializer(uri: uri)
+
+        let input = ByteHTTPLabelInput(quantity: -42)
+        try input.serializeMembers(operation.inputSchema, subject)
+
+        XCTAssertEqual(subject.uri, "/byte/-42")
+    }
+
+    func test_short_serializesShortIntoURI() throws {
+        let operation = RestJSON1TestSDK.RestJSON1ServiceClient.shortHTTPLabelOperation
+        let uri = try XCTUnwrap(operation.schema.getTrait(HTTPTrait.self)?.uri)
+        let subject = HTTPLabelSerializer(uri: uri)
+
+        let input = ShortHTTPLabelInput(quantity: 1234)
+        try input.serializeMembers(operation.inputSchema, subject)
+
+        XCTAssertEqual(subject.uri, "/short/1234")
+    }
+
     func test_number_serializesNumberIntoURI() throws {
         let operation = RestJSON1TestSDK.RestJSON1ServiceClient.integerHTTPLabelOperation
         let uri = try XCTUnwrap(operation.schema.getTrait(HTTPTrait.self)?.uri)
@@ -43,6 +65,63 @@ final class HTTPLabelSerializerTests: XCTestCase {
         try input.serializeMembers(operation.inputSchema, subject)
 
         XCTAssertEqual(subject.uri, "/integer/8675309")
+    }
+
+    func test_long_serializesLongIntoURI() throws {
+        let operation = RestJSON1TestSDK.RestJSON1ServiceClient.longHTTPLabelOperation
+        let uri = try XCTUnwrap(operation.schema.getTrait(HTTPTrait.self)?.uri)
+        let subject = HTTPLabelSerializer(uri: uri)
+
+        let input = LongHTTPLabelInput(quantity: 9876543210)
+        try input.serializeMembers(operation.inputSchema, subject)
+
+        XCTAssertEqual(subject.uri, "/long/9876543210")
+    }
+
+    func test_float_serializesFloatIntoURI() throws {
+        let operation = RestJSON1TestSDK.RestJSON1ServiceClient.floatHTTPLabelOperation
+        let uri = try XCTUnwrap(operation.schema.getTrait(HTTPTrait.self)?.uri)
+        let subject = HTTPLabelSerializer(uri: uri)
+
+        let input = FloatHTTPLabelInput(quantity: 3.5)
+        try input.serializeMembers(operation.inputSchema, subject)
+
+        XCTAssertEqual(subject.uri, "/float/3.5")
+    }
+
+    func test_float_serializesNonFiniteFloatUsingSmithyTokens() throws {
+        let operation = RestJSON1TestSDK.RestJSON1ServiceClient.floatHTTPLabelOperation
+        let uri = try XCTUnwrap(operation.schema.getTrait(HTTPTrait.self)?.uri)
+
+        for (value, expected) in [(Float.nan, "NaN"), (.infinity, "Infinity"), (-.infinity, "-Infinity")] {
+            let subject = HTTPLabelSerializer(uri: uri)
+            let input = FloatHTTPLabelInput(quantity: value)
+            try input.serializeMembers(operation.inputSchema, subject)
+            XCTAssertEqual(subject.uri, "/float/\(expected)")
+        }
+    }
+
+    func test_double_serializesDoubleIntoURI() throws {
+        let operation = RestJSON1TestSDK.RestJSON1ServiceClient.doubleHTTPLabelOperation
+        let uri = try XCTUnwrap(operation.schema.getTrait(HTTPTrait.self)?.uri)
+        let subject = HTTPLabelSerializer(uri: uri)
+
+        let input = DoubleHTTPLabelInput(quantity: 2.25)
+        try input.serializeMembers(operation.inputSchema, subject)
+
+        XCTAssertEqual(subject.uri, "/double/2.25")
+    }
+
+    func test_double_serializesNonFiniteDoubleUsingSmithyTokens() throws {
+        let operation = RestJSON1TestSDK.RestJSON1ServiceClient.doubleHTTPLabelOperation
+        let uri = try XCTUnwrap(operation.schema.getTrait(HTTPTrait.self)?.uri)
+
+        for (value, expected) in [(Double.nan, "NaN"), (.infinity, "Infinity"), (-.infinity, "-Infinity")] {
+            let subject = HTTPLabelSerializer(uri: uri)
+            let input = DoubleHTTPLabelInput(quantity: value)
+            try input.serializeMembers(operation.inputSchema, subject)
+            XCTAssertEqual(subject.uri, "/double/\(expected)")
+        }
     }
 
     // MARK: - string HTTP labels

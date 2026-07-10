@@ -24,7 +24,7 @@ public final class HTTPTrait: RuntimeTrait {
     public required init(node: Node) throws {
         guard let object = node.object else { throw TraitError("http trait does not have object at root") }
         guard let method = object["method"]?.string else { throw TraitError("http trait does not have method") }
-        guard let uri = object["uri"]?.string else { throw TraitError("http trait does not have method") }
+        guard let uri = object["uri"]?.string else { throw TraitError("http trait does not have uri") }
         self.method = method
         self.uri = uri
     }

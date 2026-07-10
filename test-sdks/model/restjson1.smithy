@@ -9,7 +9,12 @@ service RestJSON1Service {
     version: "2022-11-30"
     operations: [
         BooleanHTTPLabel
+        ByteHTTPLabel
+        ShortHTTPLabel
         IntegerHTTPLabel
+        LongHTTPLabel
+        FloatHTTPLabel
+        DoubleHTTPLabel
         StringHTTPLabel
         GreedyStringHTTPLabel
         TimestampHTTPLabel
@@ -29,6 +34,30 @@ structure BooleanHTTPLabelInput {
     answer: Boolean
 }
 
+@http(method: "GET", uri: "/byte/{quantity}")
+operation ByteHTTPLabel {
+    input: ByteHTTPLabelInput
+}
+
+@input
+structure ByteHTTPLabelInput {
+    @httpLabel
+    @required
+    quantity: Byte
+}
+
+@http(method: "GET", uri: "/short/{quantity}")
+operation ShortHTTPLabel {
+    input: ShortHTTPLabelInput
+}
+
+@input
+structure ShortHTTPLabelInput {
+    @httpLabel
+    @required
+    quantity: Short
+}
+
 @http(method: "GET", uri: "/integer/{quantity}")
 operation IntegerHTTPLabel {
     input: IntegerHTTPLabelInput
@@ -39,6 +68,42 @@ structure IntegerHTTPLabelInput {
     @httpLabel
     @required
     quantity: Integer
+}
+
+@http(method: "GET", uri: "/long/{quantity}")
+operation LongHTTPLabel {
+    input: LongHTTPLabelInput
+}
+
+@input
+structure LongHTTPLabelInput {
+    @httpLabel
+    @required
+    quantity: Long
+}
+
+@http(method: "GET", uri: "/float/{quantity}")
+operation FloatHTTPLabel {
+    input: FloatHTTPLabelInput
+}
+
+@input
+structure FloatHTTPLabelInput {
+    @httpLabel
+    @required
+    quantity: Float
+}
+
+@http(method: "GET", uri: "/double/{quantity}")
+operation DoubleHTTPLabel {
+    input: DoubleHTTPLabelInput
+}
+
+@input
+structure DoubleHTTPLabelInput {
+    @httpLabel
+    @required
+    quantity: Double
 }
 
 @http(method: "GET", uri: "/string/{word}")
