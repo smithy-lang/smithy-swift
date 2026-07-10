@@ -68,12 +68,12 @@ public final class Serializer: ShapeSerializer {
         encoder.encode(.int(Int64(value)))
     }
 
-    public func writeInteger(_ schema: Schema, _ value: Int) throws {
+    public func writeInteger(_ schema: Schema, _ value: Int32) throws {
         writeMember(schema: schema)
         encoder.encode(.int(Int64(value)))
     }
 
-    public func writeLong(_ schema: Schema, _ value: Int) throws {
+    public func writeLong(_ schema: Schema, _ value: Int64) throws {
         writeMember(schema: schema)
         encoder.encode(.int(Int64(value)))
     }

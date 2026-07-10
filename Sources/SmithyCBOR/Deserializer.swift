@@ -95,7 +95,7 @@ public class Deserializer: ShapeDeserializer {
         }
     }
 
-    public func readInteger(_ schema: Schema) throws -> Int {
+    public func readInteger(_ schema: Schema) throws -> Int32 {
         guard decoder.hasNext() else {
             throw CBORDecoderError("member \(schema.id) ended unexpectedly")
         }
@@ -103,15 +103,17 @@ public class Deserializer: ShapeDeserializer {
         let next = try decoder.popNext()
         switch next {
         case .int(let value):
-            return Int(value)
+            guard let int32 = Int32(exactly: value) else { throw CBORDecoderError("value \(value) overflows Int32") }
+            return int32
         case .uint(let value):
-            return Int(value)
+            guard let int32 = Int32(exactly: value) else { throw CBORDecoderError("value \(value) overflows Int32") }
+            return int32
         default:
             throw CBORDecoderError("member \(schema.id) expected .int or .uint but got \(next) instead")
         }
     }
 
-    public func readLong(_ schema: Schema) throws -> Int {
+    public func readLong(_ schema: Schema) throws -> Int64 {
         guard decoder.hasNext() else {
             throw CBORDecoderError("member \(schema.id) ended unexpectedly")
         }
@@ -119,9 +121,10 @@ public class Deserializer: ShapeDeserializer {
         let next = try decoder.popNext()
         switch next {
         case .int(let value):
-            return Int(value)
+            return value
         case .uint(let value):
-            return Int(value)
+            guard let int64 = Int64(exactly: value) else { throw CBORDecoderError("value \(value) overflows Int64") }
+            return int64
         default:
             throw CBORDecoderError("member \(schema.id) expected .int or .uint but got \(next) instead")
         }
@@ -164,31 +167,11 @@ public class Deserializer: ShapeDeserializer {
     }
 
     public func readBigInteger(_ schema: Schema) throws -> Int64 {
-        guard decoder.hasNext() else {
-            throw CBORDecoderError("member \(schema.id) ended unexpectedly")
-        }
-        try nullCheck()
-        let next = try decoder.popNext()
-        switch next {
-        case .int(let value):
-            return Int64(value)
-        case .uint(let value):
-            return Int64(value)
-        default:
-            throw CBORDecoderError("member \(schema.id) expected .int or .uint but got \(next) instead")
-        }
+        try readLong(schema)
     }
 
     public func readBigDecimal(_ schema: Schema) throws -> Double {
-        guard decoder.hasNext() else {
-            throw CBORDecoderError("member \(schema.id) ended unexpectedly")
-        }
-        try nullCheck()
-        let next = try decoder.popNext()
-        guard case .double(let value) = next else {
-            throw CBORDecoderError("member \(schema.id) expected .double but got \(next) instead")
-        }
-        return value
+        try readDouble(schema)
     }
 
     public func readString(_ schema: Schema) throws -> String {
