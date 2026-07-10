@@ -60,6 +60,7 @@ let package = Package(
                 .product(name: "SmithyJSON", package: "smithy-swift"),
                 .product(name: "SmithySerialization", package: "smithy-swift"),
                 .product(name: "ClientRuntime", package: "smithy-swift"),
+                .product(name: "SmithyTimestamps", package: "smithy-swift"),
                 .product(name: "SmithyTestUtil", package: "smithy-swift"),
                 .product(name: "AWSJSONTestSDK", package: "AWSJSONTestSDK"),
             ]
@@ -183,6 +184,8 @@ let package = Package(
             name: "SmithyHTTPAPITests",
             dependencies: [
                 .product(name: "SmithyHTTPAPI", package: "smithy-swift"),
+                .product(name: "Smithy", package: "smithy-swift"),
+                .product(name: "SmithyTimestamps", package: "smithy-swift"),
                 .product(name: "RestJSON1TestSDK", package: "RestJSON1TestSDK"),
             ]
         ),

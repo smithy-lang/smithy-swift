@@ -242,12 +242,9 @@ public final class Serializer: ShapeSerializer {
 
         // Depending on format, timestamp is written either as a string or double.
         switch timestampFormat {
-        case .dateTime:
-            let dateTimeString = TimestampFormatter(format: .dateTime).string(from: value)
+        case .dateTime, .httpDate:
+            let dateTimeString = TimestampFormatter(format: timestampFormat).string(from: value)
             try writeString(schema, dateTimeString)
-        case .httpDate:
-            let httpDateString = TimestampFormatter(format: .httpDate).string(from: value)
-            try writeString(schema, httpDateString)
         case .epochSeconds:
             let epochSecondsString = TimestampFormatter(format: .epochSeconds).string(from: value)
             guard let epochSeconds = Double(epochSecondsString) else {

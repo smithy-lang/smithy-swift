@@ -13,6 +13,7 @@ import software.amazon.smithy.model.Model
 import software.amazon.smithy.model.transform.ModelTransformer
 import software.amazon.smithy.swift.codegen.core.GenerationContext
 import software.amazon.smithy.swift.codegen.integration.SwiftIntegration
+import software.amazon.smithy.swift.codegen.integration.serde.SerdeUtils
 import software.amazon.smithy.swift.codegen.model.AddOperationShapes
 import software.amazon.smithy.swift.codegen.model.EquatableConformanceTransformer
 import software.amazon.smithy.swift.codegen.model.NeedsReaderWriterTransformer
@@ -92,7 +93,10 @@ class SwiftCodegenPlugin : SmithyBuildPlugin {
         val enabledIntegrations = getEnabledIntegrations(context.model, swiftSettings)
 
         // Write the model as JSON AST, before any preprocessing occurs
-        ModelWriter().write(context.model, context.fileManifest, swiftSettings)
+        // Only write JSON model if schema-based is in use and JSON model wasn't provided
+        if (SerdeUtils.useSchemaBased(swiftSettings, context.model) && swiftSettings.modelPath == null) {
+            ModelWriter().write(context.model, context.fileManifest, swiftSettings)
+        }
 
         val resolvedModel = preprocessModel(context.model, swiftSettings, enabledIntegrations)
 

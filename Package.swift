@@ -192,7 +192,8 @@ var runtimeTargets: [PackageDescription.Target] {
         ),
         libXML2TargetOrNil,
         .target(
-            name: "SmithyTimestamps"
+            name: "SmithyTimestamps",
+            dependencies: ["Smithy"]
         ),
         .target(
             name: "SmithyTestUtil",
@@ -211,7 +212,11 @@ var runtimeTargets: [PackageDescription.Target] {
         ),
         .target(
             name: "SmithyHTTPAPI",
-            dependencies: ["Smithy", "SmithySerialization"]
+            dependencies: [
+                "Smithy",
+                "SmithySerialization",
+                "SmithyTimestamps",
+            ]
         ),
         .target(
             name: "SmithyHTTPClient",
@@ -313,6 +318,7 @@ var runtimeTargets: [PackageDescription.Target] {
                 "Smithy",
                 "SmithySerialization",
                 "SmithyJSON",
+                "SmithyHTTPAPI",
             ]
         ),
         .target(
@@ -322,6 +328,7 @@ var runtimeTargets: [PackageDescription.Target] {
                 "Smithy",
                 "SmithySerialization",
                 "SmithyJSON",
+                "SmithyHTTPAPI",
                 "SmithyEventStreams",
             ]
         ),
@@ -332,6 +339,7 @@ var runtimeTargets: [PackageDescription.Target] {
                 "Smithy",
                 "SmithySerialization",
                 "SmithyCBOR",
+                "SmithyHTTPAPI",
             ]
         ),
     ].compactMap { $0 }
