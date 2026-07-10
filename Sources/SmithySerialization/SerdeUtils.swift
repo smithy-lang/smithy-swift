@@ -16,7 +16,7 @@ public enum Numerics {
 
     public static func int(_ value: Int64) throws -> Int {
         guard let intValue = Int(exactly: value) else {
-            throw SerializerError("value \(value) does not fit into Int64")
+            throw SerializerError("value \(value) does not fit into Int")
         }
         return intValue
     }
