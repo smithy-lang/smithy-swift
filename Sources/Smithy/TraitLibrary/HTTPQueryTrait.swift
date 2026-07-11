@@ -9,7 +9,7 @@
 
 @_spi(SchemaBasedSerde)
 public final class HTTPQueryTrait: RuntimeTrait {
-    public static var id = ShapeID("smithy.api", "httpQuery")
+    public static let id = ShapeID("smithy.api", "httpQuery")
 
     public static let uniqueIndex = traitUniqueIndexCounter.getNextIndex()
 
