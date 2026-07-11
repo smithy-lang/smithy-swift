@@ -1,11 +1,11 @@
 $version: "2.0"
 
-namespace smithy.swift.restJson1Tests
+namespace smithy.swift.httpLabelTests
 
 use aws.protocols#restJson1
 
 @restJson1
-service RestJSON1Service {
+service HTTPLabelService {
     version: "2022-11-30"
     operations: [
         BooleanHTTPLabel

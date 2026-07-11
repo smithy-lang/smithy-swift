@@ -21,8 +21,12 @@ let package = Package(
         // Generated test SDKs.  Models are in build/model.  Use them where Smithy generates them.
         // Run bash script ./scripts/codegen.sh from smithy-swift root to generate or regenerate these files
         .package(
-            name: "RestJSON1TestSDK",
-            path: "build/smithyprojections/test-sdks/restjson1-test-sdk/swift-codegen/RestJSON1TestSDK"
+            name: "HTTPLabelTestSDK",
+            path: "build/smithyprojections/test-sdks/httplabel-test-sdk/swift-codegen/HTTPLabelTestSDK"
+        ),
+        .package(
+            name: "HTTPQueryTestSDK",
+            path: "build/smithyprojections/test-sdks/httpquery-test-sdk/swift-codegen/HTTPQueryTestSDK"
         ),
         .package(
             name: "AWSJSONTestSDK",
@@ -186,7 +190,8 @@ let package = Package(
                 .product(name: "SmithyHTTPAPI", package: "smithy-swift"),
                 .product(name: "Smithy", package: "smithy-swift"),
                 .product(name: "SmithyTimestamps", package: "smithy-swift"),
-                .product(name: "RestJSON1TestSDK", package: "RestJSON1TestSDK"),
+                .product(name: "HTTPLabelTestSDK", package: "HTTPLabelTestSDK"),
+                .product(name: "HTTPQueryTestSDK", package: "HTTPQueryTestSDK"),
             ]
         ),
         .testTarget(

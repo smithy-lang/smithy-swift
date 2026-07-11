@@ -15,14 +15,14 @@ import SmithySerialization
 @_spi(SmithyTimestamps)
 import struct SmithyTimestamps.TimestampFormatter
 @_spi(SchemaBasedSerde)
-@testable import RestJSON1TestSDK
+@testable import HTTPLabelTestSDK
 
 final class HTTPLabelSerializerTests: XCTestCase {
 
     // MARK: - boolean HTTP labels
 
     func test_boolean_serializesBooleanIntoURI() throws {
-        let operation = RestJSON1TestSDK.RestJSON1ServiceClient.booleanHTTPLabelOperation
+        let operation = HTTPLabelTestSDK.HTTPLabelServiceClient.booleanHTTPLabelOperation
         let uri = try XCTUnwrap(operation.schema.getTrait(HTTPTrait.self)?.uri)
         let subject = HTTPLabelSerializer(uri: uri)
 
@@ -35,7 +35,7 @@ final class HTTPLabelSerializerTests: XCTestCase {
     // MARK: - numeric HTTP labels
 
     func test_byte_serializesByteIntoURI() throws {
-        let operation = RestJSON1TestSDK.RestJSON1ServiceClient.byteHTTPLabelOperation
+        let operation = HTTPLabelTestSDK.HTTPLabelServiceClient.byteHTTPLabelOperation
         let uri = try XCTUnwrap(operation.schema.getTrait(HTTPTrait.self)?.uri)
         let subject = HTTPLabelSerializer(uri: uri)
 
@@ -46,7 +46,7 @@ final class HTTPLabelSerializerTests: XCTestCase {
     }
 
     func test_short_serializesShortIntoURI() throws {
-        let operation = RestJSON1TestSDK.RestJSON1ServiceClient.shortHTTPLabelOperation
+        let operation = HTTPLabelTestSDK.HTTPLabelServiceClient.shortHTTPLabelOperation
         let uri = try XCTUnwrap(operation.schema.getTrait(HTTPTrait.self)?.uri)
         let subject = HTTPLabelSerializer(uri: uri)
 
@@ -57,7 +57,7 @@ final class HTTPLabelSerializerTests: XCTestCase {
     }
 
     func test_number_serializesNumberIntoURI() throws {
-        let operation = RestJSON1TestSDK.RestJSON1ServiceClient.integerHTTPLabelOperation
+        let operation = HTTPLabelTestSDK.HTTPLabelServiceClient.integerHTTPLabelOperation
         let uri = try XCTUnwrap(operation.schema.getTrait(HTTPTrait.self)?.uri)
         let subject = HTTPLabelSerializer(uri: uri)
 
@@ -68,7 +68,7 @@ final class HTTPLabelSerializerTests: XCTestCase {
     }
 
     func test_long_serializesLongIntoURI() throws {
-        let operation = RestJSON1TestSDK.RestJSON1ServiceClient.longHTTPLabelOperation
+        let operation = HTTPLabelTestSDK.HTTPLabelServiceClient.longHTTPLabelOperation
         let uri = try XCTUnwrap(operation.schema.getTrait(HTTPTrait.self)?.uri)
         let subject = HTTPLabelSerializer(uri: uri)
 
@@ -79,7 +79,7 @@ final class HTTPLabelSerializerTests: XCTestCase {
     }
 
     func test_float_serializesFloatIntoURI() throws {
-        let operation = RestJSON1TestSDK.RestJSON1ServiceClient.floatHTTPLabelOperation
+        let operation = HTTPLabelTestSDK.HTTPLabelServiceClient.floatHTTPLabelOperation
         let uri = try XCTUnwrap(operation.schema.getTrait(HTTPTrait.self)?.uri)
         let subject = HTTPLabelSerializer(uri: uri)
 
@@ -90,7 +90,7 @@ final class HTTPLabelSerializerTests: XCTestCase {
     }
 
     func test_float_serializesNonFiniteFloatUsingSmithyTokens() throws {
-        let operation = RestJSON1TestSDK.RestJSON1ServiceClient.floatHTTPLabelOperation
+        let operation = HTTPLabelTestSDK.HTTPLabelServiceClient.floatHTTPLabelOperation
         let uri = try XCTUnwrap(operation.schema.getTrait(HTTPTrait.self)?.uri)
 
         for (value, expected) in [(Float.nan, "NaN"), (.infinity, "Infinity"), (-.infinity, "-Infinity")] {
@@ -102,7 +102,7 @@ final class HTTPLabelSerializerTests: XCTestCase {
     }
 
     func test_double_serializesDoubleIntoURI() throws {
-        let operation = RestJSON1TestSDK.RestJSON1ServiceClient.doubleHTTPLabelOperation
+        let operation = HTTPLabelTestSDK.HTTPLabelServiceClient.doubleHTTPLabelOperation
         let uri = try XCTUnwrap(operation.schema.getTrait(HTTPTrait.self)?.uri)
         let subject = HTTPLabelSerializer(uri: uri)
 
@@ -113,7 +113,7 @@ final class HTTPLabelSerializerTests: XCTestCase {
     }
 
     func test_double_serializesNonFiniteDoubleUsingSmithyTokens() throws {
-        let operation = RestJSON1TestSDK.RestJSON1ServiceClient.doubleHTTPLabelOperation
+        let operation = HTTPLabelTestSDK.HTTPLabelServiceClient.doubleHTTPLabelOperation
         let uri = try XCTUnwrap(operation.schema.getTrait(HTTPTrait.self)?.uri)
 
         for (value, expected) in [(Double.nan, "NaN"), (.infinity, "Infinity"), (-.infinity, "-Infinity")] {
@@ -127,7 +127,7 @@ final class HTTPLabelSerializerTests: XCTestCase {
     // MARK: - string HTTP labels
 
     func test_string_serializesStringIntoURI() throws {
-        let operation = RestJSON1TestSDK.RestJSON1ServiceClient.stringHTTPLabelOperation
+        let operation = HTTPLabelTestSDK.HTTPLabelServiceClient.stringHTTPLabelOperation
         let uri = try XCTUnwrap(operation.schema.getTrait(HTTPTrait.self)?.uri)
         let subject = HTTPLabelSerializer(uri: uri)
 
@@ -138,7 +138,7 @@ final class HTTPLabelSerializerTests: XCTestCase {
     }
 
     func test_string_serializesStringIntoURIEscapingSpecialCharactersIncludingSlash() throws {
-        let operation = RestJSON1TestSDK.RestJSON1ServiceClient.stringHTTPLabelOperation
+        let operation = HTTPLabelTestSDK.HTTPLabelServiceClient.stringHTTPLabelOperation
         let uri = try XCTUnwrap(operation.schema.getTrait(HTTPTrait.self)?.uri)
         let subject = HTTPLabelSerializer(uri: uri)
 
@@ -149,7 +149,7 @@ final class HTTPLabelSerializerTests: XCTestCase {
     }
 
     func test_greedyString_serializesStringIntoURIEscapingSpecialCharactersIncludingSlash() throws {
-        let operation = RestJSON1TestSDK.RestJSON1ServiceClient.greedyStringHTTPLabelOperation
+        let operation = HTTPLabelTestSDK.HTTPLabelServiceClient.greedyStringHTTPLabelOperation
         let uri = try XCTUnwrap(operation.schema.getTrait(HTTPTrait.self)?.uri)
         let subject = HTTPLabelSerializer(uri: uri)
 
@@ -162,7 +162,7 @@ final class HTTPLabelSerializerTests: XCTestCase {
     // MARK: - timestamp HTTP labels
 
     func test_timestamp_serializesTimestampIntoURIAsDateTimeByDefault() throws {
-        let operation = RestJSON1TestSDK.RestJSON1ServiceClient.timestampHTTPLabelOperation
+        let operation = HTTPLabelTestSDK.HTTPLabelServiceClient.timestampHTTPLabelOperation
         let uri = try XCTUnwrap(operation.schema.getTrait(HTTPTrait.self)?.uri)
         let dateTimeString = "2026-07-09T21:43:14.762Z"
         let moment = TimestampFormatter(format: .dateTime).date(from: dateTimeString)
@@ -175,7 +175,7 @@ final class HTTPLabelSerializerTests: XCTestCase {
     }
 
     func test_timestamp_serializesTimestampIntoURIUsingTimestampFormatTrait() throws {
-        let operation = RestJSON1TestSDK.RestJSON1ServiceClient.formattedTimestampHTTPLabelOperation
+        let operation = HTTPLabelTestSDK.HTTPLabelServiceClient.formattedTimestampHTTPLabelOperation
         let uri = try XCTUnwrap(operation.schema.getTrait(HTTPTrait.self)?.uri)
         let dateTimeString = "2026-07-09T21:43:14.762Z"
         let moment = TimestampFormatter(format: .dateTime).date(from: dateTimeString)
