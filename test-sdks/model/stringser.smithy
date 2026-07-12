@@ -1,11 +1,11 @@
 $version: "2.0"
 
-namespace smithy.swift.tests.stringSer
+namespace smithy.swift.tests.StringSerializer
 
 use smithy.protocols#rpcv2Cbor
 
 @rpcv2Cbor
-service StringSerService {
+service StringSerializer {
     version: "2022-11-30"
     operations: [
         GetWidget

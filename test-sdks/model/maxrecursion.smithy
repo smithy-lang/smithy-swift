@@ -1,11 +1,11 @@
 $version: "2.0"
 
-namespace smithy.swift.tests.maxRecursion
+namespace smithy.swift.tests.MaxRecursion
 
 use smithy.protocols#rpcv2Cbor
 
 @rpcv2Cbor
-service MaxRecursionService {
+service MaxRecursion {
     version: "2022-11-30"
     operations: [
         Recursive

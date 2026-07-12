@@ -1,28 +1,28 @@
 $version: "2.0"
 
-namespace smithy.swift.tests.jsonName
+namespace smithy.swift.tests.JSONName
 
 use aws.protocols#awsJson1_0
 
 @awsJson1_0
-service JSONNameService {
+service JSONName {
     version: "2022-11-30"
     operations: [
-        JSONName
+        JSONNameMembers
     ]
 }
 
-operation JSONName {
-    input: JSONNameInput
-    output: JSONNameOutput
+operation JSONNameMembers {
+    input: JSONNameMembersInput
+    output: JSONNameMembersOutput
 }
 
-structure JSONNameInput {
+structure JSONNameMembersInput {
     @jsonName("modified")
     original: String
 }
 
-structure JSONNameOutput {
+structure JSONNameMembersOutput {
     @jsonName("modified")
     original: String
 }

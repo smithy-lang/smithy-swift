@@ -14,11 +14,11 @@ import enum Smithy.Prelude
 import class Smithy.Schema
 @_spi(SchemaBasedSerde)
 import class Smithy.SensitiveTrait
-import struct StringSerTestSDK.GetWidgetOutput
-import enum StringSerTestSDK.StringSerServiceClientTypes
+import struct StringSerializerTestSDK.GetWidgetOutput
+import enum StringSerializerTestSDK.StringSerializerClientTypes
 
 final class StringSerializerTests: XCTestCase {
-    typealias TestStruct = StringSerServiceClientTypes.SensitiveType
+    typealias TestStruct = StringSerializerClientTypes.SensitiveType
 
     func test_writesASimpleString() throws {
         let string = "xyz"
