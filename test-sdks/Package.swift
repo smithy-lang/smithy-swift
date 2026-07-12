@@ -25,8 +25,20 @@ let package = Package(
             path: "build/smithyprojections/test-sdks/awsjson-test-sdk/swift-codegen/AWSJSONTestSDK"
         ),
         .package(
-            name: "RPCv2CBORTestSDK",
-            path: "build/smithyprojections/test-sdks/rpcv2cbor-test-sdk/swift-codegen/RPCv2CBORTestSDK"
+            name: "JSONNameTestSDK",
+            path: "build/smithyprojections/test-sdks/jsonname-test-sdk/swift-codegen/JSONNameTestSDK"
+        ),
+        .package(
+            name: "MaxRecursionTestSDK",
+            path: "build/smithyprojections/test-sdks/maxrecursion-test-sdk/swift-codegen/MaxRecursionTestSDK"
+        ),
+        .package(
+            name: "NullToleranceTestSDK",
+            path: "build/smithyprojections/test-sdks/nulltolerance-test-sdk/swift-codegen/NullToleranceTestSDK"
+        ),
+        .package(
+            name: "StringSerTestSDK",
+            path: "build/smithyprojections/test-sdks/stringser-test-sdk/swift-codegen/StringSerTestSDK"
         ),
         .package(
             name: "WaitersTestSDK",
@@ -38,7 +50,7 @@ let package = Package(
             name: "SmithySerializationTests",
             dependencies: [
                 .product(name: "SmithySerialization", package: "smithy-swift"),
-                .product(name: "RPCv2CBORTestSDK", package: "RPCv2CBORTestSDK"),
+                .product(name: "StringSerTestSDK", package: "StringSerTestSDK"),
             ]
         ),
         .testTarget(
@@ -47,7 +59,7 @@ let package = Package(
                 .product(name: "SmithyCBOR", package: "smithy-swift"),
                 .product(name: "Smithy", package: "smithy-swift"),
                 .product(name: "AwsCommonRuntimeKit", package: "aws-crt-swift"),
-                .product(name: "RPCv2CBORTestSDK", package: "RPCv2CBORTestSDK"),
+                .product(name: "MaxRecursionTestSDK", package: "MaxRecursionTestSDK"),
             ]
         ),
         .testTarget(
@@ -59,6 +71,8 @@ let package = Package(
                 .product(name: "SmithyTimestamps", package: "smithy-swift"),
                 .product(name: "SmithyTestUtil", package: "smithy-swift"),
                 .product(name: "AWSJSONTestSDK", package: "AWSJSONTestSDK"),
+                .product(name: "JSONNameTestSDK", package: "JSONNameTestSDK"),
+                .product(name: "NullToleranceTestSDK", package: "NullToleranceTestSDK"),
             ]
         ),
         .testTarget(

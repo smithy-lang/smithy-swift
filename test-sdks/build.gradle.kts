@@ -18,8 +18,11 @@ dependencies {
 data class TestSDK(val projection: String, val service: String, val module: String)
 
 val testSDKs = listOf(
-    TestSDK("rpcv2cbor-test-sdk", "smithy.swift.tests#RPCv2CBORService", "RPCv2CBORTestSDK"),
     TestSDK("awsjson-test-sdk", "smithy.swift.tests#AWSJSONService", "AWSJSONTestSDK"),
+    TestSDK("jsonname-test-sdk", "smithy.swift.tests.jsonName#JSONNameService", "JSONNameTestSDK"),
+    TestSDK("maxrecursion-test-sdk", "smithy.swift.tests.maxRecursion#MaxRecursionService", "MaxRecursionTestSDK"),
+    TestSDK("nulltolerance-test-sdk", "smithy.swift.tests.nullTolerance#NullToleranceService", "NullToleranceTestSDK"),
+    TestSDK("stringser-test-sdk", "smithy.swift.tests.stringSer#StringSerService", "StringSerTestSDK"),
     TestSDK("waiters-test-sdk", "aws.protocoltests.waiters#Waiters", "WaitersTestSDK"),
 )
 

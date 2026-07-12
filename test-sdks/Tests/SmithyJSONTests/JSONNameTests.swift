@@ -7,7 +7,7 @@
 
 import XCTest
 @_spi(SchemaBasedSerde) import SmithyJSON
-@_spi(SchemaBasedSerde) import AWSJSONTestSDK
+@_spi(SchemaBasedSerde) import JSONNameTestSDK
 
 final class JSONNameTests: XCTestCase {
 
