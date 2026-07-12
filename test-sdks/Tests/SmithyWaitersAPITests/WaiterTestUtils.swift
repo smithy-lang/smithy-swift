@@ -13,7 +13,7 @@ import XCTest
 // to makes tests as simple as possible.
 // These Equatable conformances make the tests easier to read (and write).
 
-extension WaiterConfiguration.Acceptor.Match: Equatable where Output: Equatable {
+extension WaiterConfiguration.Acceptor.Match: Swift.Equatable where Output: Equatable {
 
     public static func ==(lhs: Self, rhs: Self) -> Bool {
         switch (lhs, rhs) {
@@ -29,7 +29,7 @@ extension WaiterConfiguration.Acceptor.Match: Equatable where Output: Equatable 
     }
 }
 
-extension WaiterOutcome: Equatable where Output: Equatable {
+extension WaiterOutcome: Swift.Equatable where Output: Equatable {
 
     public static func ==(lhs: WaiterOutcome, rhs: WaiterOutcome) -> Bool {
         lhs.attempts == rhs.attempts && lhs.result == rhs.result
@@ -50,7 +50,7 @@ extension Result where Success: Equatable, Failure == Error {
     }
 }
 
-extension WaiterFailureError: Equatable where Output == String {
+extension WaiterFailureError: Swift.Equatable where Output == String {
 
     public static func ==(lhs: WaiterFailureError, rhs: WaiterFailureError) -> Bool {
         lhs.attempts == rhs.attempts && lhs.failedOnMatch == rhs.failedOnMatch && lhs.result == rhs.result

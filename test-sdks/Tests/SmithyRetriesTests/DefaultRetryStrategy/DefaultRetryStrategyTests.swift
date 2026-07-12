@@ -24,9 +24,18 @@ final class DefaultRetryStrategyTests: XCTestCase {
 
     private var options: RetryStrategyOptions!
     private var subject: DefaultRetryStrategy!
-    private var mockSleeper: ((TimeInterval) async throws -> Void)!
+    private var mockSleeper: @Sendable (TimeInterval) async throws -> Void = { _ in }
     private var backoffStrategy: ExponentialBackoffStrategy!
-    private var actualDelay: TimeInterval = 0.0
+
+    actor Delay {
+        var actual: TimeInterval = 0.0
+
+        func setActual(_ timeInterval: TimeInterval) {
+            self.actual = timeInterval
+        }
+    }
+
+    private let delay = Delay()
 
     override func setUp() {
         backoffStrategy = .init()
@@ -35,7 +44,7 @@ final class DefaultRetryStrategyTests: XCTestCase {
             backoffStrategy: backoffStrategy, maxRetriesBase: 2, useNewRetries2026: true
         )
         subject = DefaultRetryStrategy(options: options)
-        mockSleeper = { self.actualDelay = $0 }
+        mockSleeper = { @Sendable in await self.delay.setActual($0) }
         subject.sleeper = mockSleeper
     }
 
@@ -82,18 +91,22 @@ final class DefaultRetryStrategyTests: XCTestCase {
     func test_refresh_sleepsForExpectedPeriodOnNonThrottlingRetry() async throws {
         let token1 = try await subject.acquireInitialRetryToken(tokenScope: scope1)
         try await subject.refreshRetryTokenForRetry(tokenToRenew: token1, errorInfo: retryableInfo)
-        XCTAssertEqual(actualDelay, 0.05)
+        let actual1 = await delay.actual
+        XCTAssertEqual(actual1, 0.05)
         try await subject.refreshRetryTokenForRetry(tokenToRenew: token1, errorInfo: retryableInfo)
-        XCTAssertEqual(actualDelay, 0.1)
+        let actual2 = await delay.actual
+        XCTAssertEqual(actual2, 0.1)
     }
 
 
     func test_refresh_sleepsForExpectedPeriodOnThrottlingRetry() async throws {
         let token1 = try await subject.acquireInitialRetryToken(tokenScope: scope1)
         try await subject.refreshRetryTokenForRetry(tokenToRenew: token1, errorInfo: retryableThrottlingInfo)
-        XCTAssertEqual(actualDelay, 1.0)
+        let actual1 = await delay.actual
+        XCTAssertEqual(actual1, 1.0)
         try await subject.refreshRetryTokenForRetry(tokenToRenew: token1, errorInfo: retryableThrottlingInfo)
-        XCTAssertEqual(actualDelay, 2.0)
+        let actual2 = await delay.actual
+        XCTAssertEqual(actual2, 2.0)
     }
 
 
@@ -101,7 +114,8 @@ final class DefaultRetryStrategyTests: XCTestCase {
         let token1 = try await subject.acquireInitialRetryToken(tokenScope: scope1)
         try await subject.refreshRetryTokenForRetry(tokenToRenew: token1, errorInfo: retryableInfoWithHint)
         // retryAfterHint=0.44, t_i=0.05, so delay = max(0.44, 0.05) = 0.44
-        XCTAssertEqual(actualDelay, retryableInfoWithHint.retryAfterHint!)
+        let actual = await delay.actual
+        XCTAssertEqual(actual, retryableInfoWithHint.retryAfterHint!)
     }
 
     func test_refresh_throwsMaxAttemptsReachedWhenMaxAttemptsReached() async throws {
@@ -175,7 +189,8 @@ final class DefaultRetryStrategyTests: XCTestCase {
         let info = RetryErrorInfo(errorType: .serverError, retryAfterHint: 0.01, isTimeout: false)
         let token1 = try await subject.acquireInitialRetryToken(tokenScope: scope1)
         try await subject.refreshRetryTokenForRetry(tokenToRenew: token1, errorInfo: info)
-        XCTAssertEqual(actualDelay, 0.05)
+        let actual = await delay.actual
+        XCTAssertEqual(actual, 0.05)
     }
 
     func test_retryAfterHint_bounded_byMaximum() async throws {
@@ -183,7 +198,8 @@ final class DefaultRetryStrategyTests: XCTestCase {
         let info = RetryErrorInfo(errorType: .serverError, retryAfterHint: 10.0, isTimeout: false)
         let token1 = try await subject.acquireInitialRetryToken(tokenScope: scope1)
         try await subject.refreshRetryTokenForRetry(tokenToRenew: token1, errorInfo: info)
-        XCTAssertEqual(actualDelay, 5.05)
+        let actual = await delay.actual
+        XCTAssertEqual(actual, 5.05)
     }
 
     func test_retryAfterHint_withinBounds_usedAsIs() async throws {
@@ -191,6 +207,7 @@ final class DefaultRetryStrategyTests: XCTestCase {
         let info = RetryErrorInfo(errorType: .serverError, retryAfterHint: 1.5, isTimeout: false)
         let token1 = try await subject.acquireInitialRetryToken(tokenScope: scope1)
         try await subject.refreshRetryTokenForRetry(tokenToRenew: token1, errorInfo: info)
-        XCTAssertEqual(actualDelay, 1.5)
+        let actual = await delay.actual
+        XCTAssertEqual(actual, 1.5)
     }
 }

@@ -75,18 +75,10 @@ jobs:
         run: ./scripts/codegen.sh
       - name: Build & Run smithy-swift Swift Unit Tests
         run: |
-          set -o pipefail && \
-          NSUnbufferedIO=YES xcodebuild \
-            -scheme smithy-swift-Package \
-            -destination '${{ matrix.destination }}' \
-            test 2>&1 \
-            | xcbeautify
-      - name: Build & Run Swift Codegen Tests
-        run: |
           cd test-sdks && \
           set -o pipefail && \
           NSUnbufferedIO=YES xcodebuild \
-            -scheme SmithySwiftCodegenTests-Package \
+            -scheme SmithySwiftTests-Package \
             -destination '${{ matrix.destination }}' \
             test 2>&1 \
             | xcbeautify
