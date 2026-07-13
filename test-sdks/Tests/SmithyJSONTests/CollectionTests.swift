@@ -7,7 +7,7 @@
 
 import XCTest
 @_spi(SchemaBasedSerde) import SmithyJSON
-@_spi(SchemaBasedSerde) import AWSJSONTestSDK
+@_spi(SchemaBasedSerde) import NullToleranceTestSDK
 
 final class CollectionTests: XCTestCase {
 
@@ -18,7 +18,7 @@ final class CollectionTests: XCTestCase {
         let subject = try Deserializer(usesJSONNameTrait: false, data: data)
 
         // Deserialize to a structure
-        let output = try NullToleranceOutput.deserialize(subject)
+        let output = try NullToleranceTestOutput.deserialize(subject)
 
         // Verify that list is just the numbers, omitting the nulls
         XCTAssertEqual(output.list, [123, 456, 789])
@@ -31,7 +31,7 @@ final class CollectionTests: XCTestCase {
         let subject = try Deserializer(usesJSONNameTrait: false, data: data)
 
         // Deserialize to a structure
-        let output = try NullToleranceOutput.deserialize(subject)
+        let output = try NullToleranceTestOutput.deserialize(subject)
 
         // Verify that map is just the keys & values for nonnull values
         XCTAssertEqual(output.map, ["a": 123, "c": 456, "e": 789])
@@ -44,7 +44,7 @@ final class CollectionTests: XCTestCase {
         let subject = try Deserializer(usesJSONNameTrait: false, data: data)
 
         // Deserialize to a structure
-        let output = try NullToleranceOutput.deserialize(subject)
+        let output = try NullToleranceTestOutput.deserialize(subject)
 
         // Verify that list contains numbers and nulls
         XCTAssertEqual(output.sparseList, [123, nil, 456, nil, 789, nil])
@@ -57,7 +57,7 @@ final class CollectionTests: XCTestCase {
         let subject = try Deserializer(usesJSONNameTrait: false, data: data)
 
         // Deserialize to a structure
-        let output = try NullToleranceOutput.deserialize(subject)
+        let output = try NullToleranceTestOutput.deserialize(subject)
 
         // Verify that map contains keys & values for null & nonnull values
         XCTAssertEqual(output.sparseMap, ["a": 123, "b": nil, "c": 456, "d": nil, "e": 789, "f": nil])
