@@ -20,8 +20,8 @@ let package = Package(
 
         // Generated test SDKs.  Models are in build/model.  Use them where Smithy generates them.
         // Run bash script ./scripts/codegen.sh from smithy-swift root to generate or regenerate these files
-        testSDKPackage("RestJSON1"),
         testSDKPackage("AWSJSON"),
+        testSDKPackage("HTTPLabel"),
         testSDKPackage("JSONName"),
         testSDKPackage("MaxRecursion"),
         testSDKPackage("NullTolerance"),
@@ -179,7 +179,7 @@ let package = Package(
                 .product(name: "SmithyHTTPAPI", package: "smithy-swift"),
                 .product(name: "Smithy", package: "smithy-swift"),
                 .product(name: "SmithyTimestamps", package: "smithy-swift"),
-                testSDKProduct("RestJSON1"),
+                testSDKProduct("HTTPLabel"),
             ]
         ),
         .testTarget(

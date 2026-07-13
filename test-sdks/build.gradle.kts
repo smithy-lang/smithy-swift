@@ -20,9 +20,9 @@ data class TestSDK(val name: String, val forceSchemaBased: Boolean = false)
 val testSDKs = listOf(
     TestSDK("AWSJSON"),
     TestSDK("JSONName"),
+    TestSDK("HTTPLabel", true),
     TestSDK("MaxRecursion"),
     TestSDK("NullTolerance"),
-    TestSDK("RestJSON1", true),
     TestSDK("StringSerializer"),
     TestSDK("Waiters"),
 )
