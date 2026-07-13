@@ -15,30 +15,28 @@ dependencies {
     implementation(project(":smithy-swift-codegen"))
 }
 
-data class TestSDK(
-    val projection: String,
-    val service: String,
-    val module: String,
-    val forceSchemaBased: Boolean = false,
-)
+data class TestSDK(val name: String, val forceSchemaBased: Boolean = false)
 
 val testSDKs = listOf(
-    TestSDK("restjson1-test-sdk", "smithy.swift.restJson1Tests#RestJSON1Service", "RestJSON1TestSDK", forceSchemaBased = true),
-    TestSDK("rpcv2cbor-test-sdk", "smithy.swift.tests#RPCv2CBORService", "RPCv2CBORTestSDK"),
-    TestSDK("awsjson-test-sdk", "smithy.swift.tests#AWSJSONService", "AWSJSONTestSDK"),
-    TestSDK("waiters-test-sdk", "aws.protocoltests.waiters#Waiters", "WaitersTestSDK"),
+    TestSDK("AWSJSON"),
+    TestSDK("JSONName"),
+    TestSDK("MaxRecursion"),
+    TestSDK("NullTolerance"),
+    TestSDK("RestJSON1", true),
+    TestSDK("StringSerializer"),
+    TestSDK("Waiters"),
 )
 
 fun generateProjection(sdk: TestSDK): String {
     val forceSchemaBased = if (sdk.forceSchemaBased) ",\n          \"forceSchemaBased\": true" else ""
     return """
-    "${sdk.projection}": {
+    "${sdk.name}": {
       "transforms": [
         {
           "name": "includeServices",
           "args": {
             "services": [
-              "${sdk.service}"
+              "smithy.swift.tests.${sdk.name}#${sdk.name}"
             ]
           }
         },
@@ -51,8 +49,8 @@ fun generateProjection(sdk: TestSDK): String {
       ],
       "plugins": {
         "swift-codegen": {
-          "service": "${sdk.service}",
-          "module": "${sdk.module}",
+          "service": "smithy.swift.tests.${sdk.name}#${sdk.name}",
+          "module": "${sdk.name}TestSDK",
           "moduleVersion": "0.0.1",
           "gitRepo": "https://github.com/smithy-lang/smithy-swift.git",
           "author": "Amazon Web Services",

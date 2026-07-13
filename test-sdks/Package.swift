@@ -20,29 +20,20 @@ let package = Package(
 
         // Generated test SDKs.  Models are in build/model.  Use them where Smithy generates them.
         // Run bash script ./scripts/codegen.sh from smithy-swift root to generate or regenerate these files
-        .package(
-            name: "RestJSON1TestSDK",
-            path: "build/smithyprojections/test-sdks/restjson1-test-sdk/swift-codegen/RestJSON1TestSDK"
-        ),
-        .package(
-            name: "AWSJSONTestSDK",
-            path: "build/smithyprojections/test-sdks/awsjson-test-sdk/swift-codegen/AWSJSONTestSDK"
-        ),
-        .package(
-            name: "RPCv2CBORTestSDK",
-            path: "build/smithyprojections/test-sdks/rpcv2cbor-test-sdk/swift-codegen/RPCv2CBORTestSDK"
-        ),
-        .package(
-            name: "WaitersTestSDK",
-            path: "build/smithyprojections/test-sdks/waiters-test-sdk/swift-codegen/WaitersTestSDK"
-        ),
+        testSDKPackage("RestJSON1"),
+        testSDKPackage("AWSJSON"),
+        testSDKPackage("JSONName"),
+        testSDKPackage("MaxRecursion"),
+        testSDKPackage("NullTolerance"),
+        testSDKPackage("StringSerializer"),
+        testSDKPackage("Waiters"),
     ],
     targets: [
         .testTarget(
             name: "SmithySerializationTests",
             dependencies: [
                 .product(name: "SmithySerialization", package: "smithy-swift"),
-                .product(name: "RPCv2CBORTestSDK", package: "RPCv2CBORTestSDK"),
+                testSDKProduct("StringSerializer"),
             ]
         ),
         .testTarget(
@@ -51,7 +42,7 @@ let package = Package(
                 .product(name: "SmithyCBOR", package: "smithy-swift"),
                 .product(name: "Smithy", package: "smithy-swift"),
                 .product(name: "AwsCommonRuntimeKit", package: "aws-crt-swift"),
-                .product(name: "RPCv2CBORTestSDK", package: "RPCv2CBORTestSDK"),
+                testSDKProduct("MaxRecursion"),
             ]
         ),
         .testTarget(
@@ -62,7 +53,9 @@ let package = Package(
                 .product(name: "ClientRuntime", package: "smithy-swift"),
                 .product(name: "SmithyTimestamps", package: "smithy-swift"),
                 .product(name: "SmithyTestUtil", package: "smithy-swift"),
-                .product(name: "AWSJSONTestSDK", package: "AWSJSONTestSDK"),
+                testSDKProduct("AWSJSON"),
+                testSDKProduct("JSONName"),
+                testSDKProduct("NullTolerance"),
             ]
         ),
         .testTarget(
@@ -70,7 +63,7 @@ let package = Package(
             dependencies: [
                 .product(name: "Smithy", package: "smithy-swift"),
                 .product(name: "SmithyWaitersAPI", package: "smithy-swift"),
-                .product(name: "WaitersTestSDK", package: "WaitersTestSDK"),
+                testSDKProduct("Waiters"),
             ]
         ),
         .testTarget(
@@ -186,7 +179,7 @@ let package = Package(
                 .product(name: "SmithyHTTPAPI", package: "smithy-swift"),
                 .product(name: "Smithy", package: "smithy-swift"),
                 .product(name: "SmithyTimestamps", package: "smithy-swift"),
-                .product(name: "RestJSON1TestSDK", package: "RestJSON1TestSDK"),
+                testSDKProduct("RestJSON1"),
             ]
         ),
         .testTarget(
@@ -205,3 +198,14 @@ let package = Package(
         ),
     ]
 )
+
+private func testSDKPackage(_ name: String) -> Package.Dependency {
+    .package(
+        name: "\(name)TestSDK",
+        path: "build/smithyprojections/test-sdks/\(name)/swift-codegen/\(name)TestSDK"
+    )
+}
+
+private func testSDKProduct(_ name: String) -> Target.Dependency {
+    .product(name: "\(name)TestSDK", package: "\(name)TestSDK")
+}
