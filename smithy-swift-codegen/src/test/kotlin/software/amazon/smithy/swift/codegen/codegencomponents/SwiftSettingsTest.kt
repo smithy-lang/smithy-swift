@@ -197,6 +197,7 @@ class SwiftSettingsTest {
             emptyList(),
             modelPath = "/path/to/model.json",
             localDevelopment = false,
+            forceSchemaBased = false,
         )
 
     private fun createServiceWithProtocols(protocols: Set<ShapeId>): ServiceShape {
