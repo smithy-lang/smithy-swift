@@ -150,6 +150,13 @@ package struct DeserializeCodegen {
             writer.write(
                 "let value: Smithy.Document = try Smithy.Document(deserializer.readDocument(\(schemaVarName)))"
             )
+        case .integer:
+            let methodName = try target.deserializeMethodName
+            writer.write("let value: \(propertySwiftType) = try Int(deserializer.\(methodName)(\(schemaVarName)))")
+        case .long:
+            let methodName = try target.deserializeMethodName
+            writer.write("let value: \(propertySwiftType) = " +
+                         "try SmithySerialization.Numerics.int(deserializer.\(methodName)(\(schemaVarName)))")
         default:
             let methodName = try target.deserializeMethodName
             writer.write("let value: \(propertySwiftType) = try deserializer.\(methodName)(\(schemaVarName))")

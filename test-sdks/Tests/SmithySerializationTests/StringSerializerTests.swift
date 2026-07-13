@@ -31,7 +31,7 @@ final class StringSerializerTests: XCTestCase {
     }
 
     func test_writesASimpleInt() throws {
-        let int = 8675309
+        let int: Int32 = 8675309
         let schema = Smithy.Prelude.integerSchema
 
         let subject = StringSerializer()

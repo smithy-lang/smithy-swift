@@ -130,17 +130,17 @@ public final class Deserializer: ShapeDeserializer {
         return short
     }
 
-    public func readInteger(_ schema: Schema) throws -> Int {
+    public func readInteger(_ schema: Schema) throws -> Int32 {
         try nullCheck()
         guard case .number(let number) = value else { throw SerializerError("Expected number") }
-        guard let int = Int(exactly: number.intValue) else { throw SerializerError("Number is not Int") }
+        guard let int = Int32(exactly: number.intValue) else { throw SerializerError("Number is not Int32") }
         return int
     }
 
-    public func readLong(_ schema: Schema) throws -> Int {
+    public func readLong(_ schema: Schema) throws -> Int64 {
         try nullCheck()
         guard case .number(let number) = value else { throw SerializerError("Expected number") }
-        guard let int = Int(exactly: number.int64Value) else { throw SerializerError("Number is not Int") }
+        guard let int = Int64(exactly: number.int64Value) else { throw SerializerError("Number is not Int64") }
         return int
     }
 

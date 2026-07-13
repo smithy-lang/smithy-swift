@@ -13,7 +13,7 @@ import SmithyJSON
 import SmithyTimestamps
 import XCTest
 
-final class DeserializeTests: XCTestCase {
+final class DeserializerTests: XCTestCase {
 
     func test_httpDate_itDeserializesHTTPDate() throws {
         let httpDateTimestamp = "Thu, 09 Jul 2026 17:24:18.769 GMT"
@@ -38,7 +38,6 @@ final class DeserializeTests: XCTestCase {
     }
 
     func test_epochSeconds_itDeserializesEpochSeconds() throws {
-        print(Date().timeIntervalSince1970)
         let epochSecondsTimestamp = 1783618892.951
         let expected = TimestampFormatter(format: .epochSeconds).date(from: "\(epochSecondsTimestamp)")
         let data = Data("{\"epochSecondsTimestamp\":\(epochSecondsTimestamp)}".utf8)

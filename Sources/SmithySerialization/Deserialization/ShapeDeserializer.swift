@@ -21,8 +21,8 @@ public protocol ShapeDeserializer {
     func readBlob(_ schema: Schema) throws -> Data
     func readByte(_ schema: Schema) throws -> Int8
     func readShort(_ schema: Schema) throws -> Int16
-    func readInteger(_ schema: Schema) throws -> Int
-    func readLong(_ schema: Schema) throws -> Int
+    func readInteger(_ schema: Schema) throws -> Int32
+    func readLong(_ schema: Schema) throws -> Int64
     func readFloat(_ schema: Schema) throws -> Float
     func readDouble(_ schema: Schema) throws -> Double
     func readBigInteger(_ schema: Schema) throws -> Int64
@@ -49,7 +49,7 @@ public extension ShapeDeserializer {
 
     func readIntEnum<T: RawRepresentable>(_ schema: Schema) throws -> T where T.RawValue == Int {
         // Force-unwrap is safe here because generated enums & intEnums never return nil from init(rawValue:)
-        try T(rawValue: readInteger(schema))!
+        try T(rawValue: Int(readInteger(schema)))!
     }
 
     func readSparseList<E>(_ schema: Schema, _ consumer: ReadValueConsumer<E>) throws -> [E?] {
