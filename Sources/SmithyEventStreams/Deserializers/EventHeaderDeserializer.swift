@@ -99,37 +99,34 @@ struct EventHeaderDeserializer: ShapeDeserializer {
         }
     }
 
-    func readInteger(_ schema: Schema) throws -> Int {
+    func readInteger(_ schema: Schema) throws -> Int32 {
         switch header.value {
         case .byte(let byte):
-            return Int(byte)
+            return Int32(byte)
         case .int16(let int16):
-            return Int(int16)
+            return Int32(int16)
         case .int32(let value):
-            return Int(value)
+            return Int32(value)
         case .int64(let int64):
-            guard int64 <= Int.max && int64 >= Int.min else {
-                throw SerializerError("Int64 overflows Int.  Value: \(int64)")
+            guard let int32 = Int32(exactly: int64) else {
+                throw SerializerError("Int64 overflows Int32.  Value: \(int64)")
             }
-            return Int(int64)
+            return int32
         default:
             throw SerializerError("Cannot convert headerValue \(header.value.type) to integer")
         }
     }
 
-    func readLong(_ schema: Schema) throws -> Int {
+    func readLong(_ schema: Schema) throws -> Int64 {
         switch header.value {
         case .byte(let byte):
-            return Int(byte)
+            return Int64(byte)
         case .int16(let int16):
-            return Int(int16)
+            return Int64(int16)
         case .int32(let value):
-            return Int(value)
+            return Int64(value)
         case .int64(let int64):
-            guard int64 <= Int.max && int64 >= Int.min else {
-                throw SerializerError("Int64 overflows Int.  Value: \(int64)")
-            }
-            return Int(int64)
+            return int64
         default:
             throw SerializerError("Cannot convert headerValue \(header.value.type) to long")
         }

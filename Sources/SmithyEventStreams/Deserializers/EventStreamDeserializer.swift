@@ -98,11 +98,11 @@ public struct EventStreamDeserializer: ShapeDeserializer {
         throw notImplemented
     }
 
-    public func readInteger(_ schema: Schema) throws -> Int {
+    public func readInteger(_ schema: Schema) throws -> Int32 {
         throw notImplemented
     }
 
-    public func readLong(_ schema: Schema) throws -> Int {
+    public func readLong(_ schema: Schema) throws -> Int64 {
         throw notImplemented
     }
 

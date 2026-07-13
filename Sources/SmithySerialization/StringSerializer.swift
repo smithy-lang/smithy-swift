@@ -81,12 +81,12 @@ public class StringSerializer: ShapeSerializer {
         string += "\(value)"
     }
 
-    public func writeInteger(_ schema: Schema, _ value: Int) throws {
+    public func writeInteger(_ schema: Schema, _ value: Int32) throws {
         guard !isSensitive(schema) else { return }
         string += "\(value)"
     }
 
-    public func writeLong(_ schema: Schema, _ value: Int) throws {
+    public func writeLong(_ schema: Schema, _ value: Int64) throws {
         guard !isSensitive(schema) else { return }
         string += "\(value)"
     }
