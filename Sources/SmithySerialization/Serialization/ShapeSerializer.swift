@@ -22,8 +22,8 @@ public protocol ShapeSerializer {
     func writeBoolean(_ schema: Schema, _ value: Bool) throws
     func writeByte(_ schema: Schema, _ value: Int8) throws
     func writeShort(_ schema: Schema, _ value: Int16) throws
-    func writeInteger(_ schema: Schema, _ value: Int) throws
-    func writeLong(_ schema: Schema, _ value: Int) throws
+    func writeInteger(_ schema: Schema, _ value: Int32) throws
+    func writeLong(_ schema: Schema, _ value: Int64) throws
     func writeFloat(_ schema: Schema, _ value: Float) throws
     func writeDouble(_ schema: Schema, _ value: Double) throws
     func writeBigInteger(_ schema: Schema, _ value: Int64) throws
@@ -58,7 +58,7 @@ public extension ShapeSerializer {
     ///   - schema: The schema for the Smithy IntEnum.
     ///   - value: The enum value to be written.
     func writeIntEnum<T: RawRepresentable>(_ schema: Schema, _ value: T) throws where T.RawValue == Int {
-        try writeInteger(schema, value.rawValue)
+        try writeInteger(schema, Numerics.int32(value.rawValue))
     }
 
     /// Write a sparse list.
@@ -116,9 +116,9 @@ public extension ShapeSerializer {
         case .short:
             try writeShort(schema, value.asShort())
         case .integer:
-            try writeInteger(schema, value.asInteger())
+            try writeInteger(schema, Numerics.int32(value.asInteger()))
         case .long:
-            try writeLong(schema, Int(value.asLong()))
+            try writeLong(schema, Int64(value.asLong()))
         case .float:
             try writeFloat(schema, value.asFloat())
         case .double:

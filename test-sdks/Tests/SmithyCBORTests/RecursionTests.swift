@@ -9,7 +9,7 @@ import XCTest
 @_spi(SchemaBasedSerde) import Smithy
 @_spi(SchemaBasedSerde) import SmithyCBOR
 import AwsCommonRuntimeKit
-@_spi(SchemaBasedSerde) import RPCv2CBORTestSDK
+@_spi(SchemaBasedSerde) import MaxRecursionTestSDK
 
 final class RecursionTests: XCTestCase {
 

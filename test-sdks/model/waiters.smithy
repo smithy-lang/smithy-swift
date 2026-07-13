@@ -1,8 +1,7 @@
 $version: "2.0"
 
-namespace aws.protocoltests.waiters
+namespace smithy.swift.tests.Waiters
 
-use aws.api#service
 use aws.protocols#restJson1
 use smithy.waiters#waitable
 
@@ -10,7 +9,6 @@ use smithy.waiters#waitable
 // The acceptor in each waiter serves as subject for unit testing,
 // to ensure that the logic in code-generated acceptors works as
 // expected.
-@service(sdkId: "Waiters")
 @restJson1
 service Waiters {
     version: "2022-11-30"

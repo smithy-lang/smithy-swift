@@ -1,15 +1,14 @@
 $version: "2.0"
 
-namespace smithy.swift.tests
+namespace smithy.swift.tests.StringSerializer
 
 use smithy.protocols#rpcv2Cbor
 
 @rpcv2Cbor
-service RPCv2CBORService {
+service StringSerializer {
     version: "2022-11-30"
     operations: [
         GetWidget
-        Recursive
     ]
 }
 
@@ -56,24 +55,4 @@ list PrivateList {
 map PrivateMap {
     key: String
     value: PrivateString
-}
-
-operation Recursive {
-    input: RecursiveInputOutput
-    output: RecursiveInputOutput
-}
-
-structure RecursiveInputOutput {
-    nested: RecursiveInputOutput
-    nestedList: NestedList
-    nestedMap: NestedMap
-}
-
-list NestedList {
-    member: RecursiveInputOutput
-}
-
-map NestedMap {
-    key: String
-    value: RecursiveInputOutput
 }

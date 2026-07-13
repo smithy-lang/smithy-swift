@@ -24,7 +24,7 @@ final class HTTPQuerySerializerTests: XCTestCase {
     // MARK: - boolean HTTP query
 
     func test_boolean_serializesBooleanAsTrueOrFalse() throws {
-        let operation = HTTPQueryTestSDK.HTTPQueryServiceClient.booleanHTTPQueryOperation
+        let operation = HTTPQueryTestSDK.HTTPQueryClient.booleanHTTPQueryOperation
         let subject = HTTPQuerySerializer()
 
         let input = BooleanHTTPQueryInput(flag: true)
@@ -34,7 +34,7 @@ final class HTTPQuerySerializerTests: XCTestCase {
     }
 
     func test_boolean_serializesFalse() throws {
-        let operation = HTTPQueryTestSDK.HTTPQueryServiceClient.booleanHTTPQueryOperation
+        let operation = HTTPQueryTestSDK.HTTPQueryClient.booleanHTTPQueryOperation
         let subject = HTTPQuerySerializer()
 
         let input = BooleanHTTPQueryInput(flag: false)
@@ -46,7 +46,7 @@ final class HTTPQuerySerializerTests: XCTestCase {
     // MARK: - numeric HTTP query
 
     func test_byte_serializesByteIntoQuery() throws {
-        let operation = HTTPQueryTestSDK.HTTPQueryServiceClient.byteHTTPQueryOperation
+        let operation = HTTPQueryTestSDK.HTTPQueryClient.byteHTTPQueryOperation
         let subject = HTTPQuerySerializer()
 
         let input = ByteHTTPQueryInput(value: -42)
@@ -56,7 +56,7 @@ final class HTTPQuerySerializerTests: XCTestCase {
     }
 
     func test_short_serializesShortIntoQuery() throws {
-        let operation = HTTPQueryTestSDK.HTTPQueryServiceClient.shortHTTPQueryOperation
+        let operation = HTTPQueryTestSDK.HTTPQueryClient.shortHTTPQueryOperation
         let subject = HTTPQuerySerializer()
 
         let input = ShortHTTPQueryInput(value: 1234)
@@ -66,7 +66,7 @@ final class HTTPQuerySerializerTests: XCTestCase {
     }
 
     func test_integer_serializesIntegerIntoQuery() throws {
-        let operation = HTTPQueryTestSDK.HTTPQueryServiceClient.integerHTTPQueryOperation
+        let operation = HTTPQueryTestSDK.HTTPQueryClient.integerHTTPQueryOperation
         let subject = HTTPQuerySerializer()
 
         let input = IntegerHTTPQueryInput(value: 8675309)
@@ -76,7 +76,7 @@ final class HTTPQuerySerializerTests: XCTestCase {
     }
 
     func test_long_serializesLongIntoQuery() throws {
-        let operation = HTTPQueryTestSDK.HTTPQueryServiceClient.longHTTPQueryOperation
+        let operation = HTTPQueryTestSDK.HTTPQueryClient.longHTTPQueryOperation
         let subject = HTTPQuerySerializer()
 
         let input = LongHTTPQueryInput(value: 9876543210)
@@ -86,7 +86,7 @@ final class HTTPQuerySerializerTests: XCTestCase {
     }
 
     func test_float_serializesFloatIntoQuery() throws {
-        let operation = HTTPQueryTestSDK.HTTPQueryServiceClient.floatHTTPQueryOperation
+        let operation = HTTPQueryTestSDK.HTTPQueryClient.floatHTTPQueryOperation
         let subject = HTTPQuerySerializer()
 
         let input = FloatHTTPQueryInput(value: 3.5)
@@ -96,7 +96,7 @@ final class HTTPQuerySerializerTests: XCTestCase {
     }
 
     func test_float_serializesNonFiniteFloatUsingSmithyTokens() throws {
-        let operation = HTTPQueryTestSDK.HTTPQueryServiceClient.floatHTTPQueryOperation
+        let operation = HTTPQueryTestSDK.HTTPQueryClient.floatHTTPQueryOperation
 
         for (value, expected) in [(Float.nan, "NaN"), (.infinity, "Infinity"), (-.infinity, "-Infinity")] {
             let subject = HTTPQuerySerializer()
@@ -107,7 +107,7 @@ final class HTTPQuerySerializerTests: XCTestCase {
     }
 
     func test_double_serializesDoubleIntoQuery() throws {
-        let operation = HTTPQueryTestSDK.HTTPQueryServiceClient.doubleHTTPQueryOperation
+        let operation = HTTPQueryTestSDK.HTTPQueryClient.doubleHTTPQueryOperation
         let subject = HTTPQuerySerializer()
 
         let input = DoubleHTTPQueryInput(value: 2.25)
@@ -117,7 +117,7 @@ final class HTTPQuerySerializerTests: XCTestCase {
     }
 
     func test_double_serializesNonFiniteDoubleUsingSmithyTokens() throws {
-        let operation = HTTPQueryTestSDK.HTTPQueryServiceClient.doubleHTTPQueryOperation
+        let operation = HTTPQueryTestSDK.HTTPQueryClient.doubleHTTPQueryOperation
 
         for (value, expected) in [(Double.nan, "NaN"), (.infinity, "Infinity"), (-.infinity, "-Infinity")] {
             let subject = HTTPQuerySerializer()
@@ -130,7 +130,7 @@ final class HTTPQuerySerializerTests: XCTestCase {
     // MARK: - string HTTP query
 
     func test_string_serializesStringIntoQuery() throws {
-        let operation = HTTPQueryTestSDK.HTTPQueryServiceClient.stringHTTPQueryOperation
+        let operation = HTTPQueryTestSDK.HTTPQueryClient.stringHTTPQueryOperation
         let subject = HTTPQuerySerializer()
 
         let input = StringHTTPQueryInput(value: "abcdef")
@@ -140,7 +140,7 @@ final class HTTPQuerySerializerTests: XCTestCase {
     }
 
     func test_string_percentEncodesSpecialCharactersInValueIncludingSlash() throws {
-        let operation = HTTPQueryTestSDK.HTTPQueryServiceClient.stringHTTPQueryOperation
+        let operation = HTTPQueryTestSDK.HTTPQueryClient.stringHTTPQueryOperation
         let subject = HTTPQuerySerializer()
 
         // Only RFC 3986 unreserved characters are left unescaped in query values.
@@ -151,7 +151,7 @@ final class HTTPQuerySerializerTests: XCTestCase {
     }
 
     func test_string_percentEncodesQueryParameterName() throws {
-        let operation = HTTPQueryTestSDK.HTTPQueryServiceClient.encodedNameHTTPQueryOperation
+        let operation = HTTPQueryTestSDK.HTTPQueryClient.encodedNameHTTPQueryOperation
         let subject = HTTPQuerySerializer()
 
         let input = EncodedNameHTTPQueryInput(value: "value")
@@ -163,7 +163,7 @@ final class HTTPQuerySerializerTests: XCTestCase {
     // MARK: - timestamp HTTP query
 
     func test_timestamp_serializesTimestampAsDateTimeByDefault() throws {
-        let operation = HTTPQueryTestSDK.HTTPQueryServiceClient.timestampHTTPQueryOperation
+        let operation = HTTPQueryTestSDK.HTTPQueryClient.timestampHTTPQueryOperation
         let dateTimeString = "2026-07-09T21:43:14.762Z"
         let moment = TimestampFormatter(format: .dateTime).date(from: dateTimeString)
         let subject = HTTPQuerySerializer()
@@ -175,7 +175,7 @@ final class HTTPQuerySerializerTests: XCTestCase {
     }
 
     func test_timestamp_serializesTimestampUsingTimestampFormatTrait() throws {
-        let operation = HTTPQueryTestSDK.HTTPQueryServiceClient.formattedTimestampHTTPQueryOperation
+        let operation = HTTPQueryTestSDK.HTTPQueryClient.formattedTimestampHTTPQueryOperation
         let dateTimeString = "2026-07-09T21:43:14.762Z"
         let moment = TimestampFormatter(format: .dateTime).date(from: dateTimeString)
         let subject = HTTPQuerySerializer()
@@ -192,7 +192,7 @@ final class HTTPQuerySerializerTests: XCTestCase {
     // MARK: - list HTTP query
 
     func test_list_serializesEachElementAsRepeatedQueryItem() throws {
-        let operation = HTTPQueryTestSDK.HTTPQueryServiceClient.stringListHTTPQueryOperation
+        let operation = HTTPQueryTestSDK.HTTPQueryClient.stringListHTTPQueryOperation
         let subject = HTTPQuerySerializer()
 
         // Per the spec, a list member serializes to multiple query items sharing the same name,
@@ -207,7 +207,7 @@ final class HTTPQuerySerializerTests: XCTestCase {
     }
 
     func test_list_percentEncodesEachElement() throws {
-        let operation = HTTPQueryTestSDK.HTTPQueryServiceClient.stringListHTTPQueryOperation
+        let operation = HTTPQueryTestSDK.HTTPQueryClient.stringListHTTPQueryOperation
         let subject = HTTPQuerySerializer()
 
         let input = StringListHTTPQueryInput(words: ["a/b", "c d"])
@@ -220,7 +220,7 @@ final class HTTPQuerySerializerTests: XCTestCase {
     }
 
     func test_list_emptyListProducesNoQueryItems() throws {
-        let operation = HTTPQueryTestSDK.HTTPQueryServiceClient.stringListHTTPQueryOperation
+        let operation = HTTPQueryTestSDK.HTTPQueryClient.stringListHTTPQueryOperation
         let subject = HTTPQuerySerializer()
 
         let input = StringListHTTPQueryInput(words: [])
@@ -232,7 +232,7 @@ final class HTTPQuerySerializerTests: XCTestCase {
     // MARK: - sparse list HTTP query
 
     func test_sparseList_serializesNilElementsAsTheNullLiteral() throws {
-        let operation = HTTPQueryTestSDK.HTTPQueryServiceClient.sparseStringListHTTPQueryOperation
+        let operation = HTTPQueryTestSDK.HTTPQueryClient.sparseStringListHTTPQueryOperation
         let subject = HTTPQuerySerializer()
 
         // A sparse list may contain nil elements; each is serialized as the literal string "null",
@@ -250,7 +250,7 @@ final class HTTPQuerySerializerTests: XCTestCase {
     // MARK: - multiple & omitted members
 
     func test_multipleMembers_eachProduceItsOwnQueryItem() throws {
-        let operation = HTTPQueryTestSDK.HTTPQueryServiceClient.multipleHTTPQueryOperation
+        let operation = HTTPQueryTestSDK.HTTPQueryClient.multipleHTTPQueryOperation
         let subject = HTTPQuerySerializer()
 
         let input = MultipleHTTPQueryInput(count: 5, key: "abc")
@@ -263,7 +263,7 @@ final class HTTPQuerySerializerTests: XCTestCase {
     }
 
     func test_omittedOptionalMemberProducesNoQueryItem() throws {
-        let operation = HTTPQueryTestSDK.HTTPQueryServiceClient.multipleHTTPQueryOperation
+        let operation = HTTPQueryTestSDK.HTTPQueryClient.multipleHTTPQueryOperation
         let subject = HTTPQuerySerializer()
 
         let input = MultipleHTTPQueryInput(count: nil, key: "abc")
@@ -273,7 +273,7 @@ final class HTTPQuerySerializerTests: XCTestCase {
     }
 
     func test_allMembersOmittedProducesNoQueryItems() throws {
-        let operation = HTTPQueryTestSDK.HTTPQueryServiceClient.multipleHTTPQueryOperation
+        let operation = HTTPQueryTestSDK.HTTPQueryClient.multipleHTTPQueryOperation
         let subject = HTTPQuerySerializer()
 
         let input = MultipleHTTPQueryInput()

@@ -149,12 +149,12 @@ public final class Serializer: ShapeSerializer {
         _data.append(contentsOf: "\(value)".utf8)
     }
 
-    public func writeInteger(_ schema: Schema, _ value: Int) throws {
+    public func writeInteger(_ schema: Schema, _ value: Int32) throws {
         try writeCommaAndStructureKeyIfNeeded(schema)
         _data.append(contentsOf: "\(value)".utf8)
     }
 
-    public func writeLong(_ schema: Schema, _ value: Int) throws {
+    public func writeLong(_ schema: Schema, _ value: Int64) throws {
         try writeCommaAndStructureKeyIfNeeded(schema)
         _data.append(contentsOf: "\(value)".utf8)
     }

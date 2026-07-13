@@ -1,11 +1,11 @@
 $version: "2.0"
 
-namespace smithy.swift.httpQueryTests
+namespace smithy.swift.tests.HTTPQuery
 
 use aws.protocols#restJson1
 
 @restJson1
-service HTTPQueryService {
+service HTTPQuery {
     version: "2024-11-14"
     operations: [
         BooleanHTTPQuery

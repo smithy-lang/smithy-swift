@@ -76,12 +76,12 @@ public final class HTTPQuerySerializer: ShapeSerializer {
         addToQueryString(name: name, value: "\(value)")
     }
 
-    public func writeInteger(_ schema: Schema, _ value: Int) throws {
+    public func writeInteger(_ schema: Schema, _ value: Int32) throws {
         guard let name = queryName(for: schema) else { return }
         addToQueryString(name: name, value: "\(value)")
     }
 
-    public func writeLong(_ schema: Schema, _ value: Int) throws {
+    public func writeLong(_ schema: Schema, _ value: Int64) throws {
         guard let name = queryName(for: schema) else { return }
         addToQueryString(name: name, value: "\(value)")
     }

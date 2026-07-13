@@ -97,11 +97,11 @@ struct EventUnionDeserializer: ShapeDeserializer {
         throw notImplemented
     }
 
-    func readInteger(_ schema: Schema) throws -> Int {
+    func readInteger(_ schema: Schema) throws -> Int32 {
         throw notImplemented
     }
 
-    func readLong(_ schema: Schema) throws -> Int {
+    func readLong(_ schema: Schema) throws -> Int64 {
         throw notImplemented
     }
 
