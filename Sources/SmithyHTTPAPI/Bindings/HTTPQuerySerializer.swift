@@ -49,8 +49,8 @@ public final class HTTPQuerySerializer: ShapeSerializer {
         // The element schema does not carry the httpQuery trait, so the list's name is held
         // here for the scalar writers to use while the elements are being serialized.
         self.listName = URLEncodingUtils.urlPercentEncodedForQuery(name)
+        defer { self.listName = nil }
         try value.forEach { try consumer($0, self) }
-        self.listName = nil
     }
 
     public func writeMap<V>(

@@ -229,6 +229,22 @@ final class HTTPQuerySerializerTests: XCTestCase {
         XCTAssertEqual(subject.queryItems, [])
     }
 
+    func test_list_serializesEachNumericElementAsRepeatedQueryItem() throws {
+        let operation = HTTPQueryTestSDK.HTTPQueryClient.integerListHTTPQueryOperation
+        let subject = HTTPQuerySerializer()
+
+        // Lists of scalars other than string reach the scalar writers through the shared list
+        // name; each element is rendered with its scalar formatting under the repeated name.
+        let input = IntegerListHTTPQueryInput(numbers: [1, -2, 3])
+        try input.serializeMembers(operation.inputSchema, subject)
+
+        XCTAssertEqual(subject.queryItems, [
+            URIQueryItem(name: "Number", value: "1"),
+            URIQueryItem(name: "Number", value: "-2"),
+            URIQueryItem(name: "Number", value: "3"),
+        ])
+    }
+
     // MARK: - sparse list HTTP query
 
     func test_sparseList_serializesNilElementsAsTheNullLiteral() throws {

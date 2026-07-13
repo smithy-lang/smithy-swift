@@ -19,6 +19,7 @@ service HTTPQuery {
         TimestampHTTPQuery
         FormattedTimestampHTTPQuery
         StringListHTTPQuery
+        IntegerListHTTPQuery
         SparseStringListHTTPQuery
         EncodedNameHTTPQuery
         MultipleHTTPQuery
@@ -159,6 +160,21 @@ structure StringListHTTPQueryInput {
 
 list StringList {
     member: String
+}
+
+@http(method: "GET", uri: "/IntegerListHTTPQuery")
+operation IntegerListHTTPQuery {
+    input: IntegerListHTTPQueryInput
+}
+
+@input
+structure IntegerListHTTPQueryInput {
+    @httpQuery("Number")
+    numbers: IntegerList
+}
+
+list IntegerList {
+    member: Integer
 }
 
 @http(method: "GET", uri: "/SparseStringListHTTPQuery")
