@@ -78,7 +78,7 @@ jobs:
           cd test-sdks && \
           set -o pipefail && \
           NSUnbufferedIO=YES xcodebuild \
-            -scheme SmithySwiftTests-Package \
+            -scheme SmithySwiftCodegenTests-Package \
             -destination '${{ matrix.destination }}' \
             test 2>&1 \
             | xcbeautify

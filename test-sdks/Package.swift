@@ -3,7 +3,7 @@
 import PackageDescription
 
 let package = Package(
-    name: "SmithySwiftTests",
+    name: "SmithySwiftCodegenTests",
     platforms: [
         .macOS(.v12),
         .iOS(.v13),
