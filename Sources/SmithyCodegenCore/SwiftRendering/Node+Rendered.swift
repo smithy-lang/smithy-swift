@@ -16,7 +16,7 @@ extension Node {
         switch self {
         case .object(let object):
             guard !object.isEmpty else { return "[:]" }
-            return "[" + object.map { "\($0.key.literal): \($0.value.rendered)" }.joined(separator: ",") + "]"
+            return "[" + object.sorted { $0.key < $1.key }.map { "\($0.key.literal): \($0.value.rendered)" }.joined(separator: ",") + "]"
         case .list(let list):
             return "[" + list.map { $0.rendered }.joined(separator: ", ") + "]"
         case .string(let string):
