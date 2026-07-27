@@ -6,6 +6,7 @@
 //
 
 import struct Foundation.Data
+import class Foundation.FileManager
 import class Foundation.JSONDecoder
 import struct Foundation.URL
 @_spi(SchemaBasedSerde)
@@ -61,31 +62,41 @@ public struct CodeGenerator {
         // If a schemas file URL was provided, generate it
         if let schemasFileURL {
             let schemasContents = try SchemasCodegen().generate(ctx: ctx)
-            try Data(schemasContents.utf8).write(to: schemasFileURL)
+            try Data(schemasContents.utf8).writeIfChanged(to: schemasFileURL)
         }
 
         // If a Serialize file URL was provided, generate it
         if let serializeFileURL {
             let serializeContents = try SerializeCodegen().generate(ctx: ctx)
-            try Data(serializeContents.utf8).write(to: serializeFileURL)
+            try Data(serializeContents.utf8).writeIfChanged(to: serializeFileURL)
         }
 
         // If a Deserialize file URL was provided, generate it
         if let deserializeFileURL {
             let deserializeContents = try DeserializeCodegen().generate(ctx: ctx)
-            try Data(deserializeContents.utf8).write(to: deserializeFileURL)
+            try Data(deserializeContents.utf8).writeIfChanged(to: deserializeFileURL)
         }
 
         // If a TypeRegistry file URL was provided, generate it
         if let typeRegistryFileURL {
             let typeRegistryContents = try TypeRegistryCodegen().generate(ctx: ctx)
-            try Data(typeRegistryContents.utf8).write(to: typeRegistryFileURL)
+            try Data(typeRegistryContents.utf8).writeIfChanged(to: typeRegistryFileURL)
         }
 
         // If an Operations file URL was provided, generate it
         if let operationsFileURL {
             let operationsContents = try OperationsCodegen().generate(ctx: ctx)
-            try Data(operationsContents.utf8).write(to: operationsFileURL)
+            try Data(operationsContents.utf8).writeIfChanged(to: operationsFileURL)
         }
+    }
+}
+
+private extension Data {
+    func writeIfChanged(to url: URL) throws {
+        if FileManager.default.fileExists(atPath: url.path) {
+            let existingData = try Data(contentsOf: url)
+            guard existingData != self else { return }
+        }
+        try write(to: url)
     }
 }
