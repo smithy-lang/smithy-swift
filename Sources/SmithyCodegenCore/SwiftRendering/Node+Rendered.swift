@@ -16,7 +16,9 @@ extension Node {
         switch self {
         case .object(let object):
             guard !object.isEmpty else { return "[:]" }
-            return "[" + object.map { "\($0.key.literal): \($0.value.rendered)" }.joined(separator: ",") + "]"
+            // Sort key-value pairs so object is rendered deterministically
+            let sortedPairs = object.sorted { $0.key < $1.key }
+            return "[" + sortedPairs.map { "\($0.key.literal): \($0.value.rendered)" }.joined(separator: ", ") + "]"
         case .list(let list):
             return "[" + list.map { $0.rendered }.joined(separator: ", ") + "]"
         case .string(let string):

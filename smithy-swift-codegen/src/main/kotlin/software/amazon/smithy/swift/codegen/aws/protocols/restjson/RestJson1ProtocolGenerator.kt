@@ -7,11 +7,13 @@ package software.amazon.smithy.swift.codegen.aws.protocols.restjson
 import software.amazon.smithy.aws.traits.protocols.RestJson1Trait
 import software.amazon.smithy.codegen.core.Symbol
 import software.amazon.smithy.model.shapes.MemberShape
+import software.amazon.smithy.model.shapes.OperationShape
 import software.amazon.smithy.model.shapes.Shape
 import software.amazon.smithy.model.shapes.ShapeId
 import software.amazon.smithy.swift.codegen.integration.DefaultHTTPProtocolCustomizations
 import software.amazon.smithy.swift.codegen.integration.ProtocolGenerator
 import software.amazon.smithy.swift.codegen.integration.isInHttpBody
+import software.amazon.smithy.swift.codegen.integration.serde.SerdeUtils
 import software.amazon.smithy.swift.codegen.middleware.MiddlewareRenderable
 import software.amazon.smithy.swift.codegen.protocols.core.SmithyHTTPBindingProtocolGenerator
 
@@ -46,4 +48,21 @@ open class RestJson1ProtocolGenerator(
             .members()
             .filter { it.isInHttpBody() }
             .toList()
+
+    override fun addProtocolSpecificMiddleware(
+        ctx: ProtocolGenerator.GenerationContext,
+        operation: OperationShape,
+    ) {
+        super.addProtocolSpecificMiddleware(ctx, operation)
+
+        if (!SerdeUtils.useSchemaBased(ctx)) return
+        // Remove these middlewares, they are handled by applying the ClientProtocol & Operation
+        // to the orchestrator
+        operationMiddleware.removeMiddleware(operation, "OperationInputBodyMiddleware")
+        operationMiddleware.removeMiddleware(operation, "DeserializeMiddleware")
+
+        // Remove this middleware as it will be handled by HTTP binding serializers
+        operationMiddleware.removeMiddleware(operation, "OperationInputUrlPathMiddleware")
+        operationMiddleware.removeMiddleware(operation, "OperationInputQueryItemMiddleware")
+    }
 }
