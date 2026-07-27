@@ -85,7 +85,7 @@ var crtDependency: Package.Dependency {
     return if useCRTFromMain {
         .package(url: "https://github.com/awslabs/aws-crt-swift", branch: "main")
     } else {
-        .package(url: "https://github.com/awslabs/aws-crt-swift", from: "0.63.0")
+        .package(url: "https://github.com/awslabs/aws-crt-swift", from: "0.64.0")
     }
 }
 
