@@ -31,6 +31,7 @@ let package = Package(
     products: [
         .library(name: "Smithy", targets: ["Smithy"]),
         .library(name: "SmithySerialization", targets: ["SmithySerialization"]),
+        .library(name: "SmithyRestJSON1", targets: ["SmithyRestJSON1"]),
         .library(name: "SmithyAWSJSON", targets: ["SmithyAWSJSON"]),
         .library(name: "SmithyRPCv2CBOR", targets: ["SmithyRPCv2CBOR"]),
         .library(name: "ClientRuntime", targets: ["ClientRuntime"]),
@@ -211,7 +212,11 @@ var runtimeTargets: [PackageDescription.Target] {
         ),
         .target(
             name: "SmithyHTTPAPI",
-            dependencies: ["Smithy"]
+            dependencies: [
+                "Smithy",
+                "SmithySerialization",
+                "SmithyTimestamps",
+            ]
         ),
         .target(
             name: "SmithyHTTPClient",
@@ -308,12 +313,22 @@ var runtimeTargets: [PackageDescription.Target] {
             resources: [ .process("Resources") ]
         ),
         .target(
+            name: "SmithyRestJSON1",
+            dependencies: [
+                "Smithy",
+                "SmithySerialization",
+                "SmithyJSON",
+                "SmithyHTTPAPI",
+            ]
+        ),
+        .target(
             name: "SmithyAWSJSON",
             dependencies: [
                 "ClientRuntime",
                 "Smithy",
                 "SmithySerialization",
                 "SmithyJSON",
+                "SmithyHTTPAPI",
                 "SmithyEventStreams",
             ]
         ),
@@ -324,6 +339,7 @@ var runtimeTargets: [PackageDescription.Target] {
                 "Smithy",
                 "SmithySerialization",
                 "SmithyCBOR",
+                "SmithyHTTPAPI",
             ]
         ),
     ].compactMap { $0 }
