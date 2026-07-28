@@ -92,11 +92,26 @@ public struct CodeGenerator {
 }
 
 private extension Data {
+
+    // Read the existing code-generated source file, and rewrite the file only if
+    // the new contents are different from the existing contents.
+    //
+    // This mitigates the Xcode-specific bug described in https://github.com/swiftlang/swift-build/issues/305
+    // which causes generated code to regenerate and recompile to happen on every incremental build,
+    // even when there was no change to build inputs.
+    //
+    // Using a hash (i.e. SHA-256) to reduce memory usage during file contents comparison was considered
+    // but rejected because it would require adding swift-crypto as a dependency to the code generator.
+    //
+    // On Linux, where this bug does not exist because the Xcode build system is not used,
+    // the check is skipped and the file contents are always rewritten.
     func writeIfChanged(to url: URL) throws {
+        #if !os(Linux)
         if FileManager.default.fileExists(atPath: url.path) {
             let existingData = try Data(contentsOf: url)
             guard existingData != self else { return }
         }
+        #endif
         try write(to: url)
     }
 }
