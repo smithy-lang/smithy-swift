@@ -23,6 +23,7 @@ let package = Package(
         testSDKPackage("AWSJSON"),
         testSDKPackage("HTTPLabel"),
         testSDKPackage("HTTPQuery"),
+        testSDKPackage("HTTPQueryParams"),
         testSDKPackage("JSONName"),
         testSDKPackage("MaxRecursion"),
         testSDKPackage("NullTolerance"),
@@ -182,6 +183,7 @@ let package = Package(
                 .product(name: "SmithyTimestamps", package: "smithy-swift"),
                 testSDKProduct("HTTPLabel"),
                 testSDKProduct("HTTPQuery"),
+                testSDKProduct("HTTPQueryParams"),
             ]
         ),
         .testTarget(
