@@ -44,9 +44,6 @@ struct SmithyCodegenCLI: AsyncParsableCommand {
     var operationsPath: String?
 
     func run() async throws {
-
-        let start = Date()
-
         let currentWorkingDirectoryFileURL = currentWorkingDirectoryFileURL()
 
         let operations = (operations ?? "").split(separator: ",").map(String.init)
@@ -88,14 +85,6 @@ struct SmithyCodegenCLI: AsyncParsableCommand {
             typeRegistryFileURL: typeRegistryFileURL,
             operationsFileURL: operationsFileURL
         ).run()
-
-        let duration = Date().timeIntervalSince(start)
-        let secondsDuration = String(
-            format: "%0.2f",
-            locale: Locale(identifier: "en_US_POSIX"),
-            arguments: [duration]
-        )
-        print("Completed generating model \(modelFileURL.lastPathComponent) in \(secondsDuration) sec")
     }
 
     private func currentWorkingDirectoryFileURL() -> URL {
