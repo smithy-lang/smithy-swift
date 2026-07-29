@@ -65,53 +65,43 @@ public final class HTTPHeaderSerializer: ShapeSerializer {
     }
 
     public func writeBoolean(_ schema: Schema, _ value: Bool) throws {
-        guard let name = headerName(for: schema) else { return }
-        addToHeaders(name: name, value: "\(value)")
+        addToHeaders(schema: schema, value: "\(value)")
     }
 
     public func writeByte(_ schema: Schema, _ value: Int8) throws {
-        guard let name = headerName(for: schema) else { return }
-        addToHeaders(name: name, value: "\(value)")
+        addToHeaders(schema: schema, value: "\(value)")
     }
 
     public func writeShort(_ schema: Schema, _ value: Int16) throws {
-        guard let name = headerName(for: schema) else { return }
-        addToHeaders(name: name, value: "\(value)")
+        addToHeaders(schema: schema, value: "\(value)")
     }
 
     public func writeInteger(_ schema: Schema, _ value: Int32) throws {
-        guard let name = headerName(for: schema) else { return }
-        addToHeaders(name: name, value: "\(value)")
+        addToHeaders(schema: schema, value: "\(value)")
     }
 
     public func writeLong(_ schema: Schema, _ value: Int64) throws {
-        guard let name = headerName(for: schema) else { return }
-        addToHeaders(name: name, value: "\(value)")
+        addToHeaders(schema: schema, value: "\(value)")
     }
 
     public func writeFloat(_ schema: Schema, _ value: Float) throws {
-        guard let name = headerName(for: schema) else { return }
-        addToHeaders(name: name, value: encoded(value))
+        addToHeaders(schema: schema, value: encoded(value))
     }
 
     public func writeDouble(_ schema: Schema, _ value: Double) throws {
-        guard let name = headerName(for: schema) else { return }
-        addToHeaders(name: name, value: encoded(value))
+        addToHeaders(schema: schema, value: encoded(value))
     }
 
     public func writeBigInteger(_ schema: Schema, _ value: Int64) throws {
-        guard let name = headerName(for: schema) else { return }
-        addToHeaders(name: name, value: "\(value)")
+        addToHeaders(schema: schema, value: "\(value)")
     }
 
     public func writeBigDecimal(_ schema: Schema, _ value: Double) throws {
-        guard let name = headerName(for: schema) else { return }
-        addToHeaders(name: name, value: encoded(value))
+        addToHeaders(schema: schema, value: encoded(value))
     }
 
     public func writeString(_ schema: Schema, _ value: String) throws {
-        guard let name = headerName(for: schema) else { return }
-        addToHeaders(name: name, value: value)
+        addToHeaders(schema: schema, value: value)
     }
 
     public func writeBlob(_ schema: Schema, _ value: Data) throws {
@@ -137,19 +127,11 @@ public final class HTTPHeaderSerializer: ShapeSerializer {
 
     // MARK: - Private methods
 
-    /// Returns the header name for the value described by the passed schema, or `nil` if the value
-    /// should not be bound to a header.
-    ///
-    /// While a list is being serialized, the list's header name is returned for each element.
-    /// Otherwise the name comes from the schema's `httpHeader` trait, and `nil` is returned if it
-    /// has none.
     private func headerName(for schema: Schema) -> String? {
         if let listName { return listName }
         return schema.getTrait(HTTPHeaderTrait.self)?.name
     }
 
-    /// Renders a floating-point value as a string, using the Smithy-defined tokens for
-    /// the non-finite values NaN, Infinity, and -Infinity.
     private func encoded<FP: FloatingPoint>(_ value: FP) -> String {
         guard !value.isNaN else { return "NaN" }
         switch value {
@@ -159,19 +141,13 @@ public final class HTTPHeaderSerializer: ShapeSerializer {
         }
     }
 
-    /// Appends a header value under the given name.
-    ///
-    /// A list element is quoted, when needed, so that any comma it contains is not mistaken for a
-    /// list delimiter when the header is later parsed.  A scalar value is added verbatim.
-    private func addToHeaders(name: String, value: String) {
+    private func addToHeaders(schema: Schema, value: String) {
+        guard let name = headerName(for: schema) else { return }
         headers.add(name: name, value: listName != nil ? Self.quoteHeaderValue(value) : value)
     }
 
-    /// The characters in an HTTP header list value that require the value to be quoted.
     private static let quotableHeaderValueChars = "\",()"
 
-    /// Quotes and escapes a header list value if it contains whitespace at either end or any
-    /// character that would otherwise be ambiguous when the compact list representation is parsed.
     private static func quoteHeaderValue(_ value: String) -> String {
         let trimmed = value.trimmingCharacters(in: .whitespacesAndNewlines)
         let needsQuoting = trimmed.count != value.count || value.contains { char in
