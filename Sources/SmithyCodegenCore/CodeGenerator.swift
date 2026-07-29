@@ -6,6 +6,7 @@
 //
 
 import struct Foundation.Data
+import class Foundation.FileManager
 import class Foundation.JSONDecoder
 import struct Foundation.URL
 @_spi(SchemaBasedSerde)
@@ -61,31 +62,56 @@ public struct CodeGenerator {
         // If a schemas file URL was provided, generate it
         if let schemasFileURL {
             let schemasContents = try SchemasCodegen().generate(ctx: ctx)
-            try Data(schemasContents.utf8).write(to: schemasFileURL)
+            try Data(schemasContents.utf8).writeIfChanged(to: schemasFileURL)
         }
 
         // If a Serialize file URL was provided, generate it
         if let serializeFileURL {
             let serializeContents = try SerializeCodegen().generate(ctx: ctx)
-            try Data(serializeContents.utf8).write(to: serializeFileURL)
+            try Data(serializeContents.utf8).writeIfChanged(to: serializeFileURL)
         }
 
         // If a Deserialize file URL was provided, generate it
         if let deserializeFileURL {
             let deserializeContents = try DeserializeCodegen().generate(ctx: ctx)
-            try Data(deserializeContents.utf8).write(to: deserializeFileURL)
+            try Data(deserializeContents.utf8).writeIfChanged(to: deserializeFileURL)
         }
 
         // If a TypeRegistry file URL was provided, generate it
         if let typeRegistryFileURL {
             let typeRegistryContents = try TypeRegistryCodegen().generate(ctx: ctx)
-            try Data(typeRegistryContents.utf8).write(to: typeRegistryFileURL)
+            try Data(typeRegistryContents.utf8).writeIfChanged(to: typeRegistryFileURL)
         }
 
         // If an Operations file URL was provided, generate it
         if let operationsFileURL {
             let operationsContents = try OperationsCodegen().generate(ctx: ctx)
-            try Data(operationsContents.utf8).write(to: operationsFileURL)
+            try Data(operationsContents.utf8).writeIfChanged(to: operationsFileURL)
         }
+    }
+}
+
+private extension Data {
+
+    // Read the existing code-generated source file, and rewrite the file only if
+    // the new contents are different from the existing contents.
+    //
+    // This mitigates the Xcode-specific bug described in https://github.com/swiftlang/swift-build/issues/305
+    // which causes generated code to regenerate and recompile to happen on every incremental build,
+    // even when there was no change to build inputs.
+    //
+    // Using a hash (i.e. SHA-256) to reduce memory usage during file contents comparison was considered
+    // but rejected because it would require adding swift-crypto as a dependency to the code generator.
+    //
+    // On Linux, where this bug does not exist because the Xcode build system is not used,
+    // the check is skipped and the file contents are always rewritten.
+    func writeIfChanged(to url: URL) throws {
+        #if !os(Linux)
+        if FileManager.default.fileExists(atPath: url.path) {
+            let existingData = try Data(contentsOf: url)
+            guard existingData != self else { return }
+        }
+        #endif
+        try write(to: url)
     }
 }

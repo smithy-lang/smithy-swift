@@ -223,6 +223,13 @@ class SwiftSettingsTest {
         return builder.build()
     }
 
+    // ServiceIndex holds the Model via a WeakReference (see ServiceIndex#getModel).
+    // If the only strong reference to the model is a local in createServiceIndex,
+    // a GC between building the index and querying it clears the WeakReference,
+    // causing getProtocols to throw a spurious NullPointerException. Retaining the
+    // model in a field keeps it strongly reachable for the duration of the test.
+    private var retainedModel: Model? = null
+
     private fun createServiceIndex(service: ServiceShape): ServiceIndex {
         val modelBuilder = Model.builder()
 
@@ -258,6 +265,7 @@ class SwiftSettingsTest {
         }
 
         val model = modelBuilder.build()
+        retainedModel = model
         return ServiceIndex.of(model)
     }
 }
