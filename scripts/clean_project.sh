@@ -9,3 +9,5 @@ rm -rf .gradle
 rm -rf .build
 rm -rf build
 rm -rf smithy-swift-codegen/build
+rm -rf test-sdks/build
+rm -rf test-sdks/.build
