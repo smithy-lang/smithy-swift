@@ -23,7 +23,7 @@ import var Smithy.schemaExtensionUniqueIndexCounter
 ///
 /// Bytes include leading & trailing double-quotes, and all characters requiring escaping in JSON
 /// have been escaped.  The trailing colon is not included.
-class MemberJSONNameExtension: SchemaExtension {
+final class MemberJSONNameExtension: SchemaExtension {
 
     static let uniqueIndex = schemaExtensionUniqueIndexCounter.getNextIndex()
 
@@ -33,7 +33,7 @@ class MemberJSONNameExtension: SchemaExtension {
     required init(schema: Schema) {
         let memberName = schema.id.member
         let jsonName = schema.getTrait(JSONNameTrait.self)?.name ?? memberName
-        self.nameWithoutJSONNameTrait = memberName.map { Serializer.writeStringToJSONUTF8Data($0) }
-        self.nameWithJSONNameTrait = jsonName.map { Serializer.writeStringToJSONUTF8Data($0) }
+        self.nameWithoutJSONNameTrait = memberName.map { Data(Serializer.writeStringToJSONUTF8Data($0)) }
+        self.nameWithJSONNameTrait = jsonName.map { Data(Serializer.writeStringToJSONUTF8Data($0)) }
     }
 }

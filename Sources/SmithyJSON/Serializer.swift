@@ -369,7 +369,7 @@ public final class Serializer: ShapeSerializer {
         if let ext = memberSchema.getExtension(MemberJSONNameExtension.self) {
             return usesJSONNameTrait ? ext.nameWithJSONNameTrait : ext.nameWithoutJSONNameTrait
         } else {
-            let ext = try MemberJSONNameExtension(schema: memberSchema)
+            let ext = MemberJSONNameExtension(schema: memberSchema)
             memberSchema.setExtension(ext)
             return usesJSONNameTrait ? ext.nameWithJSONNameTrait : ext.nameWithoutJSONNameTrait
         }
