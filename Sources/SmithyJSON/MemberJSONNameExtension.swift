@@ -9,6 +9,8 @@ import struct Foundation.Data
 @_spi(SchemaBasedSerde)
 import class Smithy.JSONNameTrait
 @_spi(SchemaBasedSerde)
+import enum Smithy.Prelude
+@_spi(SchemaBasedSerde)
 import class Smithy.Schema
 @_spi(SchemaBasedSerde)
 import protocol Smithy.SchemaExtension
@@ -30,10 +32,19 @@ final class MemberJSONNameExtension: SchemaExtension {
     let nameWithoutJSONNameTrait: Data?
     let nameWithJSONNameTrait: Data?
 
-    required init(schema: Schema) {
+    required init(schema: Schema) throws {
         let memberName = schema.id.member
         let jsonName = schema.getTrait(JSONNameTrait.self)?.name ?? memberName
-        self.nameWithoutJSONNameTrait = memberName.map { Data(Serializer.writeStringToJSONUTF8Data($0)) }
-        self.nameWithJSONNameTrait = jsonName.map { Data(Serializer.writeStringToJSONUTF8Data($0)) }
+        self.nameWithoutJSONNameTrait = try memberName.map { try Self.writeKey(name: $0) }
+        self.nameWithJSONNameTrait = try jsonName.map { try Self.writeKey(name: $0) }
+    }
+
+    @inline(always)
+    private static func writeKey(name: String) throws -> Data {
+        let serializer = Serializer(usesJSONNameTrait: false)
+        try serializer.writeString(Smithy.Prelude.stringSchema, name)
+        var data = try serializer.data
+        data.append(58) // append a colon after the key
+        return Data(data) // trims excess capacity & flattens the source Data
     }
 }

@@ -198,23 +198,29 @@ public final class Serializer: ShapeSerializer {
                 copyStartIndex = utf8view.index(after: index)
                 switch byte {
                 case Self.doubleQuote:
-                    appendEscaped(ascii: Self.doubleQuote)
+                    _data.append(contentsOf: [Self.backslash, Self.doubleQuote])
                 case Self.backslash:
-                    appendEscaped(ascii: Self.backslash)
+                    _data.append(contentsOf: [Self.backslash, Self.backslash])
                 case Self.backspace:
-                    appendEscaped(ascii: Self.b)
+                    _data.append(contentsOf: [Self.backslash, Self.b])
                 case Self.formFeed:
-                    appendEscaped(ascii: Self.f)
+                    _data.append(contentsOf: [Self.backslash, Self.f])
                 case Self.lineFeed:
-                    appendEscaped(ascii: Self.n)
+                    _data.append(contentsOf: [Self.backslash, Self.n])
                 case Self.cr:
-                    appendEscaped(ascii: Self.r)
+                    _data.append(contentsOf: [Self.backslash, Self.r])
                 case Self.tab:
-                    appendEscaped(ascii: Self.t)
+                    _data.append(contentsOf: [Self.backslash, Self.t])
                 case 0..<0x20:
                     // Any C0 control without a short form must be \u00XX-escaped (RFC 8259)
-                    appendEscaped(ascii: Self.u)
-                    appendHexByte(ascii: byte)
+                    _data.append(contentsOf: [
+                        Self.backslash,
+                        Self.u,
+                        Self.zero,
+                        Self.zero,
+                        Self.digits[Int(byte >> 4)],
+                        Self.digits[Int(byte & 0x0F)],
+                    ])
                 default:
                     break
                 }
@@ -267,65 +273,6 @@ public final class Serializer: ShapeSerializer {
         }
     }
 
-    static func writeStringToJSONUTF8Data(_ value: String) -> Data {
-        // Write the string's UTF-8 bytes, escaping the characters that the JSON spec
-        // requires us to escape.  We don't escape forward-slash because we never embed
-        // JSON in XML or use it in URLs.
-        // We iterate over UTF-8 bytes rather than Characters: a grapheme cluster such as
-        // "\r\n" is a single Character whose asciiValue collapses to one byte, which would
-        // silently drop the carriage return.  Iterating bytes also skips grapheme-cluster
-        // segmentation entirely.  UTF-8 lead & continuation bytes (>= 0x80) never require
-        // escaping, so they are copied through verbatim by the default case.
-        // Open and close the string with double quotes.
-        var _data = Data(capacity: 2 * value.count + 2)
-        _data.append(doubleQuote)
-        let utf8view = value.utf8
-        var copyStartIndex = utf8view.startIndex
-        for index in utf8view.indices {
-            let byte = utf8view[index]
-            if byte < 32 || byte == doubleQuote || byte == backslash {
-                _data.append(contentsOf: utf8view[copyStartIndex..<index])
-                copyStartIndex = utf8view.index(after: index)
-                switch byte {
-                case Self.doubleQuote:
-                    _data.append(Self.backslash)
-                    _data.append(Self.doubleQuote)
-                case Self.backslash:
-                    _data.append(Self.backslash)
-                    _data.append(Self.backslash)
-                case Self.backspace:
-                    _data.append(Self.backslash)
-                    _data.append(Self.b)
-                case Self.formFeed:
-                    _data.append(Self.backslash)
-                    _data.append(Self.f)
-                case Self.lineFeed:
-                    _data.append(Self.backslash)
-                    _data.append(Self.n)
-                case Self.cr:
-                    _data.append(Self.backslash)
-                    _data.append(Self.r)
-                case Self.tab:
-                    _data.append(Self.backslash)
-                    _data.append(Self.t)
-                case 0..<0x20:
-                    // Any C0 control without a short form must be \u00XX-escaped (RFC 8259)
-                    _data.append(Self.backslash)
-                    _data.append(Self.u)
-                    _data.append(Self.zero)
-                    _data.append(Self.zero)
-                    _data.append(Self.digits[Int(byte >> 4)])
-                    _data.append(Self.digits[Int(byte & 0x0F)])
-                default:
-                    break
-                }
-            }
-        }
-        _data.append(contentsOf: value.utf8[copyStartIndex..<utf8view.endIndex])
-        _data.append(Self.doubleQuote)
-        return _data
-    }
-
     // MARK: - Private methods
 
     // An implementation of Smithy's floating point encoding, usable for any Swift floating point type.
@@ -357,11 +304,11 @@ public final class Serializer: ShapeSerializer {
         }
         self._needsComma = true
 
-        // If this is a member of a structure or union, write the key string and a colon.
+        // If this is a member of a structure or union, write the key, which includes a double-quoted
+        // JSON string plus a colon.
         guard schema.containerType == .structure || schema.containerType == .union else { return }
         guard let objectKeyJSONData = try objectKeyJSONData(for: schema) else { return }
         _data.append(contentsOf: objectKeyJSONData)
-        _data.append(Self.colon)
     }
 
     @inline(always)
@@ -369,25 +316,10 @@ public final class Serializer: ShapeSerializer {
         if let ext = memberSchema.getExtension(MemberJSONNameExtension.self) {
             return usesJSONNameTrait ? ext.nameWithJSONNameTrait : ext.nameWithoutJSONNameTrait
         } else {
-            let ext = MemberJSONNameExtension(schema: memberSchema)
+            let ext = try MemberJSONNameExtension(schema: memberSchema)
             memberSchema.setExtension(ext)
             return usesJSONNameTrait ? ext.nameWithJSONNameTrait : ext.nameWithoutJSONNameTrait
         }
-    }
-
-    @inline(always)
-    private func appendEscaped(ascii: UInt8) {
-        _data.append(contentsOf: [Self.backslash, ascii])
-    }
-
-    @inline(always)
-    private func appendHexByte(ascii: UInt8) {
-        _data.append(contentsOf: [
-            Self.zero,
-            Self.zero,
-            Self.digits[Int(ascii >> 4)],
-            Self.digits[Int(ascii & 0x0F)],
-        ])
     }
 
     static let digits: [UInt8] = "0123456789abcdef".compactMap { $0.asciiValue }

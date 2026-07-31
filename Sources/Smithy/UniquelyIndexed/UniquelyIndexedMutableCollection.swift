@@ -43,7 +43,7 @@ public class UniquelyIndexedMutableCollection: @unchecked Sendable {
         defer { lock.unlock() }
         if T.uniqueIndex >= _storage.count {
             let newCapacity = T.uniqueIndex - _storage.count + 1
-            _storage.append(addingCapacity: newCapacity) { $0.append(repeating: nil, count: newCapacity) }
+            _storage.append(contentsOf: Array(repeating: nil, count: newCapacity))
         }
         _storage[T.uniqueIndex] = value
     }
