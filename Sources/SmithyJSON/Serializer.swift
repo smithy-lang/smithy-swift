@@ -57,13 +57,14 @@ public final class Serializer: ShapeSerializer {
     private static let negativeInfinity = "\"-Infinity\"".utf8
 
     let usesJSONNameTrait: Bool
-    private var _data: Data
+    private var _data: [UInt8]
     private var _needsComma = false
 
     public init(usesJSONNameTrait: Bool) {
         self.usesJSONNameTrait = usesJSONNameTrait
         // 64KB is reserved to allow for additions to data without requiring copy to a new buffer
-        self._data = Data(capacity: 65536)
+        self._data = [UInt8]()
+        self._data.reserveCapacity(65536)
     }
 
     public func writeStruct<S>(_ schema: Schema, _ value: S) throws where S: SerializableStruct {
@@ -263,7 +264,7 @@ public final class Serializer: ShapeSerializer {
         get throws {
             // Return the encoded data, substituting '{}' if empty
             guard !_data.isEmpty else { return Data("{}".utf8) }
-            return _data
+            return Data(_data)
         }
     }
 
