@@ -53,6 +53,11 @@ final class UniquelyIndexedMutableCollection: @unchecked Sendable {
         _storage[T.uniqueIndex] = value
     }
 
+    // The members below round out the collection's API but currently have no callers in production
+    // code; they are exercised by tests only.  Suppress the analyzer's unused-declaration rule rather
+    // than delete them, so the type remains a complete, symmetric collection.
+    // swiftlint:disable unused_declaration
+
     /// Sets the stored value to `nil` for the passed type.
     ///
     /// Capacity in the storage is not added or reduced by this method.
@@ -85,4 +90,6 @@ final class UniquelyIndexedMutableCollection: @unchecked Sendable {
         defer { lock.unlock() }
         return _storage.compactMap { $0 }
     }
+
+    // swiftlint:enable unused_declaration
 }
