@@ -11,7 +11,14 @@
 /// Schema extensions are stored on the schema itself the first time a schema is accessed, and
 /// retrieved from the schema during subsequent accesses.
 @_spi(SchemaBasedSerde)
-public protocol SchemaExtension: AnyObject, UniquelyIndexedByType {}
+public protocol SchemaExtension: AnyObject, UniquelyIndexedByType {
+
+    /// Creates the schema extension by deriving its contents from the passed schema.
+    ///
+    /// This initializer allows ``Schema/getOrCreateExtension(_:)`` to create an extension on demand.
+    /// - Parameter schema: The schema that this extension will be stored on & derives its data from.
+    init(schema: Schema) throws
+}
 
 /// Call `getNextIndex()` on this counter to generate a unique index for each type of schema extension.
 @_spi(SchemaBasedSerde)

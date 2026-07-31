@@ -32,7 +32,7 @@ final class MemberJSONNameExtension: SchemaExtension {
     let nameWithoutJSONNameTrait: Data?
     let nameWithJSONNameTrait: Data?
 
-    required init(schema: Schema) throws {
+    init(schema: Schema) throws {
         let memberName = schema.id.member
         let jsonName = schema.getTrait(JSONNameTrait.self)?.name ?? memberName
         self.nameWithoutJSONNameTrait = try memberName.map { try Self.writeKey(name: $0) }

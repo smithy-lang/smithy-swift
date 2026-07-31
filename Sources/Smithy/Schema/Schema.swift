@@ -147,4 +147,17 @@ public final class Schema: Sendable {
     public func setExtension<Extension: SchemaExtension>(_ value: Extension) {
         _extensions.set(value)
     }
+
+    /// Gets the requested type of schema extension for this schema, creating & storing it first if it does not exist.
+    ///
+    /// Creation & storage is not performed atomically; see ``setExtension(_:)`` for the implications when
+    /// this method is called from multiple threads at the same time.
+    /// - Parameter type: The type of schema extension to be retrieved & returned.
+    /// - Returns: A schema extension of the requested type.
+    public func getOrCreateExtension<Extension: SchemaExtension>(_ type: Extension.Type) throws -> Extension {
+        if let storedExtension = getExtension(Extension.self) { return storedExtension }
+        let newExtension = try Extension(schema: self)
+        setExtension(newExtension)
+        return newExtension
+    }
 }

@@ -308,13 +308,7 @@ public final class Serializer: ShapeSerializer {
         // JSON string plus a colon.
         // The MemberJSONNameExtension is used to calculate then store the key for future use.
         guard schema.containerType == .structure || schema.containerType == .union else { return }
-        let ext: MemberJSONNameExtension
-        if let storedExt = schema.getExtension(MemberJSONNameExtension.self) {
-            ext = storedExt
-        } else {
-            ext = try MemberJSONNameExtension(schema: schema)
-            schema.setExtension(ext)
-        }
+        let ext = try schema.getOrCreateExtension(MemberJSONNameExtension.self)
         guard let data = usesJSONNameTrait ? ext.nameWithJSONNameTrait : ext.nameWithoutJSONNameTrait else { return }
         _data.append(contentsOf: data)
     }
