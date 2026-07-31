@@ -24,6 +24,7 @@ let package = Package(
         testSDKPackage("HTTPHeader"),
         testSDKPackage("HTTPLabel"),
         testSDKPackage("HTTPQuery"),
+        testSDKPackage("HTTPQueryParams"),
         testSDKPackage("JSONName"),
         testSDKPackage("MaxRecursion"),
         testSDKPackage("NullTolerance"),
@@ -184,6 +185,7 @@ let package = Package(
                 testSDKProduct("HTTPHeader"),
                 testSDKProduct("HTTPLabel"),
                 testSDKProduct("HTTPQuery"),
+                testSDKProduct("HTTPQueryParams"),
             ]
         ),
         .testTarget(
