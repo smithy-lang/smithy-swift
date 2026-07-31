@@ -20,11 +20,11 @@ import var Smithy.schemaExtensionUniqueIndexCounter
 /// Stores the UTF-8 bytes for the JSON string representation of this member's JSON name.
 ///
 /// Bytes may be reused when this member is sent again, increasing performance by not requiring
-/// recalculation of theJSON bytes.  The tradeoff is the extra memory consumed to store the bytes
+/// recalculation of the JSON bytes.  The tradeoff is the extra memory consumed to store the bytes
 /// in this schema extension.
 ///
 /// Bytes include leading & trailing double-quotes, and all characters requiring escaping in JSON
-/// have been escaped.  The trailing colon is not included.
+/// have been escaped.  The trailing colon is appended as well.
 final class MemberJSONNameExtension: SchemaExtension {
 
     static let uniqueIndex = schemaExtensionUniqueIndexCounter.getNextIndex()
@@ -39,12 +39,16 @@ final class MemberJSONNameExtension: SchemaExtension {
         self.nameWithJSONNameTrait = try jsonName.map { try Self.writeKey(name: $0) }
     }
 
-    @inline(always)
     private static func writeKey(name: String) throws -> Data {
+        // Create a Serializer & use it to write the key to a JSON string,
+        // surrounded by double quotes.
         let serializer = Serializer(usesJSONNameTrait: false)
         try serializer.writeString(Smithy.Prelude.stringSchema, name)
+
+        // Get the data, append a colon (UTF-8 58) to the end, and create a new Data
+        // to trim extra capacity and flatten.
         var data = try serializer.data
-        data.append(58) // append a colon after the key
-        return Data(data) // trims excess capacity & flattens the source Data
+        data.append(58)
+        return Data(data)
     }
 }

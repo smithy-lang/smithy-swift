@@ -306,20 +306,17 @@ public final class Serializer: ShapeSerializer {
 
         // If this is a member of a structure or union, write the key, which includes a double-quoted
         // JSON string plus a colon.
+        // The MemberJSONNameExtension is used to calculate then store the key for future use.
         guard schema.containerType == .structure || schema.containerType == .union else { return }
-        guard let objectKeyJSONData = try objectKeyJSONData(for: schema) else { return }
-        _data.append(contentsOf: objectKeyJSONData)
-    }
-
-    @inline(always)
-    private func objectKeyJSONData(for memberSchema: Schema) throws -> Data? {
-        if let ext = memberSchema.getExtension(MemberJSONNameExtension.self) {
-            return usesJSONNameTrait ? ext.nameWithJSONNameTrait : ext.nameWithoutJSONNameTrait
+        let ext: MemberJSONNameExtension
+        if let storedExt = schema.getExtension(MemberJSONNameExtension.self) {
+            ext = storedExt
         } else {
-            let ext = try MemberJSONNameExtension(schema: memberSchema)
-            memberSchema.setExtension(ext)
-            return usesJSONNameTrait ? ext.nameWithJSONNameTrait : ext.nameWithoutJSONNameTrait
+            ext = try MemberJSONNameExtension(schema: schema)
+            schema.setExtension(ext)
         }
+        guard let data = usesJSONNameTrait ? ext.nameWithJSONNameTrait : ext.nameWithoutJSONNameTrait else { return }
+        _data.append(contentsOf: data)
     }
 
     static let digits: [UInt8] = "0123456789abcdef".compactMap { $0.asciiValue }

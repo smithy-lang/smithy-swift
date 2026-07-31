@@ -133,7 +133,7 @@ public final class Schema: Sendable {
     }
 
     /// Gets the requested type of schema extension for this schema.
-    /// - Parameter type: The type of schema extension to be created & returned.
+    /// - Parameter type: The type of schema extension to be retrieved & returned.
     /// - Returns: A schema extension of the requested type, or `nil` if none exists.
     public func getExtension<Extension: SchemaExtension>(_ type: Extension.Type) -> Extension? {
         _extensions.get(Extension.self)
@@ -142,7 +142,7 @@ public final class Schema: Sendable {
     /// Stores the passed schema extension.
     ///
     /// If multiple callers attempt to create a schema extension from multiple threads at the same time, each will create & store the value.
-    /// This results in extra work performed, but the type is thread-safe and the time spent blocking any calling thread is minimized.
+    /// This may result in extra work performed, but the type is thread-safe and the time spent blocking any calling thread is minimized.
     /// - Parameter value: The schema extension to be stored.
     public func setExtension<Extension: SchemaExtension>(_ value: Extension) {
         _extensions.set(value)
