@@ -12,6 +12,10 @@ import enum Smithy.ByteStream
 import class Smithy.Schema
 import protocol Smithy.SmithyDocument
 
+/// The protocol for a shape deserializer, which converts encoded data into modeled types.
+///
+/// If `null` is encountered while reading to any supported type, the `DecodedNull` error should be thrown back to the caller.
+/// `DecodedNull` may be caught and handled when a null value is to be expected or (at least) tolerated.
 @_spi(SchemaBasedSerde)
 public protocol ShapeDeserializer {
     func readStruct<T: DeserializableStruct>(_ schema: Schema, _ value: inout T) throws
@@ -30,12 +34,10 @@ public protocol ShapeDeserializer {
     func readString(_ schema: Schema) throws -> String
     func readDocument(_ schema: Schema) throws -> any SmithyDocument
     func readTimestamp(_ schema: Schema) throws -> Date
-    func readNull<T>(_ schema: Schema) throws -> T?
     func readDataStream(_ schema: Schema) throws -> ByteStream
     func readEventStream<E: DeserializableStruct & Sendable>(
         _ schema: Schema
     ) throws -> AsyncThrowingStream<E, any Error>
-    func isNull() throws -> Bool
     var containerSize: Int { get }
 }
 
@@ -54,20 +56,20 @@ public extension ShapeDeserializer {
 
     func readSparseList<E>(_ schema: Schema, _ consumer: ReadValueConsumer<E>) throws -> [E?] {
         try readList(schema) { deserializer in
-            if try deserializer.isNull() {
-                return try deserializer.readNull(schema.resolveTarget.member)
-            } else {
+            do {
                 return try consumer(deserializer)
+            } catch is DecodedNull {
+                return nil
             }
         }
     }
 
     func readSparseMap<V>(_ schema: Schema, _ consumer: ReadValueConsumer<V>) throws -> [String: V?] {
         try readMap(schema) { deserializer in
-            if try deserializer.isNull() {
-                return try deserializer.readNull(schema.resolveTarget.value)
-            } else {
+            do {
                 return try consumer(deserializer)
+            } catch is DecodedNull {
+                return nil
             }
         }
     }

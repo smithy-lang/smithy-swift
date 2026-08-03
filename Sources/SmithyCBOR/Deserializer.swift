@@ -19,7 +19,7 @@ import struct SmithySerialization.SerializerError
 @_spi(SchemaBasedSerde)
 import protocol SmithySerialization.ShapeDeserializer
 @_spi(SchemaBasedSerde)
-import struct SmithySerialization.UnexpectedNullError
+import struct SmithySerialization.DecodedNull
 
 @_spi(SchemaBasedSerde)
 public class Deserializer: ShapeDeserializer {
@@ -202,18 +202,6 @@ public class Deserializer: ShapeDeserializer {
         return value
     }
 
-    public func isNull() throws -> Bool {
-        try decoder.isNull()
-    }
-
-    public func readNull<T>(_ schema: Schema) throws -> T? {
-        let next = try decoder.popNext()
-        guard case .null = next else {
-            throw CBORDecoderError("member \(schema.id) expected .null but got \(next) instead")
-        }
-        return nil
-    }
-
     public func readStruct<T: DeserializableStruct>(_ schema: Schema, _ value: inout T) throws {
         guard depth < maxDepth else { throw CBORDecoderError("Maximum recursive depth exceeded during readStruct()") }
         depth += 1
@@ -250,7 +238,7 @@ public class Deserializer: ShapeDeserializer {
                     } else {
                         try skipValue()
                     }
-                } catch is UnexpectedNullError {
+                } catch is DecodedNull {
                     // skip null
                 }
                 guard decoder.hasNext() else {
@@ -274,7 +262,7 @@ public class Deserializer: ShapeDeserializer {
                     } else {
                         try skipValue()
                     }
-                } catch is UnexpectedNullError {
+                } catch is DecodedNull {
                     // skip null
                 }
             }
@@ -335,7 +323,7 @@ public class Deserializer: ShapeDeserializer {
                 do {
                     let nextElement = try consumer(self)
                     list.append(nextElement)
-                } catch is UnexpectedNullError {
+                } catch is DecodedNull {
                     // skip the null
                 }
                 guard decoder.hasNext() else {
@@ -349,7 +337,7 @@ public class Deserializer: ShapeDeserializer {
                 do {
                     let nextElement = try consumer(self)
                     list.append(nextElement)
-                } catch is UnexpectedNullError {
+                } catch is DecodedNull {
                     // skip the null
                 }
             }
@@ -382,7 +370,7 @@ public class Deserializer: ShapeDeserializer {
                 do {
                     let value = try consumer(self)
                     map[key] = value
-                } catch is UnexpectedNullError {
+                } catch is DecodedNull {
                     // skip the null
                 }
                 guard decoder.hasNext() else {
@@ -399,7 +387,7 @@ public class Deserializer: ShapeDeserializer {
                 do {
                     let value = try consumer(self)
                     map[key] = value
-                } catch is UnexpectedNullError {
+                } catch is DecodedNull {
                     // skip the null
                 }
             }
@@ -415,7 +403,7 @@ public class Deserializer: ShapeDeserializer {
     private func nullCheck() throws {
         if try decoder.isNull() {
             _ = try decoder.popNext()
-            throw UnexpectedNullError()
+            throw DecodedNull()
         }
     }
 }
