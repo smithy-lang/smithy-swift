@@ -12,14 +12,14 @@ import struct Foundation.Date
 import class Smithy.Schema
 import protocol Smithy.SmithyDocument
 @_spi(SchemaBasedSerde)
+import struct SmithySerialization.DecodedNull
+@_spi(SchemaBasedSerde)
 import protocol SmithySerialization.DeserializableStruct
 @_spi(SchemaBasedSerde)
 import typealias SmithySerialization.ReadValueConsumer
 import struct SmithySerialization.SerializerError
 @_spi(SchemaBasedSerde)
 import protocol SmithySerialization.ShapeDeserializer
-@_spi(SchemaBasedSerde)
-import struct SmithySerialization.DecodedNull
 
 @_spi(SchemaBasedSerde)
 public class Deserializer: ShapeDeserializer {

@@ -12,12 +12,12 @@ import class Foundation.NSNumber
 @_spi(SchemaBasedSerde)
 @_spi(SmithyDocumentImpl) import Smithy
 @_spi(SchemaBasedSerde)
+import struct SmithySerialization.DecodedNull
+@_spi(SchemaBasedSerde)
 import protocol SmithySerialization.DeserializableStruct
 import struct SmithySerialization.SerializerError
 @_spi(SchemaBasedSerde)
 import protocol SmithySerialization.ShapeDeserializer
-@_spi(SchemaBasedSerde)
-import struct SmithySerialization.DecodedNull
 @_spi(SmithyTimestamps) import struct SmithyTimestamps.TimestampFormatter
 
 @_spi(SchemaBasedSerde)
