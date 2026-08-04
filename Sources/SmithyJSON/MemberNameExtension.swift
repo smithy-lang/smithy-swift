@@ -6,8 +6,6 @@
 //
 
 @_spi(SchemaBasedSerde)
-import enum Smithy.Prelude
-@_spi(SchemaBasedSerde)
 import class Smithy.Schema
 @_spi(SchemaBasedSerde)
 import protocol Smithy.SchemaExtension
@@ -31,19 +29,6 @@ final class MemberNameExtension: SchemaExtension {
 
     init(schema: Schema) throws {
         let memberName = schema.id.member
-        self.name = try memberName.map { try Self.writeKey(name: $0) }
-    }
-
-    static func writeKey(name: String) throws -> [UInt8] {
-        // Create a Serializer & use it to write the key to a JSON string,
-        // surrounded by double quotes.
-        let serializer = Serializer(usesJSONNameTrait: false)
-        try serializer.writeString(Smithy.Prelude.stringSchema, name)
-
-        // Get the data, append a colon (UTF-8 58) to the end, and create a new array
-        // to trim extra capacity and flatten.
-        var data = try serializer.data
-        data.append(58)
-        return [UInt8](data)
+        self.name = try memberName.map { try Serializer.writeKey(name: $0) }
     }
 }

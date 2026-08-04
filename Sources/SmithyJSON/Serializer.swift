@@ -8,8 +8,6 @@
 import struct Foundation.Data
 import struct Foundation.Date
 @_spi(SchemaBasedSerde)
-import class Smithy.JSONNameTrait
-@_spi(SchemaBasedSerde)
 import enum Smithy.Prelude
 @_spi(SchemaBasedSerde)
 import class Smithy.Schema
@@ -320,4 +318,24 @@ public final class Serializer: ShapeSerializer {
     }
 
     static let digits: [UInt8] = "0123456789abcdef".compactMap { $0.asciiValue }
+
+    /// Encodes the passed name as the UTF-8 bytes for a JSON object key.
+    ///
+    /// The returned bytes include the enclosing double-quotes and a trailing colon, and any
+    /// characters requiring escaping in JSON have been escaped.  Used by the schema extensions
+    /// that cache a member's serialized key; see ``MemberNameExtension`` & ``JSONNameExtension``.
+    /// - Parameter name: The key name to be encoded.
+    /// - Returns: The UTF-8 bytes for the JSON representation of the key.
+    static func writeKey(name: String) throws -> [UInt8] {
+        // Create a Serializer & use it to write the key to a JSON string,
+        // surrounded by double quotes.
+        let serializer = Serializer(usesJSONNameTrait: false)
+        try serializer.writeString(Smithy.Prelude.stringSchema, name)
+
+        // Get the data, append a colon (UTF-8 58) to the end, and create a new array
+        // to trim extra capacity and flatten.
+        var data = try serializer.data
+        data.append(Self.colon)
+        return [UInt8](data)
+    }
 }

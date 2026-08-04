@@ -5,11 +5,8 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
-import struct Foundation.Data
 @_spi(SchemaBasedSerde)
 import class Smithy.JSONNameTrait
-@_spi(SchemaBasedSerde)
-import enum Smithy.Prelude
 @_spi(SchemaBasedSerde)
 import class Smithy.Schema
 @_spi(SchemaBasedSerde)
@@ -34,6 +31,6 @@ final class JSONNameExtension: SchemaExtension {
 
     init(schema: Schema) throws {
         let jsonName = schema.getTrait(JSONNameTrait.self)?.name ?? schema.id.member
-        self.name = try jsonName.map { try MemberNameExtension.writeKey(name: $0) }
+        self.name = try jsonName.map { try Serializer.writeKey(name: $0) }
     }
 }

@@ -28,6 +28,28 @@ final class JSONNameTests: XCTestCase {
         XCTAssertEqual(data, Data(#"{"modified":"abc"}"#.utf8))
     }
 
+    // A member with no jsonName trait falls back to the member name in both modes.  The enabled
+    // mode reaches that fallback through JSONNameExtension, a separate type from the one the
+    // disabled mode uses, so both modes are covered here.
+
+    func test_jsonNameSerialize_serializesMemberNameWithoutJSONNameTraitWhenEnabled() throws {
+        let subject = Serializer(usesJSONNameTrait: true)
+        try JSONNameMembersInput(unmodified: "abc").serialize(subject)
+        XCTAssertEqual(try subject.data, Data(#"{"unmodified":"abc"}"#.utf8))
+    }
+
+    func test_jsonNameSerialize_serializesMemberNameWithoutJSONNameTraitWhenDisabled() throws {
+        let subject = Serializer(usesJSONNameTrait: false)
+        try JSONNameMembersInput(unmodified: "abc").serialize(subject)
+        XCTAssertEqual(try subject.data, Data(#"{"unmodified":"abc"}"#.utf8))
+    }
+
+    func test_jsonNameSerialize_serializesBothTraitedAndUntraitedMembersWhenEnabled() throws {
+        let subject = Serializer(usesJSONNameTrait: true)
+        try JSONNameMembersInput(original: "abc", unmodified: "def").serialize(subject)
+        XCTAssertEqual(try subject.data, Data(#"{"modified":"abc","unmodified":"def"}"#.utf8))
+    }
+
     func test_jsonNameDeserialize_deserializesMemberNameWhenDisabled() throws {
         let data = Data(#"{"original":"abc"}"#.utf8)
         let subject = try Deserializer(usesJSONNameTrait: false, data: data)
@@ -45,9 +67,10 @@ final class JSONNameTests: XCTestCase {
     // MARK: - Cached member name reuse
 
     // Member schemas are static & shared, and the serializer caches a member's serialized JSON key
-    // on the schema the first time that member is written.  The cache holds the key for both the
-    // member name & the jsonName, so the `usesJSONNameTrait` value of whichever serializer writes
-    // first must not affect the output of any later serializer using the other setting.
+    // on the schema the first time that member is written.  Each mode caches into its own schema
+    // extension - JSONNameExtension when `usesJSONNameTrait` is enabled, MemberNameExtension when
+    // it is disabled - so the value used by whichever serializer writes first must not affect the
+    // output of any later serializer using the other setting.
 
     func test_jsonNameSerialize_doesNotLetADisabledSerializerPoisonTheCacheForAnEnabledOne() throws {
         let input = JSONNameMembersInput(original: "abc")
@@ -88,6 +111,27 @@ final class JSONNameTests: XCTestCase {
             try JSONNameMembersInput(original: "abc").serialize(subject)
             XCTAssertEqual(try subject.data, Data(#"{"original":"abc"}"#.utf8))
         }
+    }
+
+    func test_jsonNameSerialize_doesNotLetTheModesPoisonEachOtherForAnUntraitedMember() throws {
+        // Both modes resolve an untraited member to the same key, but by way of different
+        // extensions.  Populate the cache in each order to confirm neither affects the other.
+        let input = JSONNameMembersInput(unmodified: "abc")
+        let expected = Data(#"{"unmodified":"abc"}"#.utf8)
+
+        let first = Serializer(usesJSONNameTrait: false)
+        try input.serialize(first)
+        XCTAssertEqual(try first.data, expected)
+
+        // Reads back with the other mode, whose extension is still unpopulated.
+        let second = Serializer(usesJSONNameTrait: true)
+        try input.serialize(second)
+        XCTAssertEqual(try second.data, expected)
+
+        // Both extensions are now cached; confirm each still serves the right key.
+        let third = Serializer(usesJSONNameTrait: false)
+        try input.serialize(third)
+        XCTAssertEqual(try third.data, expected)
     }
 
     // MARK: - Escaping of cached member names
