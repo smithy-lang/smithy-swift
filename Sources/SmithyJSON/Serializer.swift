@@ -305,13 +305,18 @@ public final class Serializer: ShapeSerializer {
         }
         self._needsComma = true
 
-        // If this is a member of a structure or union, write the key, which includes a double-quoted
-        // JSON string plus a colon.
-        // The MemberJSONNameExtension is used to calculate then store the key for future use.
+        // If this is a member of a structure or union, write the key, which includes a
+        // double-quoted JSON string plus a colon.
+        // The MemberNameExtension or JSONNameExtension is used to calculate then store
+        // the key for future use.
         guard schema.containerType == .structure || schema.containerType == .union else { return }
-        let ext = try schema.getOrCreateExtension(MemberJSONNameExtension.self)
-        guard let data = usesJSONNameTrait ? ext.nameWithJSONNameTrait : ext.nameWithoutJSONNameTrait else { return }
-        _data.append(contentsOf: data)
+        let name = if usesJSONNameTrait {
+            try schema.getOrCreateExtension(JSONNameExtension.self).name
+        } else {
+            try schema.getOrCreateExtension(MemberNameExtension.self).name
+        }
+        guard let name else { return }
+        _data.append(contentsOf: name)
     }
 
     static let digits: [UInt8] = "0123456789abcdef".compactMap { $0.asciiValue }
