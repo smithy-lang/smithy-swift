@@ -8,8 +8,6 @@
 import struct Foundation.Data
 import struct Foundation.Date
 @_spi(SchemaBasedSerde)
-import class Smithy.JSONNameTrait
-@_spi(SchemaBasedSerde)
 import enum Smithy.Prelude
 @_spi(SchemaBasedSerde)
 import class Smithy.Schema
@@ -199,23 +197,29 @@ public final class Serializer: ShapeSerializer {
                 copyStartIndex = utf8view.index(after: index)
                 switch byte {
                 case Self.doubleQuote:
-                    appendEscaped(ascii: Self.doubleQuote)
+                    _data.append(contentsOf: [Self.backslash, Self.doubleQuote])
                 case Self.backslash:
-                    appendEscaped(ascii: Self.backslash)
+                    _data.append(contentsOf: [Self.backslash, Self.backslash])
                 case Self.backspace:
-                    appendEscaped(ascii: Self.b)
+                    _data.append(contentsOf: [Self.backslash, Self.b])
                 case Self.formFeed:
-                    appendEscaped(ascii: Self.f)
+                    _data.append(contentsOf: [Self.backslash, Self.f])
                 case Self.lineFeed:
-                    appendEscaped(ascii: Self.n)
+                    _data.append(contentsOf: [Self.backslash, Self.n])
                 case Self.cr:
-                    appendEscaped(ascii: Self.r)
+                    _data.append(contentsOf: [Self.backslash, Self.r])
                 case Self.tab:
-                    appendEscaped(ascii: Self.t)
+                    _data.append(contentsOf: [Self.backslash, Self.t])
                 case 0..<0x20:
                     // Any C0 control without a short form must be \u00XX-escaped (RFC 8259)
-                    appendEscaped(ascii: Self.u)
-                    appendHexByte(ascii: byte)
+                    _data.append(contentsOf: [
+                        Self.backslash,
+                        Self.u,
+                        Self.zero,
+                        Self.zero,
+                        Self.digits[Int(byte >> 4)],
+                        Self.digits[Int(byte & 0x0F)],
+                    ])
                 default:
                     break
                 }
@@ -299,38 +303,39 @@ public final class Serializer: ShapeSerializer {
         }
         self._needsComma = true
 
-        // If this is a member of a structure or union, write the key string and a colon.
-        // Never lead the key with a comma since it was just written above.
-        if schema.containerType == .structure || schema.containerType == .union, let key = try objectKey(for: schema) {
-            let savedNeedsComma = self._needsComma
-            self._needsComma = false
-            try writeString(Smithy.Prelude.stringSchema, key)
-            self._needsComma = savedNeedsComma
-            _data.append(Self.colon)
-        }
-    }
-
-    private func objectKey(for memberSchema: Schema) throws -> String? {
-        // Get jsonName, if present, for restJson.  Otherwise just the member name.
-        return if usesJSONNameTrait, let jsonName = memberSchema.getTrait(JSONNameTrait.self)?.name {
-            jsonName
+        // If this is a member of a structure or union, write the key, which includes a
+        // double-quoted JSON string plus a colon.
+        // The MemberNameExtension or JSONNameExtension is used to calculate then store
+        // the key for future use.
+        guard schema.containerType == .structure || schema.containerType == .union else { return }
+        let name = if usesJSONNameTrait {
+            try schema.getOrCreateExtension(JSONNameExtension.self).name
         } else {
-            memberSchema.id.member
+            try schema.getOrCreateExtension(MemberNameExtension.self).name
         }
-    }
-
-    private func appendEscaped(ascii: UInt8) {
-        _data.append(contentsOf: [Self.backslash, ascii])
-    }
-
-    private func appendHexByte(ascii: UInt8) {
-        _data.append(contentsOf: [
-            Self.zero,
-            Self.zero,
-            Self.digits[Int(ascii >> 4)],
-            Self.digits[Int(ascii & 0x0F)],
-        ])
+        guard let name else { return }
+        _data.append(contentsOf: name)
     }
 
     static let digits: [UInt8] = "0123456789abcdef".compactMap { $0.asciiValue }
+
+    /// Encodes the passed name as the UTF-8 bytes for a JSON object key.
+    ///
+    /// The returned bytes include the enclosing double-quotes and a trailing colon, and any
+    /// characters requiring escaping in JSON have been escaped.  Used by the schema extensions
+    /// that cache a member's serialized key; see ``MemberNameExtension`` & ``JSONNameExtension``.
+    /// - Parameter name: The key name to be encoded.
+    /// - Returns: The UTF-8 bytes for the JSON representation of the key.
+    static func writeKey(name: String) throws -> [UInt8] {
+        // Create a Serializer & use it to write the key to a JSON string,
+        // surrounded by double quotes.
+        let serializer = Serializer(usesJSONNameTrait: false)
+        try serializer.writeString(Smithy.Prelude.stringSchema, name)
+
+        // Get the data, append a colon (UTF-8 58) to the end, and create a new array
+        // to trim extra capacity and flatten.
+        var data = try serializer.data
+        data.append(Self.colon)
+        return [UInt8](data)
+    }
 }
