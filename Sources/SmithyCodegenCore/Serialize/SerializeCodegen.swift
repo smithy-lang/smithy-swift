@@ -106,7 +106,8 @@ package struct SerializeCodegen {
                     writer: writer,
                     shape: shape,
                     member: member,
-                    schemaVarName: "structMemberSchema"
+                    schemaVarName: "structMemberSchema",
+                    depth: 1
                 )
             }
         } else {
@@ -116,7 +117,8 @@ package struct SerializeCodegen {
                     writer: writer,
                     shape: shape,
                     member: member,
-                    schemaVarName: "structMemberSchema"
+                    schemaVarName: "structMemberSchema",
+                    depth: 1
                 )
             }
         }
@@ -137,7 +139,8 @@ package struct SerializeCodegen {
             writer: writer,
             shape: shape,
             member: member,
-            schemaVarName: "unionMemberSchema"
+            schemaVarName: "unionMemberSchema",
+            depth: 1
         )
         writer.dedent()
     }
@@ -146,7 +149,8 @@ package struct SerializeCodegen {
         writer: SwiftWriter,
         shape: Shape,
         member: MemberShape,
-        schemaVarName: String
+        schemaVarName: String,
+        depth: Int
     ) throws {
         let target = try member.target
         switch target.type {
@@ -154,7 +158,8 @@ package struct SerializeCodegen {
             guard let listShape = target as? ListShape else {
                 throw ModelError("Shape \(target.id) is type .\(target.type) but not a ListShape")
             }
-            writer.write("let listMemberSchema = \(schemaVarName).target!.member")
+            let listMemberSchemaVarName = "listMemberSchema\(depth)"
+            writer.write("let \(listMemberSchemaVarName) = \(schemaVarName).target!.member")
             let isSparse = listShape.hasTrait(SparseTrait.self)
             let methodName = isSparse ? "writeSparseList" : "writeList"
             try writer.openBlock(
@@ -165,14 +170,16 @@ package struct SerializeCodegen {
                     writer: writer,
                     shape: listShape,
                     member: listShape.member,
-                    schemaVarName: "listMemberSchema"
+                    schemaVarName: listMemberSchemaVarName,
+                    depth: depth + 1
                 )
             }
         case .map:
             guard let mapShape = target as? MapShape else {
                 throw ModelError("Shape \(target.id) is type .map but not a MapShape")
             }
-            writer.write("let mapValueSchema = \(schemaVarName).target!.value")
+            let mapValueSchemaVarName = "mapValueSchema\(depth)"
+            writer.write("let \(mapValueSchemaVarName) = \(schemaVarName).target!.value")
             let isSparse = mapShape.hasTrait(SparseTrait.self)
             let methodName = isSparse ? "writeSparseMap" : "writeMap"
             try writer.openBlock(
@@ -183,7 +190,8 @@ package struct SerializeCodegen {
                     writer: writer,
                     shape: mapShape,
                     member: mapShape.value,
-                    schemaVarName: "mapValueSchema"
+                    schemaVarName: mapValueSchemaVarName,
+                    depth: depth + 1
                 )
             }
         case .integer:
