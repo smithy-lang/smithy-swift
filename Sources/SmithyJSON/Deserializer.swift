@@ -12,11 +12,12 @@ import class Foundation.NSNumber
 @_spi(SchemaBasedSerde)
 @_spi(SmithyDocumentImpl) import Smithy
 @_spi(SchemaBasedSerde)
+import struct SmithySerialization.DecodedNull
+@_spi(SchemaBasedSerde)
 import protocol SmithySerialization.DeserializableStruct
 import struct SmithySerialization.SerializerError
 @_spi(SchemaBasedSerde)
 import protocol SmithySerialization.ShapeDeserializer
-import struct SmithySerialization.UnexpectedNullError
 @_spi(SmithyTimestamps) import struct SmithyTimestamps.TimestampFormatter
 
 @_spi(SchemaBasedSerde)
@@ -81,7 +82,7 @@ public final class Deserializer: ShapeDeserializer {
         return try list.compactMap {
             do {
                 return try consumer(Deserializer(usesJSONNameTrait: usesJSONNameTrait, node: $0))
-            } catch is UnexpectedNullError {
+            } catch is DecodedNull {
                 // JSON deserializer "tolerates" nulls in non-sparse lists.
                 // This nil will be compacted out of the returned list.
                 return nil
@@ -95,7 +96,7 @@ public final class Deserializer: ShapeDeserializer {
         return try map.compactMapValues {
             do {
                 return try consumer(Deserializer(usesJSONNameTrait: usesJSONNameTrait, node: $0))
-            } catch is UnexpectedNullError {
+            } catch is DecodedNull {
                 // JSON deserializer "tolerates" nulls in non-sparse maps.
                 // This nil will be compacted out of the returned map.
                 return nil
@@ -247,15 +248,6 @@ public final class Deserializer: ShapeDeserializer {
         return date
     }
 
-    public func readNull<T>(_ schema: Schema) throws -> T? {
-        // no action required
-        return nil
-    }
-
-    public func isNull() throws -> Bool {
-        value == .null
-    }
-
     public var containerSize: Int {
         switch value {
         case .object(let object):
@@ -281,7 +273,7 @@ public final class Deserializer: ShapeDeserializer {
 
     private func nullCheck() throws {
         if case .null = self.value {
-            throw UnexpectedNullError()
+            throw DecodedNull()
         }
     }
 }
