@@ -101,20 +101,22 @@ package struct SerializeCodegen {
         if try NullableIndex().isNonOptional(member) {
             try writer.openBlock("do {", "}") { writer in
                 writer.write("let value = self.\(properties)\(propertyName)")
+                writer.write("let structMemberSchema = schema.members[\(index)]")
                 try writeSerializeCall(
                     writer: writer,
                     shape: shape,
                     member: member,
-                    schemaVarName: "schema.members[\(index)]"
+                    schemaVarName: "structMemberSchema"
                 )
             }
         } else {
             try writer.openBlock("if let value = self.\(properties)\(propertyName) {", "}") { writer in
+                writer.write("let structMemberSchema = schema.members[\(index)]")
                 try writeSerializeCall(
                     writer: writer,
                     shape: shape,
                     member: member,
-                    schemaVarName: "schema.members[\(index)]"
+                    schemaVarName: "structMemberSchema"
                 )
             }
         }
@@ -130,11 +132,12 @@ package struct SerializeCodegen {
         let enumCaseName = try ctx.symbolProvider.enumCaseName(shapeID: member.id)
         writer.write("case .\(enumCaseName)(let value):")
         writer.indent()
+        writer.write("let unionMemberSchema = schema.members[\(index)]")
         try writeSerializeCall(
             writer: writer,
             shape: shape,
             member: member,
-            schemaVarName: "schema.members[\(index)]"
+            schemaVarName: "unionMemberSchema"
         )
         writer.dedent()
     }
@@ -151,6 +154,7 @@ package struct SerializeCodegen {
             guard let listShape = target as? ListShape else {
                 throw ModelError("Shape \(target.id) is type .\(target.type) but not a ListShape")
             }
+            writer.write("let listMemberSchema = \(schemaVarName).target!.member")
             let isSparse = listShape.hasTrait(SparseTrait.self)
             let methodName = isSparse ? "writeSparseList" : "writeList"
             try writer.openBlock(
@@ -161,13 +165,14 @@ package struct SerializeCodegen {
                     writer: writer,
                     shape: listShape,
                     member: listShape.member,
-                    schemaVarName: "\(schemaVarName).target!.member"
+                    schemaVarName: "listMemberSchema"
                 )
             }
         case .map:
             guard let mapShape = target as? MapShape else {
                 throw ModelError("Shape \(target.id) is type .map but not a MapShape")
             }
+            writer.write("let mapValueSchema = \(schemaVarName).target!.value")
             let isSparse = mapShape.hasTrait(SparseTrait.self)
             let methodName = isSparse ? "writeSparseMap" : "writeMap"
             try writer.openBlock(
@@ -178,7 +183,7 @@ package struct SerializeCodegen {
                     writer: writer,
                     shape: mapShape,
                     member: mapShape.value,
-                    schemaVarName: "\(schemaVarName).target!.value"
+                    schemaVarName: "mapValueSchema"
                 )
             }
         case .integer:
