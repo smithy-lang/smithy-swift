@@ -134,14 +134,6 @@ public struct EventStreamDeserializer: ShapeDeserializer {
         throw notImplemented
     }
 
-    public func readNull<T>(_ schema: Schema) throws -> T? {
-        throw notImplemented
-    }
-
-    public func isNull() throws -> Bool {
-        throw notImplemented
-    }
-
     public var containerSize: Int { -1 }
 
     private var notImplemented: SerializerError { .init("Not implemented") }
