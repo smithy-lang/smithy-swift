@@ -20,9 +20,15 @@ operation JSONNameMembers {
 structure JSONNameMembersInput {
     @jsonName("modified")
     original: String
+
+    // Has no jsonName trait, so both serializer modes must use the member name.
+    unmodified: String
 }
 
 structure JSONNameMembersOutput {
     @jsonName("modified")
     original: String
+
+    // Has no jsonName trait, so both serializer modes must use the member name.
+    unmodified: String
 }

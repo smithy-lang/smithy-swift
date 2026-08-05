@@ -72,6 +72,8 @@ public final class Schema: Sendable {
     /// Will be `nil` for any schema other than a member.
     public let containerType: ShapeType?
 
+    private let _extensions = UniquelyIndexedMutableCollection([])
+
     /// Creates a new Schema using the passed parameters.
     ///
     /// No validation is performed on the parameters since calls to this initializer
@@ -128,5 +130,34 @@ public final class Schema: Sendable {
     /// Only access this property on a schema of type `.map` or `.document`.
     public var value: Schema {
         members[1] // `value` will be the second member in a map or document schema, after `key`
+    }
+
+    /// Gets the requested type of schema extension for this schema.
+    /// - Parameter type: The type of schema extension to be retrieved & returned.
+    /// - Returns: A schema extension of the requested type, or `nil` if none exists.
+    public func getExtension<Extension: SchemaExtension>(_ type: Extension.Type) -> Extension? {
+        _extensions.get(Extension.self)
+    }
+
+    /// Stores the passed schema extension.
+    ///
+    /// If multiple callers attempt to create a schema extension from multiple threads at the same time, each will create & store the value.
+    /// This may result in extra work performed, but the type is thread-safe and the time spent blocking any calling thread is minimized.
+    /// - Parameter value: The schema extension to be stored.
+    public func setExtension<Extension: SchemaExtension>(_ value: Extension) {
+        _extensions.set(value)
+    }
+
+    /// Gets the requested type of schema extension for this schema, creating & storing it first if it does not exist.
+    ///
+    /// Creation & storage is not performed atomically; see ``setExtension(_:)`` for the implications when
+    /// this method is called from multiple threads at the same time.
+    /// - Parameter type: The type of schema extension to be retrieved & returned.
+    /// - Returns: A schema extension of the requested type.
+    public func getOrCreateExtension<Extension: SchemaExtension>(_ type: Extension.Type) throws -> Extension {
+        if let storedExtension = getExtension(Extension.self) { return storedExtension }
+        let newExtension = try Extension(schema: self)
+        setExtension(newExtension)
+        return newExtension
     }
 }
