@@ -2,11 +2,9 @@ $version: "2.0"
 
 namespace smithy.swift.tests.MaxRecursion
 
-use aws.protocols#awsJson1_0
 use smithy.protocols#rpcv2Cbor
 
 @rpcv2Cbor
-@awsJson1_0
 service MaxRecursion {
     version: "2022-11-30"
     operations: [
