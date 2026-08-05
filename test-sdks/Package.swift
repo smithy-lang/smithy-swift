@@ -47,6 +47,7 @@ let package = Package(
                 .product(name: "Smithy", package: "smithy-swift"),
                 .product(name: "AwsCommonRuntimeKit", package: "aws-crt-swift"),
                 testSDKProduct("MaxRecursion"),
+                testSDKProduct("NullTolerance"),
             ]
         ),
         .testTarget(
