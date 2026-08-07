@@ -21,13 +21,17 @@ service HTTPHeader {
         StringListHTTPHeader
         IntegerListHTTPHeader
         SparseStringListHTTPHeader
+        TimestampListHTTPHeader
+        FormattedTimestampListHTTPHeader
         MultipleHTTPHeader
+        ErrorHTTPHeader
     ]
 }
 
 @http(method: "GET", uri: "/BooleanHTTPHeader")
 operation BooleanHTTPHeader {
     input: BooleanHTTPHeaderInput
+    output: BooleanHTTPHeaderOutput
 }
 
 @input
@@ -37,9 +41,16 @@ structure BooleanHTTPHeaderInput {
     flag: Boolean
 }
 
+@output
+structure BooleanHTTPHeaderOutput {
+    @httpHeader("X-Flag")
+    flag: Boolean
+}
+
 @http(method: "GET", uri: "/ByteHTTPHeader")
 operation ByteHTTPHeader {
     input: ByteHTTPHeaderInput
+    output: ByteHTTPHeaderOutput
 }
 
 @input
@@ -49,9 +60,16 @@ structure ByteHTTPHeaderInput {
     value: Byte
 }
 
+@output
+structure ByteHTTPHeaderOutput {
+    @httpHeader("X-Byte")
+    value: Byte
+}
+
 @http(method: "GET", uri: "/ShortHTTPHeader")
 operation ShortHTTPHeader {
     input: ShortHTTPHeaderInput
+    output: ShortHTTPHeaderOutput
 }
 
 @input
@@ -61,9 +79,16 @@ structure ShortHTTPHeaderInput {
     value: Short
 }
 
+@output
+structure ShortHTTPHeaderOutput {
+    @httpHeader("X-Short")
+    value: Short
+}
+
 @http(method: "GET", uri: "/IntegerHTTPHeader")
 operation IntegerHTTPHeader {
     input: IntegerHTTPHeaderInput
+    output: IntegerHTTPHeaderOutput
 }
 
 @input
@@ -73,9 +98,16 @@ structure IntegerHTTPHeaderInput {
     value: Integer
 }
 
+@output
+structure IntegerHTTPHeaderOutput {
+    @httpHeader("X-Integer")
+    value: Integer
+}
+
 @http(method: "GET", uri: "/LongHTTPHeader")
 operation LongHTTPHeader {
     input: LongHTTPHeaderInput
+    output: LongHTTPHeaderOutput
 }
 
 @input
@@ -85,9 +117,16 @@ structure LongHTTPHeaderInput {
     value: Long
 }
 
+@output
+structure LongHTTPHeaderOutput {
+    @httpHeader("X-Long")
+    value: Long
+}
+
 @http(method: "GET", uri: "/FloatHTTPHeader")
 operation FloatHTTPHeader {
     input: FloatHTTPHeaderInput
+    output: FloatHTTPHeaderOutput
 }
 
 @input
@@ -97,9 +136,16 @@ structure FloatHTTPHeaderInput {
     value: Float
 }
 
+@output
+structure FloatHTTPHeaderOutput {
+    @httpHeader("X-Float")
+    value: Float
+}
+
 @http(method: "GET", uri: "/DoubleHTTPHeader")
 operation DoubleHTTPHeader {
     input: DoubleHTTPHeaderInput
+    output: DoubleHTTPHeaderOutput
 }
 
 @input
@@ -109,9 +155,16 @@ structure DoubleHTTPHeaderInput {
     value: Double
 }
 
+@output
+structure DoubleHTTPHeaderOutput {
+    @httpHeader("X-Double")
+    value: Double
+}
+
 @http(method: "GET", uri: "/StringHTTPHeader")
 operation StringHTTPHeader {
     input: StringHTTPHeaderInput
+    output: StringHTTPHeaderOutput
 }
 
 @input
@@ -121,9 +174,16 @@ structure StringHTTPHeaderInput {
     value: String
 }
 
+@output
+structure StringHTTPHeaderOutput {
+    @httpHeader("X-String")
+    value: String
+}
+
 @http(method: "GET", uri: "/TimestampHTTPHeader")
 operation TimestampHTTPHeader {
     input: TimestampHTTPHeaderInput
+    output: TimestampHTTPHeaderOutput
 }
 
 @input
@@ -133,9 +193,16 @@ structure TimestampHTTPHeaderInput {
     moment: Timestamp
 }
 
+@output
+structure TimestampHTTPHeaderOutput {
+    @httpHeader("X-Moment")
+    moment: Timestamp
+}
+
 @http(method: "GET", uri: "/FormattedTimestampHTTPHeader")
 operation FormattedTimestampHTTPHeader {
     input: FormattedTimestampHTTPHeaderInput
+    output: FormattedTimestampHTTPHeaderOutput
 }
 
 @input
@@ -146,13 +213,27 @@ structure FormattedTimestampHTTPHeaderInput {
     moment: Timestamp
 }
 
+@output
+structure FormattedTimestampHTTPHeaderOutput {
+    @httpHeader("X-Moment")
+    @timestampFormat("date-time")
+    moment: Timestamp
+}
+
 @http(method: "GET", uri: "/StringListHTTPHeader")
 operation StringListHTTPHeader {
     input: StringListHTTPHeaderInput
+    output: StringListHTTPHeaderOutput
 }
 
 @input
 structure StringListHTTPHeaderInput {
+    @httpHeader("X-Word")
+    words: StringList
+}
+
+@output
+structure StringListHTTPHeaderOutput {
     @httpHeader("X-Word")
     words: StringList
 }
@@ -164,10 +245,17 @@ list StringList {
 @http(method: "GET", uri: "/IntegerListHTTPHeader")
 operation IntegerListHTTPHeader {
     input: IntegerListHTTPHeaderInput
+    output: IntegerListHTTPHeaderOutput
 }
 
 @input
 structure IntegerListHTTPHeaderInput {
+    @httpHeader("X-Number")
+    numbers: IntegerList
+}
+
+@output
+structure IntegerListHTTPHeaderOutput {
     @httpHeader("X-Number")
     numbers: IntegerList
 }
@@ -179,10 +267,17 @@ list IntegerList {
 @http(method: "GET", uri: "/SparseStringListHTTPHeader")
 operation SparseStringListHTTPHeader {
     input: SparseStringListHTTPHeaderInput
+    output: SparseStringListHTTPHeaderOutput
 }
 
 @input
 structure SparseStringListHTTPHeaderInput {
+    @httpHeader("X-Word")
+    words: SparseStringList
+}
+
+@output
+structure SparseStringListHTTPHeaderOutput {
     @httpHeader("X-Word")
     words: SparseStringList
 }
@@ -195,6 +290,7 @@ list SparseStringList {
 @http(method: "GET", uri: "/MultipleHTTPHeader")
 operation MultipleHTTPHeader {
     input: MultipleHTTPHeaderInput
+    output: MultipleHTTPHeaderOutput
 }
 
 @input
@@ -204,4 +300,93 @@ structure MultipleHTTPHeaderInput {
 
     @httpHeader("X-Count")
     count: Integer
+}
+
+@output
+structure MultipleHTTPHeaderOutput {
+    @httpHeader("X-Key")
+    key: String
+
+    @httpHeader("X-Count")
+    count: Integer
+
+    // Not bound to a header; it is left untouched by the header deserializer.
+    unbound: String
+}
+
+// Lists of timestamps are deserialized from a header by splitting on every second comma,
+// since the default http-date format contains a comma of its own.  A list whose member carries
+// the timestampFormat trait is split on every comma instead.
+@http(method: "GET", uri: "/TimestampListHTTPHeader")
+operation TimestampListHTTPHeader {
+    input: TimestampListHTTPHeaderInput
+    output: TimestampListHTTPHeaderOutput
+}
+
+@input
+structure TimestampListHTTPHeaderInput {
+    @httpHeader("X-Moment")
+    moments: TimestampList
+}
+
+@output
+structure TimestampListHTTPHeaderOutput {
+    @httpHeader("X-Moment")
+    moments: TimestampList
+}
+
+list TimestampList {
+    member: Timestamp
+}
+
+@http(method: "GET", uri: "/FormattedTimestampListHTTPHeader")
+operation FormattedTimestampListHTTPHeader {
+    input: FormattedTimestampListHTTPHeaderInput
+    output: FormattedTimestampListHTTPHeaderOutput
+}
+
+@input
+structure FormattedTimestampListHTTPHeaderInput {
+    @httpHeader("X-Moment")
+    moments: FormattedTimestampList
+}
+
+@output
+structure FormattedTimestampListHTTPHeaderOutput {
+    @httpHeader("X-Moment")
+    moments: FormattedTimestampList
+}
+
+list FormattedTimestampList {
+    @timestampFormat("date-time")
+    member: Timestamp
+}
+
+// An error response binds headers to the members of the error structure, same as a success response.
+@http(method: "GET", uri: "/ErrorHTTPHeader")
+operation ErrorHTTPHeader {
+    input: ErrorHTTPHeaderInput
+    output: ErrorHTTPHeaderOutput
+    errors: [
+        HTTPHeaderError
+    ]
+}
+
+@input
+structure ErrorHTTPHeaderInput {}
+
+@output
+structure ErrorHTTPHeaderOutput {}
+
+@error("client")
+@httpError(429)
+structure HTTPHeaderError {
+    @httpHeader("X-Key")
+    key: String
+
+    @httpHeader("X-Count")
+    count: Integer
+
+    @httpHeader("X-Word")
+    words: StringList
 }
