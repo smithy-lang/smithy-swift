@@ -64,7 +64,8 @@ package struct DeserializeCodegen {
                                 writer: writer,
                                 shape: shape,
                                 member: member,
-                                schemaVarName: "memberSchema"
+                                schemaVarName: "memberSchema",
+                                depth: 1
                             )
                             writer.dedent()
                         }
@@ -91,7 +92,8 @@ package struct DeserializeCodegen {
         writer: SwiftWriter,
         shape: Shape,
         member: MemberShape,
-        schemaVarName: String
+        schemaVarName: String,
+        depth: Int
     ) throws {
         let target = try member.target
         let propertySwiftType = try ctx.symbolProvider.swiftType(shape: target)
@@ -110,6 +112,8 @@ package struct DeserializeCodegen {
             guard let listShape = target as? ListShape else {
                 throw SymbolProviderError("Shape has type .list but is not a ListShape")
             }
+            let listMemberSchemaVarName = "listMemberSchema\(depth)"
+            writer.write("let \(listMemberSchemaVarName) = \(schemaVarName).target!.member")
             let isSparse = listShape.hasTrait(SparseTrait.self)
             let methodName = isSparse ? "readSparseList" : "readList"
             try writer.openBlock(
@@ -121,13 +125,16 @@ package struct DeserializeCodegen {
                     writer: writer,
                     shape: listShape,
                     member: listShape.member,
-                    schemaVarName: "\(schemaVarName).target!.member"
+                    schemaVarName: listMemberSchemaVarName,
+                    depth: depth + 1
                 )
             }
         case .map:
             guard let mapShape = target as? MapShape else {
                 throw SymbolProviderError("Shape has type .map but is not a MapShape")
             }
+            let mapValueSchemaVarName = "mapValueSchema\(depth)"
+            writer.write("let \(mapValueSchemaVarName) = \(schemaVarName).target!.value")
             let isSparse = mapShape.hasTrait(SparseTrait.self)
             let methodName = isSparse ? "readSparseMap" : "readMap"
             try writer.openBlock(
@@ -139,7 +146,8 @@ package struct DeserializeCodegen {
                     writer: writer,
                     shape: mapShape,
                     member: mapShape.value,
-                    schemaVarName: "\(schemaVarName).target!.value"
+                    schemaVarName: mapValueSchemaVarName,
+                    depth: depth + 1
                 )
             }
         case .document:

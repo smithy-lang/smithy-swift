@@ -9,6 +9,7 @@ service MaxRecursion {
     version: "2022-11-30"
     operations: [
         Recursive
+        DeeplyNested
     ]
 }
 
@@ -30,4 +31,41 @@ list NestedList {
 map NestedMap {
     key: String
     value: RecursiveInputOutput
+}
+
+operation DeeplyNested {
+    input: DeeplyNestedInputOutput
+    output: DeeplyNestedInputOutput
+}
+
+structure DeeplyNestedInputOutput {
+    list: List1
+    map: Map1
+}
+
+list List1 {
+    member: List2
+}
+
+list List2 {
+    member: List3
+}
+
+list List3 {
+    member: String
+}
+
+map Map1 {
+    key: String
+    value: Map2
+}
+
+map Map2 {
+    key: String
+    value: Map3
+}
+
+map Map3 {
+    key: String
+    value: String
 }

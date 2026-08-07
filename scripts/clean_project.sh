@@ -11,3 +11,4 @@ rm -rf build
 rm -rf smithy-swift-codegen/build
 rm -rf test-sdks/build
 rm -rf test-sdks/.build
+rm -rf serde-benchmark/build

@@ -60,6 +60,7 @@ let package = Package(
                 testSDKProduct("AWSJSON"),
                 testSDKProduct("JSONName"),
                 testSDKProduct("NullTolerance"),
+                testSDKProduct("MaxRecursion"),
             ]
         ),
         .testTarget(
