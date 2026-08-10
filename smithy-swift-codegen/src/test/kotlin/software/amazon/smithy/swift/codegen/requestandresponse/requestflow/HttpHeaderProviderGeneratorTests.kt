@@ -116,6 +116,45 @@ extension TimestampInputInput {
         contents.shouldContainOnlyOnce(expectedContents)
     }
 
+    @Test
+    fun `it encodes float and double headers with encodeNumber`() {
+        // Floats & doubles must be rendered by URLEncodingUtils.encodeNumber so that the non-finite
+        // values are rendered as the Smithy-defined tokens NaN, Infinity, and -Infinity.  Swift's own
+        // string interpolation would render them as nan, inf, and -inf, which are invalid on the wire.
+        val context = TestContext.initContextFrom("http-float-bindings.smithy", "com.test#Example")
+        context.generator.generateSerializers(context.generationCtx)
+        context.generationCtx.delegator.flushWriters()
+        val contents = getModelFileContents("example/Sources/example", "FloatBindingsInput+HeaderProvider.swift", context.manifest)
+        contents.shouldSyntacticSanityCheck()
+        val expectedContents = """
+extension FloatBindingsInput {
+
+    static func headerProvider(_ value: FloatBindingsInput) -> SmithyHTTPAPI.Headers {
+        var items = SmithyHTTPAPI.Headers()
+        if let headerDouble = value.headerDouble {
+            items.add(SmithyHTTPAPI.Header(name: "X-Double", value: SmithyHTTPAPI.URLEncodingUtils.encodeNumber(headerDouble)))
+        }
+        if let headerFloat = value.headerFloat {
+            items.add(SmithyHTTPAPI.Header(name: "X-Float", value: SmithyHTTPAPI.URLEncodingUtils.encodeNumber(headerFloat)))
+        }
+        if let headerFloatList = value.headerFloatList {
+            if headerFloatList.isEmpty {
+                items.add(name: "X-FloatList", value: "")
+            }
+            headerFloatList.forEach { headerValue in
+                items.add(SmithyHTTPAPI.Header(name: "X-FloatList", value: ClientRuntime.quoteHeaderValue(SmithyHTTPAPI.URLEncodingUtils.encodeNumber(headerValue))))
+            }
+        }
+        if let headerString = value.headerString {
+            items.add(SmithyHTTPAPI.Header(name: "X-String", value: Swift.String(headerString)))
+        }
+        return items
+    }
+}
+"""
+        contents.shouldContainOnlyOnce(expectedContents)
+    }
+
     private fun newTestContext(): TestContext {
         val settings = model.defaultSettings()
         model = AddOperationShapes.execute(model, settings.getService(model), settings.moduleName)

@@ -8,10 +8,7 @@ package software.amazon.smithy.swift.codegen.integration.middlewares.providers
 import software.amazon.smithy.codegen.core.Symbol
 import software.amazon.smithy.model.knowledge.HttpBinding
 import software.amazon.smithy.model.knowledge.HttpBindingIndex
-import software.amazon.smithy.model.shapes.BigDecimalShape
 import software.amazon.smithy.model.shapes.CollectionShape
-import software.amazon.smithy.model.shapes.DoubleShape
-import software.amazon.smithy.model.shapes.FloatShape
 import software.amazon.smithy.model.shapes.MapShape
 import software.amazon.smithy.model.shapes.MemberShape
 import software.amazon.smithy.model.shapes.OperationShape
@@ -24,12 +21,12 @@ import software.amazon.smithy.swift.codegen.integration.HttpBindingResolver
 import software.amazon.smithy.swift.codegen.integration.ProtocolGenerator
 import software.amazon.smithy.swift.codegen.integration.formatHeaderOrQueryValue
 import software.amazon.smithy.swift.codegen.integration.middlewares.handlers.MiddlewareShapeUtils
+import software.amazon.smithy.swift.codegen.integration.renderCreateValueCall
 import software.amazon.smithy.swift.codegen.model.defaultValue
 import software.amazon.smithy.swift.codegen.model.hasTrait
 import software.amazon.smithy.swift.codegen.model.isBoxed
 import software.amazon.smithy.swift.codegen.model.needsDefaultValueCheck
 import software.amazon.smithy.swift.codegen.model.toMemberNames
-import software.amazon.smithy.swift.codegen.swiftmodules.SmithyHTTPAPITypes
 import software.amazon.smithy.swift.codegen.swiftmodules.SmithyTypes
 import software.amazon.smithy.swift.codegen.swiftmodules.SwiftTypes
 import software.amazon.smithy.swift.codegen.utils.SDKFileUtils
@@ -75,20 +72,6 @@ class HttpQueryItemProvider(
                         )
                     queryItemMiddleware.renderProvider(writer)
                 }
-            }
-        }
-
-        fun renderCreateValueCall(
-            ctx: ProtocolGenerator.GenerationContext,
-            writer: SwiftWriter,
-            member: MemberShape,
-        ): String {
-            val targetShape = ctx.model.expectShape(member.target)
-            return when (targetShape) {
-                is DoubleShape, is FloatShape, is BigDecimalShape ->
-                    writer.format("\$N.encodeNumber", SmithyHTTPAPITypes.URLEncodingUtils)
-                else ->
-                    writer.format("\$N", SwiftTypes.String)
             }
         }
     }
@@ -252,7 +235,12 @@ class HttpQueryItemProvider(
         }
     }
 
-    private fun renderConstruction(member: MemberShape, paramName: String, prefix: String, memberName: String) {
+    private fun renderConstruction(
+        member: MemberShape,
+        paramName: String,
+        prefix: String,
+        memberName: String,
+    ) {
         val queryItemName = "${ctx.symbolProvider.toMemberNames(member).second}QueryItem"
         val createValueCall = renderCreateValueCall(ctx, writer, member)
         writer.write(
@@ -288,16 +276,20 @@ class HttpQueryItemProvider(
             if (requiresDoCatch) {
                 renderDoCatch(queryItemValue, paramName)
             } else {
+                val createValueCall = renderCreateValueCall(ctx, writer, memberTarget.member)
                 writer.write(
-                    "let queryItem = \$N(name: \"$paramName\".urlPercentEncoding(), value: \$N($queryItemValue).urlPercentEncoding())",
+                    "let queryItem = \$N(name: \"$paramName\".urlPercentEncoding(), value: \$L($queryItemValue).urlPercentEncoding())",
                     SmithyTypes.URIQueryItem,
-                    SwiftTypes.String,
+                    createValueCall,
                 )
                 writer.write("items.append(queryItem)")
             }
         }
     }
 
+    // `String.init` is used to render the value here, rather than `renderCreateValueCall`, because
+    // only base64-encoded values reach this method.  `requiresDoCatch` is set only for blobs and
+    // media-typed strings, so a floating-point value is never rendered here.
     private fun renderDoCatch(
         queryItemValueWithExtension: String,
         paramName: String,

@@ -19,6 +19,7 @@ import software.amazon.smithy.swift.codegen.integration.HttpBindingResolver
 import software.amazon.smithy.swift.codegen.integration.ProtocolGenerator
 import software.amazon.smithy.swift.codegen.integration.formatHeaderOrQueryValue
 import software.amazon.smithy.swift.codegen.integration.middlewares.handlers.MiddlewareShapeUtils
+import software.amazon.smithy.swift.codegen.integration.renderCreateValueCall
 import software.amazon.smithy.swift.codegen.model.defaultValue
 import software.amazon.smithy.swift.codegen.model.isBoxed
 import software.amazon.smithy.swift.codegen.model.needsDefaultValueCheck
@@ -148,7 +149,7 @@ class HttpHeaderProvider(
                     )
                 }
             } else if (inCollection && ctx.model.expectShape(member.target) !is TimestampShape) {
-                val createValueCall = HttpQueryItemProvider.renderCreateValueCall(ctx, writer, member)
+                val createValueCall = renderCreateValueCall(ctx, writer, member)
                 writer.write(
                     "items.add(\$N(name: \"\$L\", value: \$N(\$L(\$L))))",
                     SmithyHTTPAPITypes.Header,
@@ -158,7 +159,7 @@ class HttpHeaderProvider(
                     memberNameWithExtension,
                 )
             } else {
-                val createValueCall = HttpQueryItemProvider.renderCreateValueCall(ctx, writer, member)
+                val createValueCall = renderCreateValueCall(ctx, writer, member)
                 writer.write(
                     "items.add(\$N(name: \"\$L\", value: \$L(\$L)))",
                     SmithyHTTPAPITypes.Header,
@@ -209,6 +210,9 @@ class HttpHeaderProvider(
         }
     }
 
+    // `String.init` is used to render the value here, rather than `renderCreateValueCall`, because
+    // only base64-encoded values reach this method.  `requiresDoCatch` is set only for blobs and
+    // media-typed strings, so a floating-point value is never rendered here.
     private fun renderDoCatch(
         headerValueWithExtension: String,
         headerName: String,
