@@ -50,15 +50,38 @@ public enum Prelude {
     public static let bigDecimalSchema: Schema =
         Schema(id: .init("smithy.api", "BigDecimal"), type: .bigDecimal)
 
-    public static let documentSchema: Schema =
-        Schema(id: .init("smithy.api", "Document"), type: .document, members: [
+    public static let documentSchema: Schema = Schema(
+        id: .init("smithy.api", "Document"),
+        type: .document,
+        members: [
             // Since document can be a list or map of documents, among other types, it has the members for both
             // Map key/value comes first, then list member
             // Providing these members allows a map- or list-type document to be handled as any list or map would
-            .init(id: .init("smithy.api", "Document", "key"), type: .string, containerType: .document),
-            .init(id: .init("smithy.api", "Document", "value"), type: .document, containerType: .document),
-            .init(id: .init("smithy.api", "Document", "member"), type: .document, containerType: .document),
+            documentSchema_member_key,
+            documentSchema_member_value,
+            documentSchema_member_member,
         ])
+
+    private static let documentSchema_member_key: Schema = Schema(
+        id: .init("smithy.api", "Document", "key"),
+        type: .string,
+        containerType: .document,
+        target: stringSchema
+    )
+
+    private static let documentSchema_member_value: Schema = Schema(
+        id: .init("smithy.api", "Document", "value"),
+        type: .document,
+        containerType: .document,
+        target: documentSchema
+    )
+
+    private static let documentSchema_member_member: Schema = Schema(
+        id: .init("smithy.api", "Document", "member"),
+        type: .document,
+        containerType: .document,
+        target: documentSchema
+    )
 
     public static let primitiveBooleanSchema: Schema =
         Schema(id: .init("smithy.api", "PrimitiveBoolean"), type: .boolean, traits: [DefaultTrait(false)])

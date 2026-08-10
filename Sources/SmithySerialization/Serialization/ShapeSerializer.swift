@@ -128,12 +128,14 @@ public extension ShapeSerializer {
         case .bigInteger:
             try writeBigInteger(schema, value.asBigInteger())
         case .list, .set:
+            let listMemberSerializer = schema.member
             try writeList(schema, value.asList()) { element, serializer in
-                try serializer.writeDocument(schema.member, element)
+                try serializer.writeDocument(listMemberSerializer, element)
             }
         case .map:
+            let mapValueSerializer = schema.value
             try writeMap(schema, value.asStringMap()) { value, serializer in
-                try serializer.writeDocument(schema.value, value)
+                try serializer.writeDocument(mapValueSerializer, value)
             }
         case .document, .enum, .intEnum, .structure, .union, .member, .service, .resource, .operation:
             throw SerializerError("Unsupported or invalid document type: \(value.type)")

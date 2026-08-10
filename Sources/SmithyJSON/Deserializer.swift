@@ -202,15 +202,17 @@ public final class Deserializer: ShapeDeserializer {
     public func readDocument(_ schema: Schema) throws -> any SmithyDocument {
         switch value {
         case .object(let object):
+            let mapValueSchema = schema.value
             let documentObject = try object.mapValues { value in
                 let deserializer = Deserializer(usesJSONNameTrait: usesJSONNameTrait, node: value)
-                return try deserializer.readDocument(schema)
+                return try deserializer.readDocument(mapValueSchema)
             }
             return StringMapDocument(value: documentObject)
         case .list(let list):
+            let listMemberSchema = schema.member
             let documentList = try list.map { value in
                 let deserializer = Deserializer(usesJSONNameTrait: usesJSONNameTrait, node: value)
-                return try deserializer.readDocument(schema)
+                return try deserializer.readDocument(listMemberSchema)
             }
             return ListDocument(value: documentList)
         case .number(let number):
