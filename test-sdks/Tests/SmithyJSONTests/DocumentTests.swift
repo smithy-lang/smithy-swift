@@ -111,6 +111,88 @@ class DocumentTests: XCTestCase {
         XCTAssertEqual(try subject.data, Data(#"{"document":{"1":{"2":"3"}}}"#.utf8))
     }
 
+    func test_document_writesDocumentListOfListsOfLists() throws {
+        let input = SerdeOperationInput(
+            document: Document(
+                ListDocument(
+                    value: [
+                        ListDocument(
+                            value: [
+                                ListDocument(value: [StringDocument(value: "1")]),
+                                ListDocument(value: [StringDocument(value: "2")]),
+                            ]
+                        ),
+                        ListDocument(
+                            value: [
+                                ListDocument(value: [StringDocument(value: "3")]),
+                            ]
+                        ),
+                    ]
+                )
+            )
+        )
+        let subject = Serializer(usesJSONNameTrait: false)
+        try input.serialize(subject)
+        XCTAssertEqual(try subject.data, Data(#"{"document":[[["1"],["2"]],[["3"]]]}"#.utf8))
+    }
+
+    func test_document_writesDocumentMapOfMapsOfMaps() throws {
+        let input = SerdeOperationInput(
+            document: Document(
+                StringMapDocument(
+                    value: [
+                        "1": StringMapDocument(
+                            value: [
+                                "2": StringMapDocument(value: ["3": StringDocument(value: "4")]),
+                            ]
+                        ),
+                    ]
+                )
+            )
+        )
+        let subject = Serializer(usesJSONNameTrait: false)
+        try input.serialize(subject)
+        XCTAssertEqual(try subject.data, Data(#"{"document":{"1":{"2":{"3":"4"}}}}"#.utf8))
+    }
+
+    func test_document_writesDocumentMapOfListsOfLists() throws {
+        let input = SerdeOperationInput(
+            document: Document(
+                StringMapDocument(
+                    value: [
+                        "a": ListDocument(
+                            value: [
+                                ListDocument(value: [StringDocument(value: "1")]),
+                                ListDocument(value: [StringDocument(value: "2")]),
+                            ]
+                        ),
+                    ]
+                )
+            )
+        )
+        let subject = Serializer(usesJSONNameTrait: false)
+        try input.serialize(subject)
+        XCTAssertEqual(try subject.data, Data(#"{"document":{"a":[["1"],["2"]]}}"#.utf8))
+    }
+
+    func test_document_writesDocumentListOfMapsOfLists() throws {
+        // Each map has a single key, so the serialized order of this document is deterministic
+        // despite Swift dictionaries being unordered.
+        let input = SerdeOperationInput(
+            document: Document(
+                ListDocument(
+                    value: [
+                        StringMapDocument(value: ["a": ListDocument(value: [StringDocument(value: "1")])]),
+                        StringMapDocument(value: ["b": ListDocument(value: [StringDocument(value: "2")])]),
+                    ]
+                )
+            )
+        )
+        let subject = Serializer(usesJSONNameTrait: false)
+        try input.serialize(subject)
+        XCTAssertEqual(try subject.data, Data(#"{"document":[{"a":["1"]},{"b":["2"]}]}"#.utf8))
+    }
+
     func test_document_readsDocumentListOfLists() throws {
         let data = Data(#"{"document":[["1"],["2"],["3"]]}"#.utf8)
         let subject = try Deserializer(usesJSONNameTrait: false, data: data)
