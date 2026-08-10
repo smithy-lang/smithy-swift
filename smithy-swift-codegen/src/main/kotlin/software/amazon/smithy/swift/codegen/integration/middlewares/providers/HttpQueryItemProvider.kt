@@ -8,7 +8,10 @@ package software.amazon.smithy.swift.codegen.integration.middlewares.providers
 import software.amazon.smithy.codegen.core.Symbol
 import software.amazon.smithy.model.knowledge.HttpBinding
 import software.amazon.smithy.model.knowledge.HttpBindingIndex
+import software.amazon.smithy.model.shapes.BigDecimalShape
 import software.amazon.smithy.model.shapes.CollectionShape
+import software.amazon.smithy.model.shapes.DoubleShape
+import software.amazon.smithy.model.shapes.FloatShape
 import software.amazon.smithy.model.shapes.MapShape
 import software.amazon.smithy.model.shapes.MemberShape
 import software.amazon.smithy.model.shapes.OperationShape
@@ -26,6 +29,7 @@ import software.amazon.smithy.swift.codegen.model.hasTrait
 import software.amazon.smithy.swift.codegen.model.isBoxed
 import software.amazon.smithy.swift.codegen.model.needsDefaultValueCheck
 import software.amazon.smithy.swift.codegen.model.toMemberNames
+import software.amazon.smithy.swift.codegen.swiftmodules.SmithyHTTPAPITypes
 import software.amazon.smithy.swift.codegen.swiftmodules.SmithyTypes
 import software.amazon.smithy.swift.codegen.swiftmodules.SwiftTypes
 import software.amazon.smithy.swift.codegen.utils.SDKFileUtils
@@ -73,6 +77,20 @@ class HttpQueryItemProvider(
                 }
             }
         }
+
+        fun renderCreateValueCall(
+            ctx: ProtocolGenerator.GenerationContext,
+            writer: SwiftWriter,
+            member: MemberShape,
+        ): String {
+            val targetShape = ctx.model.expectShape(member.target)
+            return when (targetShape) {
+                is DoubleShape, is FloatShape, is BigDecimalShape ->
+                    writer.format("\$N.encodeNumber", SmithyHTTPAPITypes.URLEncodingUtils)
+                else ->
+                    writer.format("\$N", SwiftTypes.String)
+            }
+        }
     }
 
     fun renderProvider(writer: SwiftWriter) {
@@ -103,7 +121,7 @@ class HttpQueryItemProvider(
 
         var httpQueryParamBinding: HttpBindingDescriptor? = null
         queryBindings.forEach {
-            var memberName = ctx.symbolProvider.toMemberName(it.member)
+            val memberName = ctx.symbolProvider.toMemberName(it.member)
             val memberTarget = ctx.model.expectShape(it.member.target)
             val paramName = it.locationName
             val bindingIndex = HttpBindingIndex.of(ctx.model)
@@ -117,7 +135,7 @@ class HttpQueryItemProvider(
         }
         httpQueryParamBinding?.let {
             val memberTarget = ctx.model.expectShape(it.member.target)
-            var memberName = ctx.symbolProvider.toMemberName(it.member)
+            val memberName = ctx.symbolProvider.toMemberName(it.member)
             if (memberTarget is MapShape) {
                 renderHttpQueryParamMap(memberTarget, memberName)
             }
@@ -205,7 +223,7 @@ class HttpQueryItemProvider(
         paramName: String,
         unwrapped: Boolean,
     ) {
-        var (memberName, requiresDoCatch) =
+        val (memberName, requiresDoCatch) =
             formatHeaderOrQueryValue(
                 ctx,
                 writer,
@@ -226,32 +244,27 @@ class HttpQueryItemProvider(
                     memberName,
                     member.defaultValue(ctx.symbolProvider),
                 ) {
-                    val queryItemName = "${ctx.symbolProvider.toMemberNames(member).second}QueryItem"
-                    writer.write(
-                        "let \$L = \$N(name: \$S.urlPercentEncoding(), value: \$N(\$L\$L).urlPercentEncoding())",
-                        queryItemName,
-                        SmithyTypes.URIQueryItem,
-                        paramName,
-                        SwiftTypes.String,
-                        prefix,
-                        memberName,
-                    )
-                    writer.write("items.append($queryItemName)")
+                    renderConstruction(member, paramName, prefix, memberName)
                 }
             } else {
-                val queryItemName = "${ctx.symbolProvider.toMemberNames(member).second}QueryItem"
-                writer.write(
-                    "let \$L = \$N(name: \$S.urlPercentEncoding(), value: \$N(\$L\$L).urlPercentEncoding())",
-                    queryItemName,
-                    SmithyTypes.URIQueryItem,
-                    paramName,
-                    SwiftTypes.String,
-                    prefix,
-                    memberName,
-                )
-                writer.write("items.append($queryItemName)")
+                renderConstruction(member, paramName, prefix, memberName)
             }
         }
+    }
+
+    private fun renderConstruction(member: MemberShape, paramName: String, prefix: String, memberName: String) {
+        val queryItemName = "${ctx.symbolProvider.toMemberNames(member).second}QueryItem"
+        val createValueCall = renderCreateValueCall(ctx, writer, member)
+        writer.write(
+            "let \$L = \$N(name: \$S.urlPercentEncoding(), value: \$L(\$L\$L).urlPercentEncoding())",
+            queryItemName,
+            SmithyTypes.URIQueryItem,
+            paramName,
+            createValueCall,
+            prefix,
+            memberName,
+        )
+        writer.write("items.append($queryItemName)")
     }
 
     private fun renderListOrSet(
@@ -260,7 +273,7 @@ class HttpQueryItemProvider(
         memberName: String,
         paramName: String,
     ) {
-        var (queryItemValue, requiresDoCatch) =
+        val (queryItemValue, requiresDoCatch) =
             formatHeaderOrQueryValue(
                 ctx,
                 writer,

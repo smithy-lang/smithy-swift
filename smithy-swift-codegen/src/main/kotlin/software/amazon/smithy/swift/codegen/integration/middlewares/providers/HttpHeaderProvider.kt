@@ -94,7 +94,7 @@ class HttpHeaderProvider(
 
     private fun generateHeaders() {
         headerBindings.forEach {
-            var memberName = ctx.symbolProvider.toMemberName(it.member)
+            val memberName = ctx.symbolProvider.toMemberName(it.member)
             val memberTarget = ctx.model.expectShape(it.member.target)
             val paramName = it.locationName
             val isBoxed = ctx.symbolProvider.toSymbol(it.member).isBoxed()
@@ -148,20 +148,22 @@ class HttpHeaderProvider(
                     )
                 }
             } else if (inCollection && ctx.model.expectShape(member.target) !is TimestampShape) {
+                val createValueCall = HttpQueryItemProvider.renderCreateValueCall(ctx, writer, member)
                 writer.write(
-                    "items.add(\$N(name: \"\$L\", value: \$N(\$N(\$L))))",
+                    "items.add(\$N(name: \"\$L\", value: \$N(\$L(\$L))))",
                     SmithyHTTPAPITypes.Header,
                     paramName,
                     ClientRuntimeTypes.Core.quoteHeaderValue,
-                    SwiftTypes.String,
+                    createValueCall,
                     memberNameWithExtension,
                 )
             } else {
+                val createValueCall = HttpQueryItemProvider.renderCreateValueCall(ctx, writer, member)
                 writer.write(
-                    "items.add(\$N(name: \"\$L\", value: \$N(\$L)))",
+                    "items.add(\$N(name: \"\$L\", value: \$L(\$L)))",
                     SmithyHTTPAPITypes.Header,
                     paramName,
-                    SwiftTypes.String,
+                    createValueCall,
                     memberNameWithExtension,
                 )
             }
