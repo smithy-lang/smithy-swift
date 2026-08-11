@@ -32,4 +32,16 @@ public enum URLEncodingUtils {
     public static func urlPercentEncodedForQuery(_ string: String) -> String {
         string.addingPercentEncoding(withAllowedCharacters: allowedForQuery) ?? string
     }
+
+    public static func encodeNumber<FP: FloatingPoint>(_ value: FP) -> String {
+        guard !value.isNaN else { return "NaN" }
+        switch value {
+        case .infinity:
+            return "Infinity"
+        case -.infinity:
+            return "-Infinity"
+        default:
+            return "\(value)"
+        }
+    }
 }
