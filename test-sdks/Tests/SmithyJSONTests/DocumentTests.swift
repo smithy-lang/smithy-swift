@@ -6,10 +6,11 @@
 //
 
 import XCTest
-import Smithy
+@_spi(SmithyDocumentImpl) import Smithy
 @_spi(SmithyReadWrite) import SmithyReadWrite
 import SmithyTestUtil
-@testable @_spi(SmithyReadWrite) import SmithyJSON
+@testable @_spi(SmithyReadWrite) @_spi(SchemaBasedSerde) import SmithyJSON
+@_spi(SchemaBasedSerde) import AWSJSONTestSDK
 
 class DocumentTests: XCTestCase {
     let json1: [String : Any] = [
@@ -76,5 +77,183 @@ class DocumentTests: XCTestCase {
         let decodedDoc2: Document = try reader2.read()
 
         XCTAssertNotEqual(decodedDoc1, decodedDoc2)
+    }
+
+    func test_document_writesDocumentListOfLists() throws {
+        let input = SerdeOperationInput(
+            document: Document(
+                ListDocument(
+                    value: [
+                        ListDocument(value: [StringDocument(value: "1")]),
+                        ListDocument(value: [StringDocument(value: "2")]),
+                        ListDocument(value: [StringDocument(value: "3")]),
+                    ]
+                )
+            )
+        )
+        let subject = Serializer(usesJSONNameTrait: false)
+        try input.serialize(subject)
+        XCTAssertEqual(try subject.data, Data(#"{"document":[["1"],["2"],["3"]]}"#.utf8))
+    }
+
+    func test_document_writesDocumentMapOfMaps() throws {
+        let input = SerdeOperationInput(
+            document: Document(
+                StringMapDocument(
+                    value: [
+                        "1": StringMapDocument(value: ["2": StringDocument(value: "3")]),
+                    ]
+                )
+            )
+        )
+        let subject = Serializer(usesJSONNameTrait: false)
+        try input.serialize(subject)
+        XCTAssertEqual(try subject.data, Data(#"{"document":{"1":{"2":"3"}}}"#.utf8))
+    }
+
+    func test_document_writesDocumentListOfListsOfLists() throws {
+        let input = SerdeOperationInput(
+            document: Document(
+                ListDocument(
+                    value: [
+                        ListDocument(
+                            value: [
+                                ListDocument(value: [StringDocument(value: "1")]),
+                                ListDocument(value: [StringDocument(value: "2")]),
+                            ]
+                        ),
+                        ListDocument(
+                            value: [
+                                ListDocument(value: [StringDocument(value: "3")]),
+                            ]
+                        ),
+                    ]
+                )
+            )
+        )
+        let subject = Serializer(usesJSONNameTrait: false)
+        try input.serialize(subject)
+        XCTAssertEqual(try subject.data, Data(#"{"document":[[["1"],["2"]],[["3"]]]}"#.utf8))
+    }
+
+    func test_document_writesDocumentMapOfMapsOfMaps() throws {
+        let input = SerdeOperationInput(
+            document: Document(
+                StringMapDocument(
+                    value: [
+                        "1": StringMapDocument(
+                            value: [
+                                "2": StringMapDocument(value: ["3": StringDocument(value: "4")]),
+                            ]
+                        ),
+                    ]
+                )
+            )
+        )
+        let subject = Serializer(usesJSONNameTrait: false)
+        try input.serialize(subject)
+        XCTAssertEqual(try subject.data, Data(#"{"document":{"1":{"2":{"3":"4"}}}}"#.utf8))
+    }
+
+    func test_document_writesDocumentMapOfListsOfLists() throws {
+        let input = SerdeOperationInput(
+            document: Document(
+                StringMapDocument(
+                    value: [
+                        "a": ListDocument(
+                            value: [
+                                ListDocument(value: [StringDocument(value: "1")]),
+                                ListDocument(value: [StringDocument(value: "2")]),
+                            ]
+                        ),
+                    ]
+                )
+            )
+        )
+        let subject = Serializer(usesJSONNameTrait: false)
+        try input.serialize(subject)
+        XCTAssertEqual(try subject.data, Data(#"{"document":{"a":[["1"],["2"]]}}"#.utf8))
+    }
+
+    func test_document_writesDocumentListOfMapsOfLists() throws {
+        // Each map has a single key, so the serialized order of this document is deterministic
+        // despite Swift dictionaries being unordered.
+        let input = SerdeOperationInput(
+            document: Document(
+                ListDocument(
+                    value: [
+                        StringMapDocument(value: ["a": ListDocument(value: [StringDocument(value: "1")])]),
+                        StringMapDocument(value: ["b": ListDocument(value: [StringDocument(value: "2")])]),
+                    ]
+                )
+            )
+        )
+        let subject = Serializer(usesJSONNameTrait: false)
+        try input.serialize(subject)
+        XCTAssertEqual(try subject.data, Data(#"{"document":[{"a":["1"]},{"b":["2"]}]}"#.utf8))
+    }
+
+    func test_document_readsDocumentListOfLists() throws {
+        let data = Data(#"{"document":[["1"],["2"],["3"]]}"#.utf8)
+        let subject = try Deserializer(usesJSONNameTrait: false, data: data)
+        let output = try SerdeOperationOutput.deserialize(subject)
+        let list = try output.document?.asList().map { try $0.asList().map { try $0.asString() } }
+        XCTAssertEqual(list, [["1"], ["2"], ["3"]])
+    }
+
+    func test_document_readsDocumentMapOfMaps() throws {
+        let data = Data(#"{"document":{"1":{"2":"3"}}}"#.utf8)
+        let subject = try Deserializer(usesJSONNameTrait: false, data: data)
+        let output = try SerdeOperationOutput.deserialize(subject)
+        let list = try output.document?.asStringMap().mapValues { try $0.asStringMap().mapValues { try $0.asString() } }
+        XCTAssertEqual(list, ["1": ["2": "3"]])
+    }
+
+    func test_document_readsDocumentListOfListsOfLists() throws {
+        let data = Data(#"{"document":[[["1"],["2"]],[["3"]]]}"#.utf8)
+        let subject = try Deserializer(usesJSONNameTrait: false, data: data)
+        let output = try SerdeOperationOutput.deserialize(subject)
+        let list = try output.document?.asList().map { middle in
+            try middle.asList().map { inner in
+                try inner.asList().map { try $0.asString() }
+            }
+        }
+        XCTAssertEqual(list, [[["1"], ["2"]], [["3"]]])
+    }
+
+    func test_document_readsDocumentMapOfMapsOfMaps() throws {
+        let data = Data(#"{"document":{"1":{"2":{"3":"4"}}}}"#.utf8)
+        let subject = try Deserializer(usesJSONNameTrait: false, data: data)
+        let output = try SerdeOperationOutput.deserialize(subject)
+        let map = try output.document?.asStringMap().mapValues { middle in
+            try middle.asStringMap().mapValues { inner in
+                try inner.asStringMap().mapValues { try $0.asString() }
+            }
+        }
+        XCTAssertEqual(map, ["1": ["2": ["3": "4"]]])
+    }
+
+    func test_document_readsDocumentMapOfListsOfLists() throws {
+        let data = Data(#"{"document":{"a":[["1"],["2"]]}}"#.utf8)
+        let subject = try Deserializer(usesJSONNameTrait: false, data: data)
+        let output = try SerdeOperationOutput.deserialize(subject)
+        let map = try output.document?.asStringMap().mapValues { middle in
+            try middle.asList().map { inner in
+                try inner.asList().map { try $0.asString() }
+            }
+        }
+        XCTAssertEqual(map, ["a": [["1"], ["2"]]])
+    }
+
+    func test_document_readsDocumentListOfMapsOfLists() throws {
+        let data = Data(#"{"document":[{"a":["1"]},{"b":["2"]}]}"#.utf8)
+        let subject = try Deserializer(usesJSONNameTrait: false, data: data)
+        let output = try SerdeOperationOutput.deserialize(subject)
+        let list = try output.document?.asList().map { middle in
+            try middle.asStringMap().mapValues { inner in
+                try inner.asList().map { try $0.asString() }
+            }
+        }
+        XCTAssertEqual(list, [["a": ["1"]], ["b": ["2"]]])
     }
 }
