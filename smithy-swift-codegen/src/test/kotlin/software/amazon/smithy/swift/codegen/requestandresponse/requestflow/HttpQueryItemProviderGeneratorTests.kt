@@ -230,6 +230,50 @@ extension RequiredHttpFieldsInput {
         contents.shouldContainOnlyOnce(expectedContents)
     }
 
+    @Test
+    fun `009 it encodes float and double query items with encodeNumber`() {
+        // Floats & doubles must be rendered by URLEncodingUtils.encodeNumber so that the non-finite
+        // values are rendered as the Smithy-defined tokens NaN, Infinity, and -Infinity.  Swift's own
+        // string interpolation would render them as nan, inf, and -inf, which are invalid on the wire.
+        val context = setupTests("http-float-bindings.smithy", "com.test#Example")
+        val contents = getModelFileContents("example/Sources/example", "FloatBindingsInput+QueryItemProvider.swift", context.manifest)
+        contents.shouldSyntacticSanityCheck()
+        val expectedContents = """
+extension FloatBindingsInput {
+
+    static func queryItemProvider(_ value: FloatBindingsInput) throws -> [Smithy.URIQueryItem] {
+        var items = [Smithy.URIQueryItem]()
+        if let queryFloatList = value.queryFloatList {
+            queryFloatList.forEach { queryItemValue in
+                let queryItem = Smithy.URIQueryItem(name: "FloatList".urlPercentEncoding(), value: SmithyHTTPAPI.URLEncodingUtils.encodeNumber(queryItemValue).urlPercentEncoding())
+                items.append(queryItem)
+            }
+        }
+        if let queryFloat = value.queryFloat {
+            let queryFloatQueryItem = Smithy.URIQueryItem(name: "Float".urlPercentEncoding(), value: SmithyHTTPAPI.URLEncodingUtils.encodeNumber(queryFloat).urlPercentEncoding())
+            items.append(queryFloatQueryItem)
+        }
+        if let queryDoubleList = value.queryDoubleList {
+            queryDoubleList.forEach { queryItemValue in
+                let queryItem = Smithy.URIQueryItem(name: "DoubleList".urlPercentEncoding(), value: SmithyHTTPAPI.URLEncodingUtils.encodeNumber(queryItemValue).urlPercentEncoding())
+                items.append(queryItem)
+            }
+        }
+        if let queryString = value.queryString {
+            let queryStringQueryItem = Smithy.URIQueryItem(name: "String".urlPercentEncoding(), value: Swift.String(queryString).urlPercentEncoding())
+            items.append(queryStringQueryItem)
+        }
+        if let queryDouble = value.queryDouble {
+            let queryDoubleQueryItem = Smithy.URIQueryItem(name: "Double".urlPercentEncoding(), value: SmithyHTTPAPI.URLEncodingUtils.encodeNumber(queryDouble).urlPercentEncoding())
+            items.append(queryDoubleQueryItem)
+        }
+        return items
+    }
+}
+"""
+        contents.shouldContainOnlyOnce(expectedContents)
+    }
+
     private fun setupTests(
         smithyFile: String,
         serviceShapeId: String,
