@@ -8,18 +8,18 @@
 import struct Foundation.Data
 import class Smithy.Context
 @_spi(SchemaBasedSerde)
-import struct Smithy.ShapeID
-@_spi(SchemaBasedSerde)
 import class Smithy.HTTPTrait
-import class SmithyHTTPAPI.HTTPRequest
-import class SmithyHTTPAPI.HTTPRequestBuilder
-import class SmithyHTTPAPI.HTTPResponse
+@_spi(SchemaBasedSerde)
+import struct Smithy.ShapeID
 @_spi(SchemaBasedSerde)
 import class SmithyHTTPAPI.HTTPLabelSerializer
 @_spi(SchemaBasedSerde)
-import class SmithyHTTPAPI.HTTPQuerySerializer
-@_spi(SchemaBasedSerde)
 import class SmithyHTTPAPI.HTTPQueryParamsSerializer
+@_spi(SchemaBasedSerde)
+import class SmithyHTTPAPI.HTTPQuerySerializer
+import class SmithyHTTPAPI.HTTPRequest
+import class SmithyHTTPAPI.HTTPRequestBuilder
+import class SmithyHTTPAPI.HTTPResponse
 @_spi(SchemaBasedSerde)
 import protocol SmithySerialization.ClientProtocol
 @_spi(SchemaBasedSerde)
