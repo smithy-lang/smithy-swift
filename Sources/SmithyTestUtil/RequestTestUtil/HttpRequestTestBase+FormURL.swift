@@ -37,7 +37,7 @@ extension HttpRequestTestBase {
                 return []
             }
             let name: String = keyValueArray[0]
-            let value = keyValueArray.count >= 2 ? sanitizeStringForNonConformingValues(keyValueArray[1]) : nil
+            let value = keyValueArray.count >= 2 ? keyValueArray[1] : nil
             queryItems.append(URIQueryItem(name: name, value: value))
         }
         return queryItems

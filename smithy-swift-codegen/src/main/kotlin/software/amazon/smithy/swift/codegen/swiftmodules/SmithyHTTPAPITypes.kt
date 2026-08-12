@@ -20,6 +20,7 @@ object SmithyHTTPAPITypes {
     val HTTPRequest = runtimeSymbol("HTTPRequest", SwiftDeclaration.CLASS)
     val HTTPResponse = runtimeSymbol("HTTPResponse", SwiftDeclaration.CLASS)
     val HTTPStatusCode = runtimeSymbol("HTTPStatusCode", SwiftDeclaration.ENUM)
+    val URLEncodingUtils = runtimeSymbol("URLEncodingUtils", SwiftDeclaration.ENUM)
 }
 
 private fun runtimeSymbol(
