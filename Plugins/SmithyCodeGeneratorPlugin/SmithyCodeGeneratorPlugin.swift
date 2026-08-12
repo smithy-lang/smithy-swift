@@ -56,8 +56,8 @@ struct SmithyCodeGeneratorPlugin: BuildToolPlugin {
             URL(fileURLWithPath: inputPath.removingLastComponent().appending(["model.json"]).string)
         }
         let modelPath = Path(modelPathURL.path)
-        let internalClient = smithyModelInfo.internalClient
-        let operations = smithyModelInfo.operations.joined(separator: ",")
+        let internalClient = smithyModelInfo.internalClient ?? false
+        let operations = (smithyModelInfo.operations ?? []).joined(separator: ",")
 
         // Construct the Schemas.swift path.
         let schemasSwiftPath = outputDirectoryPath.appending("\(name)Schemas.swift")
@@ -118,11 +118,11 @@ private struct SmithyModelInfo: Decodable {
     /// The `sdkId` used by the Smithy-based code generator.
     let sdkId: String
 
-    /// Set to `true` if the client should be rendered for internal use.
-    let internalClient: Bool
+    /// Set to `true` if the client should be rendered for internal use.  Defaults to `false`.
+    let internalClient: Bool?
 
     /// A list of operations to be included in the client.  If omitted or empty, all operations are included.
-    let operations: [String]
+    let operations: [String]?
 
     /// The path to the model, from the root of the target's project.
     let modelPath: String?
