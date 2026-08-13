@@ -20,9 +20,9 @@ import protocol SmithySerialization.Codec
 @_spi(SchemaBasedSerde)
 import protocol SmithySerialization.InterceptingSerializer
 @_spi(SchemaBasedSerde)
-import class SmithySerialization.NoOpSerializer
-@_spi(SchemaBasedSerde)
 import protocol SmithySerialization.NoOpByDefaultShapeSerializer
+@_spi(SchemaBasedSerde)
+import class SmithySerialization.NoOpSerializer
 @_spi(SchemaBasedSerde)
 import struct SmithySerialization.Operation
 @_spi(SchemaBasedSerde)

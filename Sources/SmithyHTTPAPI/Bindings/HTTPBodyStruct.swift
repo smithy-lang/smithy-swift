@@ -18,11 +18,6 @@ struct HTTPRequestBodyProxy<Input: SerializableStruct>: SerializableStruct {
     let bindings: [HTTPBinding]
     let input: Input
 
-    init(bindings: [HTTPBinding], input: Input) {
-        self.bindings = bindings
-        self.input = input
-    }
-
     func serializeMembers(_ schema: Schema, _ serializer: any ShapeSerializer) throws {
         // Serializes members with an intercepting serializer that does not serialize members
         // that aren't bound to the HTTP body.

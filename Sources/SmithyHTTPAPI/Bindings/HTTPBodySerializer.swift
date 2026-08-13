@@ -9,11 +9,11 @@ import struct Foundation.Data
 @_spi(SchemaBasedSerde)
 import class Smithy.Schema
 @_spi(SchemaBasedSerde)
+import protocol SmithySerialization.InterceptingSerializer
+@_spi(SchemaBasedSerde)
 import class SmithySerialization.NoOpSerializer
 @_spi(SchemaBasedSerde)
 import protocol SmithySerialization.ShapeSerializer
-@_spi(SchemaBasedSerde)
-import protocol SmithySerialization.InterceptingSerializer
 
 @_spi(SchemaBasedSerde)
 public final class HTTPBodySerializer: InterceptingSerializer {

@@ -36,7 +36,7 @@ public extension NoOpByDefaultShapeSerializer {
 
     public func writeMap<V>(
         _ schema: Schema,
-        _ value: [String : V],
+        _ value: [String: V],
         _ consumer: (V, any ShapeSerializer) throws -> Void
     ) throws {
         // no operation

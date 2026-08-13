@@ -12,9 +12,9 @@ import class Smithy.HTTPLabelTrait
 @_spi(SchemaBasedSerde)
 import class Smithy.HTTPPayloadTrait
 @_spi(SchemaBasedSerde)
-import class Smithy.HTTPQueryTrait
-@_spi(SchemaBasedSerde)
 import class Smithy.HTTPQueryParamsTrait
+@_spi(SchemaBasedSerde)
+import class Smithy.HTTPQueryTrait
 @_spi(SchemaBasedSerde)
 import class Smithy.Schema
 @_spi(SchemaBasedSerde)
@@ -46,7 +46,7 @@ public class HTTPBindingsExtension: SchemaExtension {
             }
         }
     }
-    
+
 }
 
 public enum HTTPBinding {
