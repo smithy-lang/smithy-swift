@@ -17,19 +17,18 @@ class SwiftSettingsJSONGenerator(
 
         val filename = SDKFileUtils(ctx.settings).sourcesDirFilePath("swift-settings", "json")
         ctx.delegator.useFileWriter(filename) { writer ->
-            val node =
-                ObjectNode
-                    .builder()
-                    .withMember(SwiftSettings.SERVICE, ctx.settings.service.toString())
-                    .withMember(SwiftSettings.MODULE_NAME, ctx.settings.moduleName)
-                    .withMember(SwiftSettings.SDK_ID, ctx.settings.sdkId)
-                    .withMember(SwiftSettings.INTERNAL_CLIENT, ctx.settings.internalClient)
-                    .withMember(SwiftSettings.OPERATIONS, ArrayNode.fromStrings(ctx.settings.operations))
-                    .withOptionalMember(
-                        SwiftSettings.MODEL_PATH,
-                        ctx.settings.modelPath.toOptionalStringNode(),
-                    ).build()
-            writer.write(Node.prettyPrintJson(node))
+            val node = ObjectNode.builder().withMember(SwiftSettings.SERVICE, ctx.settings.service.toString())
+            if (ctx.settings.internalClient) {
+                node.withMember(SwiftSettings.INTERNAL_CLIENT, true)
+            }
+            if (ctx.settings.operations.isNotEmpty()) {
+                node.withMember(SwiftSettings.OPERATIONS, ArrayNode.fromStrings(ctx.settings.operations))
+            }
+            node.withOptionalMember(
+                SwiftSettings.MODEL_PATH,
+                ctx.settings.modelPath.toOptionalStringNode(),
+            )
+            writer.write(Node.prettyPrintJson(node.build()))
         }
     }
 }
