@@ -177,7 +177,7 @@ open class HttpProtocolUnitTestResponseGenerator protected constructor(
     }
 
     fun renderActualOutput(test: HttpResponseTestCase) {
-        val clientName = "${ctx.settings.sdkId}Client"
+        val clientName = "${ctx.settings.clientBaseName}Client"
         val region = "us-west-2"
 
         // Create a client config.  Use a dummy for:
