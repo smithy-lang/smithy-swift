@@ -17,12 +17,7 @@ class SwiftSettingsJSONGenerator(
 
         val filename = SDKFileUtils(ctx.settings).sourcesDirFilePath("swift-settings", "json")
         ctx.delegator.useFileWriter(filename) { writer ->
-            val node =
-                ObjectNode
-                    .builder()
-                    .withMember(SwiftSettings.SERVICE, ctx.settings.service.toString())
-                    .withMember(SwiftSettings.MODULE_NAME, ctx.settings.moduleName)
-                    .withMember(SwiftSettings.SDK_ID, ctx.settings.sdkId)
+            val node = ObjectNode.builder().withMember(SwiftSettings.SERVICE, ctx.settings.service.toString())
             if (ctx.settings.internalClient) {
                 node.withMember(SwiftSettings.INTERNAL_CLIENT, true)
             }

@@ -83,7 +83,7 @@ public struct SymbolProvider {
         case .document:
             return "Smithy.Document"
         case .service:
-            return "\(settings.serviceName)Client"
+            return "\(service.serviceName)Client"
         case .member, .operation, .resource:
             throw SymbolProviderError("Cannot provide Swift symbol for shape type \(shape.type)")
         }
