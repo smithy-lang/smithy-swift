@@ -14,7 +14,7 @@ import struct Smithy.ShapeID
 
 /// The wrapper for Swift-native code generation.
 public struct CodeGenerator {
-    let settings: SwiftSettings
+    let swiftSettingsFileURL: URL
     let modelFileURL: URL
     let schemasFileURL: URL?
     let serializeFileURL: URL?
@@ -28,7 +28,7 @@ public struct CodeGenerator {
     ///   - modelFileURL: The file URL where the JSON AST model file can be accessed.
     ///   - schemasFileURL: The file URL to which the `Schemas.swift` source file should be written.
     public init(
-        settings: SwiftSettings,
+        swiftSettingsFileURL: URL,
         modelFileURL: URL,
         schemasFileURL: URL?,
         serializeFileURL: URL?,
@@ -36,7 +36,7 @@ public struct CodeGenerator {
         typeRegistryFileURL: URL?,
         operationsFileURL: URL?
     ) throws {
-        self.settings = settings
+        self.swiftSettingsFileURL = swiftSettingsFileURL
         self.modelFileURL = modelFileURL
         self.schemasFileURL = schemasFileURL
         self.serializeFileURL = serializeFileURL
@@ -49,6 +49,10 @@ public struct CodeGenerator {
     ///
     /// The model is loaded and processed, then Swift source files are generated and written to the specified URL(s).
     public func run() throws {
+        // Load the SwiftSettings from the JSON file
+        let swiftSettingsData = try Data(contentsOf: swiftSettingsFileURL)
+        let settings = try JSONDecoder().decode(SwiftSettings.self, from: swiftSettingsData)
+
         // Load the AST from the model file
         let modelData = try Data(contentsOf: modelFileURL)
         let astModel = try JSONDecoder().decode(ASTModel.self, from: modelData)

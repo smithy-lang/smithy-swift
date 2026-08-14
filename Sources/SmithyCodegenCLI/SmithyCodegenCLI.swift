@@ -8,16 +8,15 @@
 import ArgumentParser
 import Foundation
 import struct SmithyCodegenCore.CodeGenerator
-import struct SmithyCodegenCore.SwiftSettings
 
 @main
 struct SmithyCodegenCLI: AsyncParsableCommand {
 
-    @Argument(help: "The shape ID of the service to be code-generated.  Must exist in the model file.")
-    var service: String
+    @Option(help: "The full or relative path to read the Swift settings input file.")
+    var swiftSettingsPath: String?
 
-    @Argument(help: "The full or relative path to read the JSON AST model input file.")
-    var modelPath: String
+    @Option(help: "The full or relative path to read the JSON AST model input file.")
+    var modelPath: String?
 
     @Option(help: "The sdkId used by the Smithy-based code generator")
     var sdkId: String?
@@ -46,18 +45,22 @@ struct SmithyCodegenCLI: AsyncParsableCommand {
     func run() async throws {
         let currentWorkingDirectoryFileURL = currentWorkingDirectoryFileURL()
 
-        let operations = (operations ?? "").split(separator: ",").map(String.init)
-        let settings = try SwiftSettings(
-            service: service,
-            sdkId: sdkId,
-            internal: `internal`,
-            operations: operations
-        )
+        // Create the swift settings file URL
+        guard let swiftSettingsPath else {
+            throw SmithyCodegenCLIError("no swift-settings path was supplied")
+        }
+        let swiftSettingsFileURL = URL(fileURLWithPath: swiftSettingsPath, relativeTo: currentWorkingDirectoryFileURL)
+        guard FileManager.default.fileExists(atPath: swiftSettingsFileURL.path) else {
+            throw SmithyCodegenCLIError("no file at swift-settings path \(swiftSettingsFileURL.path)")
+        }
 
         // Create the model file URL
+        guard let modelPath else {
+            throw SmithyCodegenCLIError("no model path was supplied")
+        }
         let modelFileURL = URL(fileURLWithPath: modelPath, relativeTo: currentWorkingDirectoryFileURL)
         guard FileManager.default.fileExists(atPath: modelFileURL.path) else {
-            throw SmithyCodegenCLIError(localizedDescription: "no file at model path \(modelFileURL.path)")
+            throw SmithyCodegenCLIError("no file at model path \(modelFileURL.path)")
         }
 
         // If --schemas-path was supplied, create the schema file URL
@@ -77,7 +80,7 @@ struct SmithyCodegenCLI: AsyncParsableCommand {
 
         // Use resolved file URLs to run code generator
         try CodeGenerator(
-            settings: settings,
+            swiftSettingsFileURL: swiftSettingsFileURL,
             modelFileURL: modelFileURL,
             schemasFileURL: schemasFileURL,
             serializeFileURL: serializeFileURL,
@@ -104,4 +107,8 @@ struct SmithyCodegenCLI: AsyncParsableCommand {
 
 struct SmithyCodegenCLIError: Error {
     let localizedDescription: String
+
+    init(_ localizedDescription: String) {
+        self.localizedDescription = localizedDescription
+    }
 }
