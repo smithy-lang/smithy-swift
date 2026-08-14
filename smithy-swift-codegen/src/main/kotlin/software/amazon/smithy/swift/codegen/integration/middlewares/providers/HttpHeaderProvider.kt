@@ -19,6 +19,7 @@ import software.amazon.smithy.swift.codegen.integration.HttpBindingResolver
 import software.amazon.smithy.swift.codegen.integration.ProtocolGenerator
 import software.amazon.smithy.swift.codegen.integration.formatHeaderOrQueryValue
 import software.amazon.smithy.swift.codegen.integration.middlewares.handlers.MiddlewareShapeUtils
+import software.amazon.smithy.swift.codegen.integration.renderCreateValueCall
 import software.amazon.smithy.swift.codegen.model.defaultValue
 import software.amazon.smithy.swift.codegen.model.isBoxed
 import software.amazon.smithy.swift.codegen.model.needsDefaultValueCheck
@@ -94,7 +95,7 @@ class HttpHeaderProvider(
 
     private fun generateHeaders() {
         headerBindings.forEach {
-            var memberName = ctx.symbolProvider.toMemberName(it.member)
+            val memberName = ctx.symbolProvider.toMemberName(it.member)
             val memberTarget = ctx.model.expectShape(it.member.target)
             val paramName = it.locationName
             val isBoxed = ctx.symbolProvider.toSymbol(it.member).isBoxed()
@@ -148,20 +149,22 @@ class HttpHeaderProvider(
                     )
                 }
             } else if (inCollection && ctx.model.expectShape(member.target) !is TimestampShape) {
+                val createValueCall = renderCreateValueCall(ctx, writer, member)
                 writer.write(
-                    "items.add(\$N(name: \"\$L\", value: \$N(\$N(\$L))))",
+                    "items.add(\$N(name: \"\$L\", value: \$N(\$L(\$L))))",
                     SmithyHTTPAPITypes.Header,
                     paramName,
                     ClientRuntimeTypes.Core.quoteHeaderValue,
-                    SwiftTypes.String,
+                    createValueCall,
                     memberNameWithExtension,
                 )
             } else {
+                val createValueCall = renderCreateValueCall(ctx, writer, member)
                 writer.write(
-                    "items.add(\$N(name: \"\$L\", value: \$N(\$L)))",
+                    "items.add(\$N(name: \"\$L\", value: \$L(\$L)))",
                     SmithyHTTPAPITypes.Header,
                     paramName,
-                    SwiftTypes.String,
+                    createValueCall,
                     memberNameWithExtension,
                 )
             }
@@ -207,6 +210,9 @@ class HttpHeaderProvider(
         }
     }
 
+    // `String.init` is used to render the value here, rather than `renderCreateValueCall`, because
+    // only base64-encoded values reach this method.  `requiresDoCatch` is set only for blobs and
+    // media-typed strings, so a floating-point value is never rendered here.
     private fun renderDoCatch(
         headerValueWithExtension: String,
         headerName: String,

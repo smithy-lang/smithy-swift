@@ -66,6 +66,32 @@ structure SerdeOperationInput {
 }
 
 structure SerdeOperationOutput {
+    structure: SerdeOperationStructure
+
+    union: SerdeOperationUnion
+
+    string: String
+
+    blob: Blob
+
+    list: IntegerList
+
+    map: IntegerMap
+
+    double: Double
+
+    boolean: Boolean
+
+    sparseList: SparseIntegerList
+
+    document: Document
+
+    myDocument: MyDocument
+
+    nestedMap: OuterNestedMap
+
+    nestedList: OuterNestedList
+
     @timestampFormat("date-time")
     dateTimeTimestamp: Timestamp
 

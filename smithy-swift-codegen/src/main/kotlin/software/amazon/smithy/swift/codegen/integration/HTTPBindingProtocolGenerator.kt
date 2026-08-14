@@ -11,8 +11,11 @@ import software.amazon.smithy.model.knowledge.HttpBindingIndex
 import software.amazon.smithy.model.knowledge.TopDownIndex
 import software.amazon.smithy.model.neighbor.RelationshipType
 import software.amazon.smithy.model.neighbor.Walker
+import software.amazon.smithy.model.shapes.BigDecimalShape
 import software.amazon.smithy.model.shapes.BlobShape
 import software.amazon.smithy.model.shapes.CollectionShape
+import software.amazon.smithy.model.shapes.DoubleShape
+import software.amazon.smithy.model.shapes.FloatShape
 import software.amazon.smithy.model.shapes.IntEnumShape
 import software.amazon.smithy.model.shapes.MemberShape
 import software.amazon.smithy.model.shapes.OperationShape
@@ -71,6 +74,8 @@ import software.amazon.smithy.swift.codegen.model.isInputEventStream
 import software.amazon.smithy.swift.codegen.model.isOutputEventStream
 import software.amazon.smithy.swift.codegen.supportsStreamingAndIsRPC
 import software.amazon.smithy.swift.codegen.swiftmodules.ClientRuntimeTypes
+import software.amazon.smithy.swift.codegen.swiftmodules.SmithyHTTPAPITypes
+import software.amazon.smithy.swift.codegen.swiftmodules.SwiftTypes
 import software.amazon.smithy.swift.codegen.utils.SDKFileUtils
 import software.amazon.smithy.utils.OptionalUtils
 import java.util.Optional
@@ -124,6 +129,26 @@ fun formatHeaderOrQueryValue(
         }
         is IntEnumShape -> Pair("$memberName.rawValue", false)
         else -> Pair(memberName, false)
+    }
+
+/**
+ * Provides the Swift expression that renders a header or query value as a `String`.
+ *
+ * Floating-point values are rendered by `URLEncodingUtils.encodeNumber(_:)`, which uses the
+ * Smithy-defined tokens for the non-finite values NaN, Infinity, and -Infinity.  Swift's own
+ * string interpolation would render those as `nan`, `inf`, and `-inf`, which are not valid on
+ * the wire.  All other values are rendered by `String.init`.
+ */
+fun renderCreateValueCall(
+    ctx: ProtocolGenerator.GenerationContext,
+    writer: SwiftWriter,
+    member: MemberShape,
+): String =
+    when (ctx.model.expectShape(member.target)) {
+        is DoubleShape, is FloatShape, is BigDecimalShape ->
+            writer.format("\$N.encodeNumber", SmithyHTTPAPITypes.URLEncodingUtils)
+        else ->
+            writer.format("\$N", SwiftTypes.String)
     }
 
 /**

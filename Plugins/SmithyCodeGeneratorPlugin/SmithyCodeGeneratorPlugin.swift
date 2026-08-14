@@ -43,21 +43,18 @@ struct SmithyCodeGeneratorPlugin: BuildToolPlugin {
 
         let currentWorkingDirectoryFileURL = URL(fileURLWithPath: FileManager.default.currentDirectoryPath)
 
-        // Get the smithy-model-info.json file contents.
-        let modelInfoData = try Data(contentsOf: URL(fileURLWithPath: inputPath.string))
-        let smithyModelInfo = try JSONDecoder().decode(SmithyModelInfo.self, from: modelInfoData)
+        // Get the swift-settings.json file path.
+        let swiftSettingsPath = inputPath.string
 
-        // Get the fields from smithy-model-info.
-        let service = smithyModelInfo.service
-        let sdkId = smithyModelInfo.sdkId
-        let modelPathURL = if let modelPath = smithyModelInfo.modelPath {
+        // Get the model path URL field from swift-settings.json.
+        let swiftSettingsData = try Data(contentsOf: URL(fileURLWithPath: inputPath.string))
+        let swiftSettingsModelInfo = try JSONDecoder().decode(SwiftSettingsModelInfo.self, from: swiftSettingsData)
+        let modelPathURL = if let modelPath = swiftSettingsModelInfo.modelPath {
             currentWorkingDirectoryFileURL.appendingPathComponent(modelPath)
         } else {
             URL(fileURLWithPath: inputPath.removingLastComponent().appending(["model.json"]).string)
         }
         let modelPath = Path(modelPathURL.path)
-        let internalClient = smithyModelInfo.internalClient
-        let operations = smithyModelInfo.operations.joined(separator: ",")
 
         // Construct the Schemas.swift path.
         let schemasSwiftPath = outputDirectoryPath.appending("\(name)Schemas.swift")
@@ -74,21 +71,15 @@ struct SmithyCodeGeneratorPlugin: BuildToolPlugin {
         // Construct the Operations.swift path.
         let operationsSwiftPath = outputDirectoryPath.appending("\(name)Operations.swift")
 
-        var arguments: [any CustomStringConvertible] = [
-            service,
-            modelPath,
-            "--internal", "\(internalClient)",
-            "--sdk-id", sdkId,
+        let arguments: [any CustomStringConvertible] = [
+            "--swift-settings-path", swiftSettingsPath,
+            "--model-path", modelPath,
             "--schemas-path", schemasSwiftPath,
             "--serialize-path", serializeSwiftPath,
             "--deserialize-path", deserializeSwiftPath,
             "--type-registry-path", typeRegistrySwiftPath,
             "--operations-path", operationsSwiftPath,
         ]
-
-        if !operations.isEmpty {
-            arguments.append(contentsOf: ["--operations", operations])
-        }
 
         // Construct the build command that invokes SmithyCodegenCLI.
         return .buildCommand(
@@ -107,23 +98,8 @@ struct SmithyCodeGeneratorPlugin: BuildToolPlugin {
     }
 }
 
-/// Decodable structure for reading the contents of `smithy-model-info.json`
-private struct SmithyModelInfo: Decodable {
-    /// The shape ID of the service being generated.  Must exist in the model.
-    let service: String
-
-    /// The name to be used for the enclosing module.
-    let module: String
-
-    /// The `sdkId` used by the Smithy-based code generator.
-    let sdkId: String
-
-    /// Set to `true` if the client should be rendered for internal use.
-    let internalClient: Bool
-
-    /// A list of operations to be included in the client.  If omitted or empty, all operations are included.
-    let operations: [String]
-
+/// Decodable structure for reading the model path from `swift-settings.json`.
+private struct SwiftSettingsModelInfo: Decodable {
     /// The path to the model, from the root of the target's project.
     let modelPath: String?
 }

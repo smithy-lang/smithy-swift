@@ -1,0 +1,3 @@
+{
+    "service": "smithy.protocoltests.rpcv2Cbor#RpcV2Protocol"
+}
