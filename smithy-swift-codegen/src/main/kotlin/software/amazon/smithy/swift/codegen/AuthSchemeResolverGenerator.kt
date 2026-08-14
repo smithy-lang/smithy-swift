@@ -19,6 +19,7 @@ import software.amazon.smithy.swift.codegen.model.boxed
 import software.amazon.smithy.swift.codegen.model.buildSymbol
 import software.amazon.smithy.swift.codegen.model.defaultValue
 import software.amazon.smithy.swift.codegen.model.getTrait
+import software.amazon.smithy.swift.codegen.model.hasTrait
 import software.amazon.smithy.swift.codegen.swiftmodules.SmithyHTTPAuthAPITypes
 import software.amazon.smithy.swift.codegen.swiftmodules.SmithyTypes
 import software.amazon.smithy.swift.codegen.swiftmodules.SwiftTypes
@@ -328,8 +329,10 @@ class AuthSchemeResolverGenerator {
         private val AUTH_SCHEME_RESOLVER = "AuthSchemeResolver"
 
         // Utility function for checking if a service relies on endpoint resolver for auth scheme resolution
-        fun usesRulesBasedAuthResolver(ctx: ProtocolGenerator.GenerationContext): Boolean =
-            listOf("S3", "EventBridge", "CloudFront KeyValueStore", "SESv2").contains(ctx.settings.sdkId)
+        fun usesRulesBasedAuthResolver(ctx: ProtocolGenerator.GenerationContext): Boolean {
+            if (!ctx.service.hasTrait<EndpointRuleSetTrait>()) return false
+            return listOf("S3", "EventBridge", "CloudFront KeyValueStore", "SESv2").contains(ctx.settings.sdkId)
+        }
 
         fun getServiceSpecificAuthSchemeResolverName(ctx: ProtocolGenerator.GenerationContext): Symbol =
             buildSymbol {
