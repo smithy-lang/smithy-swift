@@ -1,0 +1,5 @@
+{
+    "service": "smithy.protocoltests.rpcv2Cbor#RpcV2Protocol",
+    "module": "RpcV2Protocol",
+    "sdkId": "RpcV2Protocol"
+}
