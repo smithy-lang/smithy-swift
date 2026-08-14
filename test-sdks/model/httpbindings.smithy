@@ -10,6 +10,8 @@ service HTTPBindings {
     operations: [
         AllUnboundMembers
         AllBoundMembers
+        QueryAndQueryParams
+        ScalarQueryAndQueryParams
     ]
 }
 
@@ -39,4 +41,42 @@ structure AllBoundMembersInput {
 
     @httpHeader("X-C")
     c: Boolean
+}
+
+// A list-valued `@httpQuery` binding alongside an `@httpQueryParams` map, so that the merge of
+// explicit query items with query-params entries can be exercised (including name collisions).
+@http(method: "GET", uri: "/QueryAndQueryParams")
+operation QueryAndQueryParams {
+    input: QueryAndQueryParamsInput
+}
+
+structure QueryAndQueryParamsInput {
+    @httpQuery("Word")
+    words: StringList
+
+    @httpQueryParams
+    params: StringMap
+}
+
+// A scalar `@httpQuery` binding alongside an `@httpQueryParams` map, for the scalar collision case.
+@http(method: "GET", uri: "/ScalarQueryAndQueryParams")
+operation ScalarQueryAndQueryParams {
+    input: ScalarQueryAndQueryParamsInput
+}
+
+structure ScalarQueryAndQueryParamsInput {
+    @httpQuery("Key")
+    key: String
+
+    @httpQueryParams
+    params: StringMap
+}
+
+list StringList {
+    member: String
+}
+
+map StringMap {
+    key: String
+    value: String
 }
