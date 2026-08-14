@@ -35,14 +35,19 @@ import protocol SmithySerialization.ShapeSerializer
 @_spi(SchemaBasedSerde)
 public final class HTTPBindingsSerializer: NoOpByDefaultShapeSerializer {
     let bindings: [HTTPBinding]
+    public let method: HTTPMethodType
     private let mux: BindingMultiplexer
 
     public init<Input, Output>(codec: any Codec, operation: Operation<Input, Output>) throws {
-        guard let uri = operation.schema.getTrait(HTTPTrait.self)?.uri else {
-            throw SerializerError("no URI for operation \(operation.schema.id)")
+        guard let httpTrait = operation.schema.getTrait(HTTPTrait.self) else {
+            throw SerializerError("no HTTP trait for operation \(operation.schema.id)")
         }
+        guard let method = HTTPMethodType(rawValue: httpTrait.method.uppercased()) else {
+            throw SerializerError("unsupported HTTP method \(httpTrait.method) for operation \(operation.schema.id)")
+        }
+        self.method = method
         self.bindings = try operation.inputSchema.getOrCreateExtension(HTTPBindingsExtension.self).bindings
-        self.mux = try BindingMultiplexer(codec: codec, bindings: self.bindings, uri: uri)
+        self.mux = try BindingMultiplexer(codec: codec, bindings: self.bindings, uri: httpTrait.uri)
     }
 
     public func writeStruct<S: SerializableStruct>(_ schema: Schema, _ value: S) throws {
@@ -65,15 +70,13 @@ public final class HTTPBindingsSerializer: NoOpByDefaultShapeSerializer {
     }
 
     public var queryItems: [URIQueryItem] {
-        var queryItems = self.mux.queryParamsSerializer.queryItems
-        self.mux.querySerializer.queryItems.forEach { queryItem in
-            if let index = queryItems.firstIndex(where: { queryItem.name == $0.name }) {
-                queryItems[index] = queryItem
-            } else {
-                queryItems.append(queryItem)
-            }
-        }
-        return queryItems
+        // Explicit `@httpQuery` bindings take precedence over `@httpQueryParams`; when a name is
+        // bound both ways, the query-params entries for that name are dropped.  All explicit query
+        // items are preserved as-is, including repeats produced by list-valued query members.
+        let queryItems = self.mux.querySerializer.queryItems
+        let queryNames = Set(queryItems.map(\.name))
+        let queryParamsItems = self.mux.queryParamsSerializer.queryItems.filter { !queryNames.contains($0.name) }
+        return queryItems + queryParamsItems
     }
 
     public var headers: Headers {

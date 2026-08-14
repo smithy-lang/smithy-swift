@@ -54,6 +54,7 @@ public struct HTTPClientProtocol: ClientProtocol {
         try input.serialize(serializer)
 
         // Populate the request with fields from the binding serializer
+        requestBuilder.withMethod(serializer.method)
         requestBuilder.withPath(serializer.uri)
         requestBuilder.withQueryItems(serializer.queryItems)
         requestBuilder.withHeaders(serializer.headers)

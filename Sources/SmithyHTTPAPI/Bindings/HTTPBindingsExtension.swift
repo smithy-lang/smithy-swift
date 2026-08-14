@@ -23,7 +23,7 @@ import protocol Smithy.SchemaExtension
 import var Smithy.schemaExtensionUniqueIndexCounter
 
 @_spi(SchemaBasedSerde)
-public class HTTPBindingsExtension: SchemaExtension {
+public final class HTTPBindingsExtension: SchemaExtension {
     public static let uniqueIndex: Int = schemaExtensionUniqueIndexCounter.getNextIndex()
 
     public let bindings: [HTTPBinding]
@@ -49,7 +49,7 @@ public class HTTPBindingsExtension: SchemaExtension {
 
 }
 
-public enum HTTPBinding {
+public enum HTTPBinding: Sendable {
     case header
     case label
     case payload
