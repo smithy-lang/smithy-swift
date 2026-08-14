@@ -18,15 +18,6 @@ struct SmithyCodegenCLI: AsyncParsableCommand {
     @Option(help: "The full or relative path to read the JSON AST model input file.")
     var modelPath: String?
 
-    @Option(help: "The sdkId used by the Smithy-based code generator")
-    var sdkId: String?
-
-    @Option(help: "Set this to true if the client to be generated should be internal-scoped.")
-    var `internal` = false
-
-    @Option(help: "The comma-separated list of operation IDs to be included in the client.")
-    var operations: String?
-
     @Option(help: "The full or relative path to write the Schemas output file.")
     var schemasPath: String?
 

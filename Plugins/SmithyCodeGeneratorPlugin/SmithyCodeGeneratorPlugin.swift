@@ -71,7 +71,7 @@ struct SmithyCodeGeneratorPlugin: BuildToolPlugin {
         // Construct the Operations.swift path.
         let operationsSwiftPath = outputDirectoryPath.appending("\(name)Operations.swift")
 
-        var arguments: [any CustomStringConvertible] = [
+        let arguments: [any CustomStringConvertible] = [
             "--swift-settings-path", swiftSettingsPath,
             "--model-path", modelPath,
             "--schemas-path", schemasSwiftPath,
