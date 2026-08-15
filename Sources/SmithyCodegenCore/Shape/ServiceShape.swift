@@ -73,7 +73,17 @@ public class ServiceShape: Shape {
         get throws {
             try sdkIdStrippingService.toUpperCamelCase()
         }
+    }
 
+    var serviceName: String {
+        let serviceSuffix = " Service"
+        var deserviced = sdkId
+        if deserviced.hasSuffix(serviceSuffix) {
+            deserviced.removeLast(serviceSuffix.count)
+        }
+        return deserviced
+            .toUpperCamelCase()
+            .replacingOccurrences(of: " ", with: "")
     }
 
     override func immediateDescendants(includeInput: Bool, includeOutput: Bool) throws -> Set<Shape> {
