@@ -21,6 +21,7 @@ let package = Package(
         // Generated test SDKs.  Models are in build/model.  Use them where Smithy generates them.
         // Run bash script ./scripts/codegen.sh from smithy-swift root to generate or regenerate these files
         testSDKPackage("AWSJSON"),
+        testSDKPackage("EventStream"),
         testSDKPackage("HTTPBindings"),
         testSDKPackage("HTTPHeader"),
         testSDKPackage("HTTPLabel"),
@@ -155,6 +156,9 @@ let package = Package(
             name: "SmithyEventStreamsTests",
             dependencies: [
                 .product(name: "SmithyEventStreams", package: "smithy-swift"),
+                .product(name: "SmithyAWSJSON", package: "smithy-swift"),
+                .product(name: "SmithySerialization", package: "smithy-swift"),
+                testSDKProduct("EventStream"),
             ]
         ),
         .testTarget(
