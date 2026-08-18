@@ -22,8 +22,10 @@ let package = Package(
         // Run bash script ./scripts/codegen.sh from smithy-swift root to generate or regenerate these files
         testSDKPackage("AWSJSON"),
         testSDKPackage("EventStream"),
+        testSDKPackage("HTTPBindings"),
         testSDKPackage("HTTPHeader"),
         testSDKPackage("HTTPLabel"),
+        testSDKPackage("HTTPPayload"),
         testSDKPackage("HTTPQuery"),
         testSDKPackage("HTTPQueryParams"),
         testSDKPackage("JSONName"),
@@ -187,9 +189,12 @@ let package = Package(
             dependencies: [
                 .product(name: "SmithyHTTPAPI", package: "smithy-swift"),
                 .product(name: "Smithy", package: "smithy-swift"),
+                .product(name: "SmithyJSON", package: "smithy-swift"),
                 .product(name: "SmithyTimestamps", package: "smithy-swift"),
+                testSDKProduct("HTTPBindings"),
                 testSDKProduct("HTTPHeader"),
                 testSDKProduct("HTTPLabel"),
+                testSDKProduct("HTTPPayload"),
                 testSDKProduct("HTTPQuery"),
                 testSDKProduct("HTTPQueryParams"),
             ]
