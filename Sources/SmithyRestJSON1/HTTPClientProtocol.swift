@@ -6,9 +6,12 @@
 //
 
 import struct Foundation.Data
+import enum Smithy.ByteStream
 import class Smithy.Context
 @_spi(SchemaBasedSerde)
 import struct Smithy.ShapeID
+@_spi(SchemaBasedSerde)
+import class SmithyHTTPAPI.HTTPBindingsSerializer
 import class SmithyHTTPAPI.HTTPRequest
 import class SmithyHTTPAPI.HTTPRequestBuilder
 import class SmithyHTTPAPI.HTTPResponse
@@ -24,7 +27,7 @@ import struct SmithySerialization.Operation
 import protocol SmithySerialization.SerializableStruct
 
 @_spi(SchemaBasedSerde)
-public struct HTTPClientProtocol: SmithySerialization.ClientProtocol {
+public struct HTTPClientProtocol: ClientProtocol {
 
     public typealias RequestType = HTTPRequest
     public typealias ResponseType = HTTPResponse
@@ -41,9 +44,21 @@ public struct HTTPClientProtocol: SmithySerialization.ClientProtocol {
         requestBuilder: HTTPRequestBuilder,
         context: Context
     ) throws where Input: SerializableStruct, Output: DeserializableStruct {
-        // This type is incomplete & not yet used in production.
-        // This method body remains empty for now.
-        // Will provide complete body for this later.
+        // This method is incomplete.  Missing:
+        // - Request event streams
+        // - Several HTTP bindings
+        // Will be filled in as these other items are completed.
+
+        // Create a HTTP binding serializer & serialize the input to it
+        let serializer = try HTTPBindingsSerializer(codec: self.codec, operation: operation)
+        try input.serialize(serializer)
+
+        // Populate the request with fields from the binding serializer
+        requestBuilder.withMethod(serializer.method)
+        requestBuilder.withPath(serializer.uri)
+        requestBuilder.withQueryItems(serializer.queryItems)
+        requestBuilder.withHeaders(serializer.headers)
+        requestBuilder.withBody(ByteStream.data(try serializer.data))
     }
 
     public func deserializeResponse<Input, Output>(
