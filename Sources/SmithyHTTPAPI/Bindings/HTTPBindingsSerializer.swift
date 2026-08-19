@@ -6,8 +6,6 @@
 //
 
 import struct Foundation.Data
-import struct Foundation.URL
-import struct Foundation.URLComponents
 import enum Smithy.ByteStream
 @_spi(SchemaBasedSerde)
 import class Smithy.HTTPTrait
@@ -40,6 +38,11 @@ public final class HTTPBindingsSerializer: NoOpByDefaultShapeSerializer {
     public let method: HTTPMethodType
     private let mux: BindingMultiplexer
 
+    /// The query items from the literal query string, if any, in the operation's `@http` URI.
+    ///
+    /// These are fixed by the model, so they are parsed once when this serializer is created.
+    private let uriQueryItems: [URIQueryItem]
+
     public init<Input, Output>(codec: any Codec, operation: Operation<Input, Output>) throws {
         guard let httpTrait = operation.schema.getTrait(HTTPTrait.self) else {
             throw SerializerError("no HTTP trait for operation \(operation.schema.id)")
@@ -49,7 +52,36 @@ public final class HTTPBindingsSerializer: NoOpByDefaultShapeSerializer {
         }
         self.method = method
         self.bindings = try operation.inputSchema.getOrCreateExtension(HTTPBindingsExtension.self).bindings
-        self.mux = try BindingMultiplexer(codec: codec, bindings: self.bindings, uri: httpTrait.uri)
+
+        // The URI may end with a literal query string.  Split it off & parse its query items now;
+        // only the path portion of the URI is subject to label substitution.
+        let (path, literalQuery) = Self.split(uri: httpTrait.uri)
+        self.uriQueryItems = Self.queryItems(literalQuery: literalQuery)
+        self.mux = try BindingMultiplexer(codec: codec, bindings: self.bindings, uri: path)
+    }
+
+    /// Splits a URI into its path and its literal query string, if it has one.
+    private static func split(uri: String) -> (path: String, literalQuery: Substring?) {
+        guard let separator = uri.firstIndex(of: "?") else { return (uri, nil) }
+        return (String(uri[uri.startIndex..<separator]), uri[uri.index(after: separator)...])
+    }
+
+    /// Parses the literal query string from a URI into query items.
+    ///
+    /// Names & values are used exactly as they appear in the model.  A name with no value, i.e. `?uploads`,
+    /// becomes a query item with a `nil` value, which is rendered without a `=`.
+    private static func queryItems(literalQuery: Substring?) -> [URIQueryItem] {
+        guard let literalQuery else { return [] }
+        return literalQuery.split(separator: "&").map { pair in
+            guard let separator = pair.firstIndex(of: "=") else {
+                return URIQueryItem(name: String(pair), value: nil)
+            }
+            let value = pair[pair.index(after: separator)...]
+            return URIQueryItem(
+                name: String(pair[pair.startIndex..<separator]),
+                value: value.isEmpty ? nil : String(value)
+            )
+        }
     }
 
     public func writeStruct<S: SerializableStruct>(_ schema: Schema, _ value: S) throws {
@@ -68,32 +100,21 @@ public final class HTTPBindingsSerializer: NoOpByDefaultShapeSerializer {
     }
 
     public var uri: String {
-        String(self.mux.labelSerializer.uri.prefix { $0 != "?" })
+        self.mux.labelSerializer.uri
     }
 
     public var queryItems: [URIQueryItem] {
 
-        // Get the query items out of the URI, if any
-        var uriQueryItems: [URIQueryItem] = []
-        if let uriQueryURL = URL(string: self.mux.labelSerializer.uri) {
-            let urlQueryItems = URLComponents(url: uriQueryURL, resolvingAgainstBaseURL: false)?.queryItems ?? []
-            uriQueryItems = urlQueryItems.map {
-                URIQueryItem(
-                    name: URLEncodingUtils.urlPercentEncodedForQuery($0.name),
-                    value: $0.value.map { URLEncodingUtils.urlPercentEncodedForQuery($0) }
-                )
-            }
-        }
-
-        // Explicit `@httpQuery` bindings take precedence over `@httpQueryParams`; when a name is
-        // bound both ways, the query-params entries for that name are dropped.  All explicit query
-        // items are preserved as-is, including repeats produced by list-valued query members.
-        let queryItems = self.mux.querySerializer.queryItems
+        // The URI's literal query items and explicit `@httpQuery` bindings both take precedence over
+        // `@httpQueryParams`; when a name is bound more than one way, the query-params entries for that
+        // name are dropped.  All explicit query items are preserved as-is, including repeats produced
+        // by list-valued query members.
+        let queryItems = self.uriQueryItems + self.mux.querySerializer.queryItems
         let queryNames = Set(queryItems.map(\.name))
         let queryParamsItems = self.mux.queryParamsSerializer.queryItems.filter { !queryNames.contains($0.name) }
 
         // Return all sources of query items together
-        return uriQueryItems + queryItems + queryParamsItems
+        return queryItems + queryParamsItems
     }
 
     public var headers: Headers {

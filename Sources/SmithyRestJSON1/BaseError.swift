@@ -17,6 +17,20 @@ import protocol SmithySerialization.ShapeDeserializer
 struct BaseError {
     var __type: String?
     var code: String?
+
+    /// The message, from the `message` JSON key.
+    var message: String?
+
+    /// The message, from the `Message` JSON key.  Used by some services.
+    var capitalizedMessage: String?
+
+    /// The message, from the `errorMessage` JSON key.  Used by some services.
+    var errorMessage: String?
+
+    /// The error message conveyed in the response body, from whichever message key is present.
+    var resolvedMessage: String? {
+        self.message ?? self.capitalizedMessage ?? self.errorMessage
+    }
 }
 
 extension BaseError: DeserializableStruct {
@@ -38,6 +52,24 @@ extension BaseError: DeserializableStruct {
                     target: Prelude.stringSchema,
                     index: 1
                 ),
+                .init(
+                    id: .init("swift.synthetic", "BaseError", "message"),
+                    type: .member,
+                    target: Prelude.stringSchema,
+                    index: 2
+                ),
+                .init(
+                    id: .init("swift.synthetic", "BaseError", "Message"),
+                    type: .member,
+                    target: Prelude.stringSchema,
+                    index: 3
+                ),
+                .init(
+                    id: .init("swift.synthetic", "BaseError", "errorMessage"),
+                    type: .member,
+                    target: Prelude.stringSchema,
+                    index: 4
+                ),
             ]
         )
     }
@@ -48,6 +80,12 @@ extension BaseError: DeserializableStruct {
             self.__type = try deserializer.readString(memberSchema)
         case 1:
             self.code = try deserializer.readString(memberSchema)
+        case 2:
+            self.message = try deserializer.readString(memberSchema)
+        case 3:
+            self.capitalizedMessage = try deserializer.readString(memberSchema)
+        case 4:
+            self.errorMessage = try deserializer.readString(memberSchema)
         default:
             break
         }

@@ -99,4 +99,116 @@ final class HTTPBindingsSerializerTests: XCTestCase {
             URIQueryItem(name: "Kept", value: "yes"),
         ])
     }
+
+    // MARK: - URI
+
+    // An operation with no literal query string in its URI produces no query items of its own.
+    func test_uri_withNoLiteralQuery() throws {
+        let operation = HTTPBindingsClient.allBoundMembersOperation
+        let input = AllBoundMembersInput(a: "a b/c")
+
+        let subject = try HTTPBindingsSerializer(codec: TestCodec(), operation: operation)
+        try input.serialize(subject)
+
+        XCTAssertEqual(subject.uri, "/AllBoundMembers/a%20b%2Fc/")
+        XCTAssertEqual(subject.queryItems, [])
+    }
+
+    // The literal query string is not part of the path, and labels in the path are still substituted.
+    func test_uri_withLiteralQuery_splitsPathFromQuery() throws {
+        let operation = HTTPBindingsClient.literalQueryOperation
+        let input = LiteralQueryInput(name: "a b")
+
+        let subject = try HTTPBindingsSerializer(codec: TestCodec(), operation: operation)
+        try input.serialize(subject)
+
+        XCTAssertEqual(subject.uri, "/LiteralQuery/a%20b")
+        XCTAssertEqual(subject.queryItems, [
+            URIQueryItem(name: "x-id", value: "Literal"),
+            URIQueryItem(name: "uploads", value: nil),
+        ])
+    }
+
+    // A label whose value contains a `?` must not be mistaken for the start of the query string.
+    func test_uri_withLabelValueContainingQuestionMark() throws {
+        let operation = HTTPBindingsClient.literalQueryOperation
+        let input = LiteralQueryInput(name: "a?b")
+
+        let subject = try HTTPBindingsSerializer(codec: TestCodec(), operation: operation)
+        try input.serialize(subject)
+
+        XCTAssertEqual(subject.uri, "/LiteralQuery/a%3Fb")
+        XCTAssertEqual(subject.queryItems, [
+            URIQueryItem(name: "x-id", value: "Literal"),
+            URIQueryItem(name: "uploads", value: nil),
+        ])
+    }
+
+    // MARK: - Literal query items
+
+    // Literal names & values are sent exactly as they appear in the model; they are neither
+    // percent-decoded nor re-encoded.  A literal with no value gets a `nil` value, which is
+    // rendered without a `=`.
+    func test_literalQuery_itemsAreSentVerbatim() throws {
+        let operation = HTTPBindingsClient.verbatimLiteralQueryOperation
+        let input = VerbatimLiteralQueryInput()
+
+        let subject = try HTTPBindingsSerializer(codec: TestCodec(), operation: operation)
+        try input.serialize(subject)
+
+        XCTAssertEqual(subject.uri, "/VerbatimLiteralQuery")
+        XCTAssertEqual(subject.queryItems, [
+            URIQueryItem(name: "plus", value: "a+b"),
+            URIQueryItem(name: "encoded", value: "a%20b"),
+            URIQueryItem(name: "flag", value: nil),
+        ])
+    }
+
+    // Literal query items come first, then explicit `@httpQuery` items, then `@httpQueryParams`.
+    func test_literalQuery_mergesWithQueryAndQueryParams() throws {
+        let operation = HTTPBindingsClient.literalQueryOperation
+        let input = LiteralQueryInput(name: "n", params: ["Extra": "x"], words: ["a", "b"])
+
+        let subject = try HTTPBindingsSerializer(codec: TestCodec(), operation: operation)
+        try input.serialize(subject)
+
+        XCTAssertEqual(subject.queryItems, [
+            URIQueryItem(name: "x-id", value: "Literal"),
+            URIQueryItem(name: "uploads", value: nil),
+            URIQueryItem(name: "Word", value: "a"),
+            URIQueryItem(name: "Word", value: "b"),
+            URIQueryItem(name: "Extra", value: "x"),
+        ])
+    }
+
+    // A `@httpQueryParams` key that collides with a literal query name is dropped, just as it is
+    // when it collides with an explicit `@httpQuery` name.
+    func test_literalQuery_collidingQueryParamsEntriesAreDropped() throws {
+        let operation = HTTPBindingsClient.literalQueryOperation
+        let input = LiteralQueryInput(
+            name: "n",
+            params: ["x-id": "dropped", "uploads": "dropped", "Kept": "yes"]
+        )
+
+        let subject = try HTTPBindingsSerializer(codec: TestCodec(), operation: operation)
+        try input.serialize(subject)
+
+        XCTAssertEqual(subject.queryItems, [
+            URIQueryItem(name: "x-id", value: "Literal"),
+            URIQueryItem(name: "uploads", value: nil),
+            URIQueryItem(name: "Kept", value: "yes"),
+        ])
+    }
+
+    // Query items are the same no matter how many times they are read.
+    func test_literalQuery_itemsAreStableAcrossReads() throws {
+        let operation = HTTPBindingsClient.literalQueryOperation
+        let input = LiteralQueryInput(name: "n", words: ["a"])
+
+        let subject = try HTTPBindingsSerializer(codec: TestCodec(), operation: operation)
+        try input.serialize(subject)
+
+        XCTAssertEqual(subject.queryItems, subject.queryItems)
+        XCTAssertEqual(subject.uri, subject.uri)
+    }
 }
