@@ -8,36 +8,31 @@
 @_spi(SchemaBasedSerde)
 import struct Smithy.ShapeID
 
-public struct SwiftSettings: Sendable {
-    let serviceID: ShapeID
-    let sdkId: String
-    let `internal`: Bool
-    let operationIDs: [ShapeID]
+@_spi(SchemaBasedSerde)
+public struct SwiftSettings: Sendable, Decodable {
 
-    public init(
-        service: String,
-        sdkId: String?,
-        `internal`: Bool = false,
-        operations: [String] = []
-    ) throws {
-        self.serviceID = try ShapeID(service)
-        self.sdkId = sdkId ?? serviceID.name
-        self.`internal` = `internal`
+    enum CodingKeys: String, CodingKey {
+        case serviceID = "service"
+        case internalClient
+        case operations
+    }
+
+    public let serviceID: ShapeID
+    public let internalClient: Bool
+    public let operationIDs: [ShapeID]
+
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        let serviceString = try container.decode(String.self, forKey: .serviceID)
+        let internalClient = try container.decodeIfPresent(Bool.self, forKey: .internalClient) ?? false
+        let operations = try container.decodeIfPresent([String].self, forKey: .operations) ?? []
+
+        self.serviceID = try ShapeID(serviceString)
+        self.internalClient = internalClient
         self.operationIDs = try operations.map(ShapeID.init)
     }
 
     var scope: String {
-        `internal` ? "package" : "public"
-    }
-
-    var serviceName: String {
-        let serviceSuffix = " Service"
-        var deserviced = sdkId
-        if deserviced.hasSuffix(serviceSuffix) {
-            deserviced.removeLast(serviceSuffix.count)
-        }
-        return deserviced
-            .toUpperCamelCase()
-            .replacingOccurrences(of: " ", with: "")
+        internalClient ? "package" : "public"
     }
 }

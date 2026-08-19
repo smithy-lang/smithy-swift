@@ -22,12 +22,8 @@ class SmithyCodegenCoreTests: XCTestCase {
     // can debug a code generation step that is failing during builds.
     func test_generates_rpcv2_cbor_protocol() throws {
         let tempDirURL = FileManager.default.temporaryDirectory
-        let settings = try SwiftSettings(
-            service: "smithy.protocoltests.rpcv2Cbor#RpcV2Protocol",
-            sdkId: "RpcV2Protocol"
-        )
         let generator = try CodeGenerator(
-            settings: settings,
+            swiftSettingsFileURL: Bundle.module.url(forResource: "swift-settings", withExtension: "json")!,
             modelFileURL: Bundle.module.url(forResource: "smithy-rpcv2-cbor", withExtension: "json")!,
             schemasFileURL: tempDirURL.appendingPathComponent("Schemas.swift"),
             serializeFileURL: tempDirURL.appendingPathComponent("Serialize.swift"),

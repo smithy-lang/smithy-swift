@@ -21,8 +21,11 @@ let package = Package(
         // Generated test SDKs.  Models are in build/model.  Use them where Smithy generates them.
         // Run bash script ./scripts/codegen.sh from smithy-swift root to generate or regenerate these files
         testSDKPackage("AWSJSON"),
+        testSDKPackage("EventStream"),
+        testSDKPackage("HTTPBindings"),
         testSDKPackage("HTTPHeader"),
         testSDKPackage("HTTPLabel"),
+        testSDKPackage("HTTPPayload"),
         testSDKPackage("HTTPQuery"),
         testSDKPackage("HTTPQueryParams"),
         testSDKPackage("JSONName"),
@@ -60,6 +63,7 @@ let package = Package(
                 testSDKProduct("AWSJSON"),
                 testSDKProduct("JSONName"),
                 testSDKProduct("NullTolerance"),
+                testSDKProduct("MaxRecursion"),
             ]
         ),
         .testTarget(
@@ -152,6 +156,9 @@ let package = Package(
             name: "SmithyEventStreamsTests",
             dependencies: [
                 .product(name: "SmithyEventStreams", package: "smithy-swift"),
+                .product(name: "SmithyAWSJSON", package: "smithy-swift"),
+                .product(name: "SmithySerialization", package: "smithy-swift"),
+                testSDKProduct("EventStream"),
             ]
         ),
         .testTarget(
@@ -182,9 +189,12 @@ let package = Package(
             dependencies: [
                 .product(name: "SmithyHTTPAPI", package: "smithy-swift"),
                 .product(name: "Smithy", package: "smithy-swift"),
+                .product(name: "SmithyJSON", package: "smithy-swift"),
                 .product(name: "SmithyTimestamps", package: "smithy-swift"),
+                testSDKProduct("HTTPBindings"),
                 testSDKProduct("HTTPHeader"),
                 testSDKProduct("HTTPLabel"),
+                testSDKProduct("HTTPPayload"),
                 testSDKProduct("HTTPQuery"),
                 testSDKProduct("HTTPQueryParams"),
             ]

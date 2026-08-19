@@ -19,9 +19,12 @@ data class TestSDK(val name: String, val forceSchemaBased: Boolean = false)
 
 val testSDKs = listOf(
     TestSDK("AWSJSON"),
+    TestSDK("EventStream"),
     TestSDK("JSONName"),
+    TestSDK("HTTPBindings", true),
     TestSDK("HTTPHeader", true),
     TestSDK("HTTPLabel", true),
+    TestSDK("HTTPPayload", true),
     TestSDK("HTTPQuery", true),
     TestSDK("HTTPQueryParams", true),
     TestSDK("MaxRecursion"),
