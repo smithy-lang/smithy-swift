@@ -6,6 +6,8 @@
 //
 
 import struct Foundation.Data
+import struct Foundation.URL
+import struct Foundation.URLComponents
 import enum Smithy.ByteStream
 @_spi(SchemaBasedSerde)
 import class Smithy.HTTPTrait
@@ -66,17 +68,32 @@ public final class HTTPBindingsSerializer: NoOpByDefaultShapeSerializer {
     }
 
     public var uri: String {
-        self.mux.labelSerializer.uri
+        String(self.mux.labelSerializer.uri.prefix { $0 != "?" })
     }
 
     public var queryItems: [URIQueryItem] {
+
+        // Get the query items out of the URI, if any
+        var uriQueryItems: [URIQueryItem] = []
+        if let uriQueryURL = URL(string: self.mux.labelSerializer.uri) {
+            let urlQueryItems = URLComponents(url: uriQueryURL, resolvingAgainstBaseURL: false)?.queryItems ?? []
+            uriQueryItems = urlQueryItems.map {
+                URIQueryItem(
+                    name: URLEncodingUtils.urlPercentEncodedForQuery($0.name),
+                    value: $0.value.map { URLEncodingUtils.urlPercentEncodedForQuery($0) }
+                )
+            }
+        }
+
         // Explicit `@httpQuery` bindings take precedence over `@httpQueryParams`; when a name is
         // bound both ways, the query-params entries for that name are dropped.  All explicit query
         // items are preserved as-is, including repeats produced by list-valued query members.
         let queryItems = self.mux.querySerializer.queryItems
         let queryNames = Set(queryItems.map(\.name))
         let queryParamsItems = self.mux.queryParamsSerializer.queryItems.filter { !queryNames.contains($0.name) }
-        return queryItems + queryParamsItems
+
+        // Return all sources of query items together
+        return uriQueryItems + queryItems + queryParamsItems
     }
 
     public var headers: Headers {
@@ -90,6 +107,7 @@ public final class HTTPBindingsSerializer: NoOpByDefaultShapeSerializer {
     }
 }
 
+/// When passed into an input structure member, it selects the correct serializer to use based on the HTTP binding for that member.
 private struct BindingMultiplexer: InterceptingSerializer {
     let bindings: [HTTPBinding]
     let headerSerializer: HTTPHeaderSerializer
@@ -112,7 +130,7 @@ private struct BindingMultiplexer: InterceptingSerializer {
     }
 
     // Select the serializer that matches this input member's binding.
-    // Body is serialized separately, so no-op is used.
+    // Body is serialized separately, so no-op is used here.
     func before(_ schema: Schema) throws -> any ShapeSerializer {
         return switch self.bindings[schema.index] {
         case .header:

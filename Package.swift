@@ -315,6 +315,7 @@ var runtimeTargets: [PackageDescription.Target] {
         .target(
             name: "SmithyRestJSON1",
             dependencies: [
+                "ClientRuntime",
                 "Smithy",
                 "SmithySerialization",
                 "SmithyJSON",
