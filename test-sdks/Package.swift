@@ -31,6 +31,7 @@ let package = Package(
         testSDKPackage("JSONName"),
         testSDKPackage("MaxRecursion"),
         testSDKPackage("NullTolerance"),
+        testSDKPackage("RestJSON1Response"),
         testSDKPackage("StringSerializer"),
         testSDKPackage("Waiters"),
     ],
@@ -197,6 +198,18 @@ let package = Package(
                 testSDKProduct("HTTPPayload"),
                 testSDKProduct("HTTPQuery"),
                 testSDKProduct("HTTPQueryParams"),
+            ]
+        ),
+        .testTarget(
+            name: "SmithyRestJSON1Tests",
+            dependencies: [
+                .product(name: "SmithyRestJSON1", package: "smithy-swift"),
+                .product(name: "Smithy", package: "smithy-swift"),
+                .product(name: "SmithyHTTPAPI", package: "smithy-swift"),
+                .product(name: "SmithyStreams", package: "smithy-swift"),
+                .product(name: "SmithySerialization", package: "smithy-swift"),
+                .product(name: "ClientRuntime", package: "smithy-swift"),
+                testSDKProduct("RestJSON1Response"),
             ]
         ),
         .testTarget(

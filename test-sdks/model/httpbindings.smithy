@@ -12,6 +12,8 @@ service HTTPBindings {
         AllBoundMembers
         QueryAndQueryParams
         ScalarQueryAndQueryParams
+        LiteralQuery
+        VerbatimLiteralQuery
     ]
 }
 
@@ -70,6 +72,38 @@ structure ScalarQueryAndQueryParamsInput {
 
     @httpQueryParams
     params: StringMap
+}
+
+// Literal query string params in the `@http` URI, alongside a label, an explicit `@httpQuery`
+// binding, and an `@httpQueryParams` map, so that the merge of all three sources of query items
+// can be exercised.  A label is included so that the URI's query string is not confused with the
+// path when labels are substituted.
+@http(method: "GET", uri: "/LiteralQuery/{name}?x-id=Literal&uploads")
+operation LiteralQuery {
+    input: LiteralQueryInput
+}
+
+structure LiteralQueryInput {
+    @httpLabel
+    @required
+    name: String
+
+    @httpQuery("Word")
+    words: StringList
+
+    @httpQueryParams
+    params: StringMap
+}
+
+// Literal query params whose names & values must be sent exactly as they appear in the model.
+@http(method: "GET", uri: "/VerbatimLiteralQuery?plus=a+b&encoded=a%20b&flag")
+operation VerbatimLiteralQuery {
+    input: VerbatimLiteralQueryInput
+}
+
+structure VerbatimLiteralQueryInput {
+    @httpHeader("X-A")
+    a: String
 }
 
 list StringList {
