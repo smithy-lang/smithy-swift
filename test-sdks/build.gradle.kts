@@ -29,6 +29,7 @@ val testSDKs = listOf(
     TestSDK("HTTPQueryParams", true),
     TestSDK("MaxRecursion"),
     TestSDK("NullTolerance"),
+    TestSDK("RestJSON1Response", true),
     TestSDK("StringSerializer"),
     TestSDK("Waiters"),
 )
