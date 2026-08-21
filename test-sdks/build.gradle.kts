@@ -25,6 +25,7 @@ val testSDKs = listOf(
     TestSDK("HTTPHeader", true),
     TestSDK("HTTPLabel", true),
     TestSDK("HTTPPayload", true),
+    TestSDK("HTTPPrefixHeaders", true),
     TestSDK("HTTPQuery", true),
     TestSDK("HTTPQueryParams", true),
     TestSDK("MaxRecursion"),
