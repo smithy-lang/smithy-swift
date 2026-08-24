@@ -7,6 +7,7 @@
 
 import struct Foundation.Data
 import struct Foundation.Date
+import enum Smithy.ByteStream
 import protocol Smithy.ResponseMessage
 @_spi(SchemaBasedSerde)
 import class Smithy.Schema
@@ -20,7 +21,7 @@ import protocol SmithySerialization.Codec
 import protocol SmithySerialization.DeserializableStruct
 import struct SmithySerialization.SerializerError
 @_spi(SchemaBasedSerde)
-import protocol SmithySerialization.ShapeDeserializer
+import protocol SmithySerialization.ThrowByDefaultShapeDeserializer
 
 /// A deserializer that may be used to deserialize an event stream from a response.
 ///
@@ -29,7 +30,7 @@ import protocol SmithySerialization.ShapeDeserializer
 /// member, it will throw an error.
 /// It will throw a "not implemented" error if deserialization of any other type is attempted.
 @_spi(SchemaBasedSerde)
-public struct EventStreamDeserializer: ShapeDeserializer {
+public struct EventStreamDeserializer: ThrowByDefaultShapeDeserializer {
     let codec: any Codec
     let response: ResponseMessage
 
@@ -73,68 +74,4 @@ public struct EventStreamDeserializer: ShapeDeserializer {
             unmarshalClosure: unmarshalClosure
         ).toAsyncStream()
     }
-
-    public func readList<E>(_ schema: Schema, _ consumer: (any ShapeDeserializer) throws -> E) throws -> [E] {
-        throw notImplemented
-    }
-
-    public func readMap<V>(_ schema: Schema, _ consumer: (any ShapeDeserializer) throws -> V) throws -> [String: V] {
-        throw notImplemented
-    }
-
-    public func readBoolean(_ schema: Schema) throws -> Bool {
-        throw notImplemented
-    }
-
-    public func readBlob(_ schema: Schema) throws -> Data {
-        throw notImplemented
-    }
-
-    public func readByte(_ schema: Schema) throws -> Int8 {
-        throw notImplemented
-    }
-
-    public func readShort(_ schema: Schema) throws -> Int16 {
-        throw notImplemented
-    }
-
-    public func readInteger(_ schema: Schema) throws -> Int32 {
-        throw notImplemented
-    }
-
-    public func readLong(_ schema: Schema) throws -> Int64 {
-        throw notImplemented
-    }
-
-    public func readFloat(_ schema: Schema) throws -> Float {
-        throw notImplemented
-    }
-
-    public func readDouble(_ schema: Schema) throws -> Double {
-        throw notImplemented
-    }
-
-    public func readBigInteger(_ schema: Schema) throws -> Int64 {
-        throw notImplemented
-    }
-
-    public func readBigDecimal(_ schema: Schema) throws -> Double {
-        throw notImplemented
-    }
-
-    public func readString(_ schema: Schema) throws -> String {
-        throw notImplemented
-    }
-
-    public func readDocument(_ schema: Schema) throws -> any SmithyDocument {
-        throw notImplemented
-    }
-
-    public func readTimestamp(_ schema: Schema) throws -> Date {
-        throw notImplemented
-    }
-
-    public var containerSize: Int { -1 }
-
-    private var notImplemented: SerializerError { .init("Not implemented") }
 }

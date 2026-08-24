@@ -131,7 +131,7 @@ extension SmithyDocument {
     ///   - lhs: The first `SmithyDocument` to compare.
     ///   - rhs: The second `SmithyDocument` to compare.
     /// - Returns: `true` if the two `SmithyDocument`s are equal, `false` otherwise.
-    public static func isEqual(_ lhs: SmithyDocument, _ rhs: SmithyDocument) -> Bool {
+    public static func isEqual(_ lhs: any SmithyDocument, _ rhs: any SmithyDocument) -> Bool {
         switch (lhs.type, rhs.type) {
         case (.blob, .blob):
             return (try? lhs.asBlob() == rhs.asBlob()) ?? false
@@ -153,9 +153,9 @@ extension SmithyDocument {
             return (try? lhs.asFloat() == rhs.asFloat()) ?? false
         case (.double, .double):
             return (try? lhs.asDouble() == rhs.asDouble()) ?? false
-        case (.bigDecimal, .bigDecimal):
+        case (.bigDecimal, .bigDecimal), (.bigDecimal, .double), (.double, .bigDecimal):
             return (try? lhs.asBigDecimal() == rhs.asBigDecimal()) ?? false
-        case (.bigInteger, .bigInteger):
+        case (.bigInteger, .bigInteger), (.long, .bigInteger), (.bigInteger, .long):
             return (try? lhs.asBigInteger() == rhs.asBigInteger()) ?? false
         case (.list, .list):
             guard let lhsList = try? lhs.asList(), let rhsList = try? rhs.asList() else { return false }

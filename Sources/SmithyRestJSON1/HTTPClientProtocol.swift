@@ -13,7 +13,15 @@ import enum Smithy.ByteStream
 import enum Smithy.ClientError
 import class Smithy.Context
 @_spi(SchemaBasedSerde)
+import class Smithy.Schema
+@_spi(SchemaBasedSerde)
 import struct Smithy.ShapeID
+@_spi(SchemaBasedSerde)
+import class Smithy.StreamingTrait
+@_spi(SchemaBasedSerde)
+import struct SmithyEventStreams.EventStreamDeserializer
+@_spi(SchemaBasedSerde)
+import class SmithyHTTPAPI.HTTPBindingsDeserializer
 @_spi(SchemaBasedSerde)
 import class SmithyHTTPAPI.HTTPBindingsSerializer
 import class SmithyHTTPAPI.HTTPRequest
@@ -23,6 +31,8 @@ import class SmithyHTTPAPI.HTTPResponse
 import protocol SmithySerialization.ClientProtocol
 @_spi(SchemaBasedSerde)
 import protocol SmithySerialization.Codec
+@_spi(SchemaBasedSerde)
+import struct SmithySerialization.DataStreamDeserializer
 @_spi(SchemaBasedSerde)
 import protocol SmithySerialization.DeserializableStruct
 @_spi(SchemaBasedSerde)
@@ -54,7 +64,11 @@ public struct HTTPClientProtocol: ClientProtocol {
         // Will be filled in as these other items are completed.
 
         // Create a HTTP binding serializer & serialize the input to it
-        let serializer = try HTTPBindingsSerializer(codec: self.codec, operation: operation)
+        let serializer = try HTTPBindingsSerializer(
+            codec: self.codec,
+            operation: operation,
+            contentType: "application/json"
+        )
         try input.serialize(serializer)
 
         // Populate the request with fields from the binding serializer
@@ -75,19 +89,39 @@ public struct HTTPClientProtocol: ClientProtocol {
     ) async throws -> Output where Input: SerializableStruct, Output: DeserializableStruct {
         // This method is incomplete.  Missing:
         // - Response event streams
-        // - HTTP bindings, including payloads
+        // - HTTP header and paramHeader bindings
         // Will be filled in as these other items are completed.
 
-        // Read the body into memory immediately.  The body may be a non-seekable stream, so it can
-        // only be read once & the data must be reused for both output & error deserialization.
-        let responseBodyData = try await response.body.readData() ?? Data()
-
-        if (200..<300).contains(response.statusCode.rawValue) {
+        if response.statusCode.isSuccess {
             // Result of HTTP call was success
-            let deserializer = try codec.makeDeserializer(data: responseBodyData)
-            return try Output.deserialize(deserializer)
+
+            if let streamingMember = operation.responseStreamingMember {
+                // Fill all output members other than the streaming members.
+                let deserializer = try HTTPBindingsDeserializer(operation: operation, codec: codec, response: response, data: nil)
+                var output = try Output.deserialize(deserializer)
+
+                //
+                switch streamingMember.type {
+                case .union:
+                    let eventStreamDeserializer = EventStreamDeserializer(codec: codec, response: response)
+                    try output.deserializeMember(streamingMember, eventStreamDeserializer)
+                case .blob:
+                    let dataStreamDeserializer = DataStreamDeserializer(response: response)
+                    try output.deserializeMember(streamingMember, dataStreamDeserializer)
+                default:
+                    break // streaming trait may only ever be applied to unions & blobs
+                }
+                return output
+            } else {
+                let data = try await response.body.readData() ?? Data()
+                let deserializer = try HTTPBindingsDeserializer(operation: operation, codec: codec, response: response, data: data)
+                return try Output.deserialize(deserializer)
+            }
         } else {
             // Result of HTTP call was error
+
+            // Read the body into memory
+            let responseBodyData = try await response.body.readData() ?? Data()
 
             // Attempt to parse the basic error fields (`__type`, `code`, and the message) from the body.
             // A body that is not valid JSON, i.e. one produced by an intermediary, yields no fields
@@ -119,7 +153,7 @@ public struct HTTPClientProtocol: ClientProtocol {
             }
 
             // Error type was resolved.  Deserialize the modeled error from the response body
-            let errorDeserializer = try codec.makeDeserializer(data: responseBodyData)
+            let errorDeserializer = try HTTPBindingsDeserializer(operation: operation, codec: codec, response: response, data: responseBodyData)
             let error = try registryEntry.swiftType.deserialize(errorDeserializer)
 
             // Cast the error so that we can fill its fields
@@ -156,5 +190,12 @@ extension HTTPResponse {
         self.headers.value(for: "x-amzn-error-message")
             ?? self.headers.value(for: ":error-message")
             ?? self.headers.value(for: "x-amzn-ErrorMessage")
+    }
+}
+
+private extension Operation {
+
+    var responseStreamingMember: Schema? {
+        outputSchema.members.first { $0.hasTrait(StreamingTrait.self) }
     }
 }

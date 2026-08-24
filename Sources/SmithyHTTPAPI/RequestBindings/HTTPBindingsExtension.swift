@@ -16,6 +16,8 @@ import class Smithy.HTTPQueryParamsTrait
 @_spi(SchemaBasedSerde)
 import class Smithy.HTTPQueryTrait
 @_spi(SchemaBasedSerde)
+import class Smithy.HTTPResponseCodeTrait
+@_spi(SchemaBasedSerde)
 import class Smithy.Schema
 @_spi(SchemaBasedSerde)
 import protocol Smithy.SchemaExtension
@@ -40,6 +42,8 @@ public final class HTTPBindingsExtension: SchemaExtension {
                 return .query
             } else if member.hasTrait(HTTPQueryParamsTrait.self) {
                 return .queryParams
+            } else if member.hasTrait(HTTPResponseCodeTrait.self) {
+                return .responseCode
             } else {
                 // If not explicitly bound anywhere else, the member is included in the body
                 return .body
@@ -55,5 +59,6 @@ public enum HTTPBinding: Sendable {
     case payload
     case query
     case queryParams
+    case responseCode
     case body
 }

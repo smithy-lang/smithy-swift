@@ -31,7 +31,7 @@ public final class Deserializer: ShapeDeserializer {
             self.value = .object([:])
             return
         }
-        let jsonObject = try JSONSerialization.jsonObject(with: data)
+        let jsonObject = try JSONSerialization.jsonObject(with: data, options: .fragmentsAllowed)
         let node = try JSONValue(from: jsonObject)
         self.value = node
     }

@@ -87,4 +87,6 @@ public extension ShapeDeserializer {
             continuation.finish()
         }
     }
+
+    var containerSize: Int { -1 }
 }

@@ -8,51 +8,28 @@
 import struct Foundation.Data
 import struct Foundation.Date
 @_spi(SchemaBasedSerde)
-import class Smithy.EventHeaderTrait
-@_spi(SchemaBasedSerde)
-import class Smithy.EventPayloadTrait
-@_spi(SchemaBasedSerde)
 import class Smithy.Schema
-import protocol Smithy.SmithyDocument
-import struct SmithyEventStreamsAPI.Message
 @_spi(SchemaBasedSerde)
-import protocol SmithySerialization.Codec
+import protocol Smithy.SmithyDocument
 @_spi(SchemaBasedSerde)
 import protocol SmithySerialization.DeserializableStruct
-import struct SmithySerialization.SerializerError
 @_spi(SchemaBasedSerde)
 import protocol SmithySerialization.ShapeDeserializer
 
-/// Deserializes the associated value (event or exception) from a case of a streaming union.
-struct EventContentDeserializer: ShapeDeserializer {
-    let codec: any Codec
-    let message: Message
+@_spi(SchemaBasedSerde)
+public protocol ThrowByDefaultShapeDeserializer: ShapeDeserializer {}
+
+public extension ThrowByDefaultShapeDeserializer {
 
     func readStruct<T: DeserializableStruct>(_ schema: Schema, _ value: inout T) throws {
-
-        // Deserialize the event payload, to the member marked with @eventPayload if it exists,
-        // to the structure's members otherwise.
-        // Use a deserializer for the protocol in use, by making it from the codec.
-        let payloadDeserializer = try codec.makeDeserializer(data: message.payload)
-        if let payloadMember = schema.members.first(where: { $0.hasTrait(EventPayloadTrait.self) }) {
-            try value.deserializeMember(payloadMember, payloadDeserializer)
-        } else {
-            try payloadDeserializer.readStruct(schema, &value)
-        }
-
-        // Attempt to match the headers in the message to members in the structure.
-        for header in message.headers {
-            guard let headerMember = schema.members.first(where: { $0.id.member == header.name }) else { continue }
-            let headerDeserializer = EventHeaderDeserializer(header: header)
-            try value.deserializeMember(headerMember, headerDeserializer)
-        }
+        throw notImplemented
     }
 
     func readList<E>(_ schema: Schema, _ consumer: (any ShapeDeserializer) throws -> E) throws -> [E] {
         throw notImplemented
     }
 
-    func readMap<V>(_ schema: Schema, _ consumer: (any ShapeDeserializer) throws -> V) throws -> [String: V] {
+    func readMap<V>(_ schema: Schema, _ consumer: (any ShapeDeserializer) throws -> V) throws -> [String : V] {
         throw notImplemented
     }
 
@@ -107,6 +84,6 @@ struct EventContentDeserializer: ShapeDeserializer {
     func readTimestamp(_ schema: Schema) throws -> Date {
         throw notImplemented
     }
-
-    private var notImplemented: SerializerError { .init("Not implemented") }
 }
+
+private var notImplemented: SerializerError { .init("Not implemented") }

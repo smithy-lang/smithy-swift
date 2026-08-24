@@ -36,14 +36,15 @@ import protocol SmithySerialization.ShapeSerializer
 public final class HTTPBindingsSerializer: NoOpByDefaultShapeSerializer {
     let bindings: [HTTPBinding]
     public let method: HTTPMethodType
-    private let mux: BindingMultiplexer
+    private let mux: RequestBindingMultiplexer
+    private let contentType: String
 
     /// The query items from the literal query string, if any, in the operation's `@http` URI.
     ///
     /// These are fixed by the model, so they are parsed once when this serializer is created.
     private let uriQueryItems: [URIQueryItem]
 
-    public init<Input, Output>(codec: any Codec, operation: Operation<Input, Output>) throws {
+    public init<Input, Output>(codec: any Codec, operation: Operation<Input, Output>, contentType: String) throws {
         guard let httpTrait = operation.schema.getTrait(HTTPTrait.self) else {
             throw SerializerError("no HTTP trait for operation \(operation.schema.id)")
         }
@@ -57,7 +58,8 @@ public final class HTTPBindingsSerializer: NoOpByDefaultShapeSerializer {
         // only the path portion of the URI is subject to label substitution.
         let (path, literalQuery) = Self.split(uri: httpTrait.uri)
         self.uriQueryItems = Self.queryItems(literalQuery: literalQuery)
-        self.mux = try BindingMultiplexer(codec: codec, bindings: self.bindings, uri: path)
+        self.mux = try RequestBindingMultiplexer(codec: codec, bindings: self.bindings, uri: path)
+        self.contentType = contentType
     }
 
     /// Splits a URI into its path and its literal query string, if it has one.
@@ -118,7 +120,11 @@ public final class HTTPBindingsSerializer: NoOpByDefaultShapeSerializer {
     }
 
     public var headers: Headers {
-        self.mux.headerSerializer.headers
+        var headers = self.mux.headerSerializer.headers
+        if !headers.exists(name: "Content-Type") {
+            headers.add(Header(name: "Content-Type", value: resolvedContentType))
+        }
+        return headers
     }
 
     public var data: Data {
@@ -126,17 +132,21 @@ public final class HTTPBindingsSerializer: NoOpByDefaultShapeSerializer {
             try self.mux.data
         }
     }
+
+    private var resolvedContentType: String {
+        self.mux.payloadSerializer.contentType ?? self.contentType
+    }
 }
 
 /// When passed into an input structure member, it selects the correct serializer to use based on the HTTP binding for that member.
-private struct BindingMultiplexer: InterceptingSerializer {
+private struct RequestBindingMultiplexer: InterceptingSerializer {
     let bindings: [HTTPBinding]
     let headerSerializer: HTTPHeaderSerializer
     let labelSerializer: HTTPLabelSerializer
     let querySerializer: HTTPQuerySerializer
     let queryParamsSerializer: HTTPQueryParamsSerializer
     let bodySerializer: any ShapeSerializer
-    let payloadSerializer: any ShapeSerializer
+    let payloadSerializer: HTTPPayloadSerializer
     let noOpSerializer: NoOpSerializer
 
     init(codec: any Codec, bindings: [HTTPBinding], uri: String) throws {
@@ -164,7 +174,7 @@ private struct BindingMultiplexer: InterceptingSerializer {
             querySerializer
         case .queryParams:
             queryParamsSerializer
-        case .body:
+        case .responseCode, .body: // responseCode should never appear in an input
             noOpSerializer
         }
     }
@@ -173,7 +183,7 @@ private struct BindingMultiplexer: InterceptingSerializer {
     var data: Data {
         get throws {
             if self.bindings.contains(.payload) {
-                try self.payloadSerializer.data
+                self.payloadSerializer.data
             } else {
                 try self.bodySerializer.data
             }

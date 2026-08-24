@@ -166,7 +166,5 @@ struct EventHeaderDeserializer: ShapeDeserializer {
         return value
     }
 
-    var containerSize: Int { -1 }
-
     private var notImplemented: SerializerError { .init("Not implemented") }
 }
