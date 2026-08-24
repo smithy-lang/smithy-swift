@@ -21,6 +21,7 @@ public let allRuntimeTraitTypes: [any Trait.Type] = [
     HTTPHeaderTrait.self,
     HTTPLabelTrait.self,
     HTTPPayloadTrait.self,
+    HTTPPrefixHeadersTrait.self,
     HTTPQueryParamsTrait.self,
     HTTPQueryTrait.self,
     HTTPResponseCodeTrait.self,
