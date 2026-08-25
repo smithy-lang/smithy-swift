@@ -122,8 +122,9 @@ public final class Serializer: ShapeSerializer {
         throw SerializerError("Document type not implemented in CBOR")
     }
 
-    public var data: Data {
-        Data(encoder.getEncoded())
+    public var data: Data? {
+        let encoded = Data(encoder.getEncoded())
+        return !encoded.isEmpty ? encoded : nil
     }
 
     // MARK: - Private methods

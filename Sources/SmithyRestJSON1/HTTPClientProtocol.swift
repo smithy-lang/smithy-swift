@@ -21,6 +21,9 @@ import class Smithy.StreamingTrait
 @_spi(SchemaBasedSerde)
 import struct SmithyEventStreams.EventStreamDeserializer
 @_spi(SchemaBasedSerde)
+import class SmithyEventStreams.EventStreamSerializer
+import SmithyEventStreamsAuthAPI
+@_spi(SchemaBasedSerde)
 import class SmithyHTTPAPI.HTTPBindingsDeserializer
 @_spi(SchemaBasedSerde)
 import class SmithyHTTPAPI.HTTPBindingsSerializer
@@ -34,11 +37,14 @@ import protocol SmithySerialization.Codec
 @_spi(SchemaBasedSerde)
 import struct SmithySerialization.DataStreamDeserializer
 @_spi(SchemaBasedSerde)
+import class SmithySerialization.DataStreamSerializer
+@_spi(SchemaBasedSerde)
 import protocol SmithySerialization.DeserializableStruct
 @_spi(SchemaBasedSerde)
 import struct SmithySerialization.Operation
 @_spi(SchemaBasedSerde)
 import protocol SmithySerialization.SerializableStruct
+import struct SmithySerialization.SerializerError
 
 @_spi(SchemaBasedSerde)
 public struct HTTPClientProtocol: ClientProtocol {
@@ -58,16 +64,13 @@ public struct HTTPClientProtocol: ClientProtocol {
         requestBuilder: HTTPRequestBuilder,
         context: Context
     ) throws where Input: SerializableStruct, Output: DeserializableStruct {
-        // This method is incomplete.  Missing:
-        // - Request event streams
-        // - Several HTTP bindings
-        // Will be filled in as these other items are completed.
 
         // Create a HTTP binding serializer & serialize the input to it
         let serializer = try HTTPBindingsSerializer(
             codec: self.codec,
             operation: operation,
-            contentType: "application/json"
+            contentType: "application/json",
+            defaultBody: Data("{}".utf8)
         )
         try input.serialize(serializer)
 
@@ -76,7 +79,35 @@ public struct HTTPClientProtocol: ClientProtocol {
         requestBuilder.withPath(serializer.uri)
         requestBuilder.withQueryItems(serializer.queryItems)
         requestBuilder.withHeaders(serializer.headers)
-        requestBuilder.withBody(ByteStream.data(try serializer.data))
+
+        switch operation.requestStreamingType {
+        case .event:
+            guard let messageEncoder = context.messageEncoder else {
+                throw SerializerError("Message encoder was not configured")
+            }
+            guard let messageSigner = context.messageSigner else {
+                throw SerializerError("Message signer was not configured")
+            }
+            let eventStreamSerializer = EventStreamSerializer(
+                codec: codec,
+                contentType: "application/json",
+                messageEncoder: messageEncoder,
+                messageSigner: messageSigner
+            )
+            try input.serializeMembers(operation.inputSchema, eventStreamSerializer)
+            requestBuilder.withBody(eventStreamSerializer.body)
+            requestBuilder.updateHeader(name: "Content-Type", value: eventStreamSerializer.mediaType)
+        case .data:
+            let dataStreamSerializer = DataStreamSerializer()
+            try input.serializeMembers(operation.inputSchema, dataStreamSerializer)
+            requestBuilder.withBody(dataStreamSerializer.body)
+            requestBuilder.updateHeader(name: "Content-Type", value: dataStreamSerializer.mediaType)
+        case .none:
+            requestBuilder.withBody(serializer.body)
+            if !requestBuilder.headers.exists(name: "Content-Type"), let mediaType = serializer.mediaType {
+                requestBuilder.withHeader(name: "Content-Type", value: mediaType)
+            }
+        }
 
         // Set the path in the context
         context.path = requestBuilder.path
@@ -87,20 +118,12 @@ public struct HTTPClientProtocol: ClientProtocol {
         context: Context,
         response: HTTPResponse
     ) async throws -> Output where Input: SerializableStruct, Output: DeserializableStruct {
-        // This method is incomplete.  Missing:
-        // - Response event streams
-        // - HTTP header and paramHeader bindings
-        // Will be filled in as these other items are completed.
-
         if response.statusCode.isSuccess {
-            // Result of HTTP call was success
-
             if let streamingMember = operation.responseStreamingMember {
                 // Fill all output members other than the streaming members.
-                let deserializer = try HTTPBindingsDeserializer(operation: operation, codec: codec, response: response, data: nil)
+                let deserializer = HTTPBindingsDeserializer(codec: codec, response: response, data: nil)
                 var output = try Output.deserialize(deserializer)
 
-                //
                 switch streamingMember.type {
                 case .union:
                     let eventStreamDeserializer = EventStreamDeserializer(codec: codec, response: response)
@@ -113,8 +136,9 @@ public struct HTTPClientProtocol: ClientProtocol {
                 }
                 return output
             } else {
-                let data = try await response.body.readData() ?? Data()
-                let deserializer = try HTTPBindingsDeserializer(operation: operation, codec: codec, response: response, data: data)
+                // If not a streaming response, read all the data into memory then deserialize
+                let data = try await response.body.readData()
+                let deserializer = HTTPBindingsDeserializer(codec: codec, response: response, data: data)
                 return try Output.deserialize(deserializer)
             }
         } else {
@@ -153,7 +177,7 @@ public struct HTTPClientProtocol: ClientProtocol {
             }
 
             // Error type was resolved.  Deserialize the modeled error from the response body
-            let errorDeserializer = try HTTPBindingsDeserializer(operation: operation, codec: codec, response: response, data: responseBodyData)
+            let errorDeserializer = HTTPBindingsDeserializer(codec: codec, response: response, data: responseBodyData)
             let error = try registryEntry.swiftType.deserialize(errorDeserializer)
 
             // Cast the error so that we can fill its fields
@@ -194,6 +218,23 @@ extension HTTPResponse {
 }
 
 private extension Operation {
+
+    enum StreamingType {
+        case event
+        case data
+    }
+
+    var requestStreamingType: StreamingType? {
+        let streamingMemberType = inputSchema.members.first { $0.hasTrait(StreamingTrait.self) }?.type
+        switch streamingMemberType {
+        case .union:
+            return .event
+        case .blob:
+            return .data
+        default:
+            return nil
+        }
+    }
 
     var responseStreamingMember: Schema? {
         outputSchema.members.first { $0.hasTrait(StreamingTrait.self) }

@@ -125,7 +125,7 @@ public final class HTTPHeaderSerializer: ShapeSerializer {
         headers.add(name: listName, value: "null")
     }
 
-    public var data: Data { Data() } // not used for this serializer
+    public var data: Data? { nil } // not used for this serializer
 
     // MARK: - Private methods
 

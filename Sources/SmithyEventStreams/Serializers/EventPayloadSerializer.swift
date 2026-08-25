@@ -55,7 +55,7 @@ final class EventPayloadSerializer: ShapeSerializer {
         // payload document, without the member name as a key.
         let payloadSerializer = try codec.makeSerializer()
         try payloadSerializer.writeStruct(schema.target ?? schema, value)
-        try setPayload(try payloadSerializer.data, contentType: contentType)
+        try setPayload(try payloadSerializer.data ?? Data(), contentType: contentType)
     }
 
     func writeBlob(_ schema: Schema, _ value: Data) throws {
@@ -124,7 +124,7 @@ final class EventPayloadSerializer: ShapeSerializer {
         // A nil payload is sent as an empty payload.
     }
 
-    var data: Data {
+    var data: Data? {
         get throws { payload }
     }
 

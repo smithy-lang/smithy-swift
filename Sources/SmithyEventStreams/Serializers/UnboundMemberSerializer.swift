@@ -116,7 +116,7 @@ struct UnboundMemberSerializer: ShapeSerializer {
         try base.writeNull(schema)
     }
 
-    var data: Data {
+    var data: Data? {
         get throws { try base.data }
     }
 

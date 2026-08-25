@@ -25,7 +25,7 @@ final class HTTPPayloadSerializerTests: XCTestCase {
         let operation = HTTPPayloadClient.structureHTTPPayloadOperation
         let input = StructureHTTPPayloadInput(payload: .init(a: "xyz", b: 321, c: true))
 
-        let subject = try HTTPBindingsSerializer(codec: TestCodec(), operation: operation)
+        let subject = try HTTPBindingsSerializer(codec: TestCodec(), operation: operation, contentType: "application/json")
         try input.serialize(subject)
 
         XCTAssertEqual(try subject.data, Data(#"{"a":"xyz","b":321,"c":true}"#.utf8))
@@ -35,7 +35,7 @@ final class HTTPPayloadSerializerTests: XCTestCase {
         let operation = HTTPPayloadClient.unionHTTPPayloadOperation
         let input = UnionHTTPPayloadInput(payload: .b(456))
 
-        let subject = try HTTPBindingsSerializer(codec: TestCodec(), operation: operation)
+        let subject = try HTTPBindingsSerializer(codec: TestCodec(), operation: operation, contentType: "application/json")
         try input.serialize(subject)
 
         XCTAssertEqual(try subject.data, Data(#"{"b":456}"#.utf8))
@@ -48,7 +48,7 @@ final class HTTPPayloadSerializerTests: XCTestCase {
         ]
         let input = DocumentHTTPPayloadInput(payload: document)
 
-        let subject = try HTTPBindingsSerializer(codec: TestCodec(), operation: operation)
+        let subject = try HTTPBindingsSerializer(codec: TestCodec(), operation: operation, contentType: "application/json")
         try input.serialize(subject)
 
         XCTAssertEqual(try subject.data, Data(#"{"a":["b","c","d"]}"#.utf8))
@@ -59,7 +59,7 @@ final class HTTPPayloadSerializerTests: XCTestCase {
         let operation = HTTPPayloadClient.stringHTTPPayloadOperation
         let input = StringHTTPPayloadInput(payload: justAString)
 
-        let subject = try HTTPBindingsSerializer(codec: TestCodec(), operation: operation)
+        let subject = try HTTPBindingsSerializer(codec: TestCodec(), operation: operation, contentType: "application/json")
         try input.serialize(subject)
 
         XCTAssertEqual(try subject.data, Data(justAString.utf8))
@@ -70,7 +70,7 @@ final class HTTPPayloadSerializerTests: XCTestCase {
         let operation = HTTPPayloadClient.blobHTTPPayloadOperation
         let input = BlobHTTPPayloadInput(payload: justABlob)
 
-        let subject = try HTTPBindingsSerializer(codec: TestCodec(), operation: operation)
+        let subject = try HTTPBindingsSerializer(codec: TestCodec(), operation: operation, contentType: "application/json")
         try input.serialize(subject)
 
         XCTAssertEqual(try subject.data, justABlob)

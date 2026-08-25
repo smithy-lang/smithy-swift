@@ -9,6 +9,8 @@ import Foundation
 @_spi(SchemaBasedSerde)
 import class Smithy.HTTPHeaderTrait
 @_spi(SchemaBasedSerde)
+import class Smithy.MediaTypeTrait
+@_spi(SchemaBasedSerde)
 import class Smithy.Schema
 import protocol Smithy.SmithyDocument
 @_spi(SchemaBasedSerde)
@@ -38,6 +40,9 @@ import struct SmithyTimestamps.TimestampFormatter
 ///
 /// Only string, boolean, timestamp, numbers, and lists of those types may be bound to a header;
 /// reading any other type throws an error.
+///
+/// A string carrying the `mediaType` trait is base64 encoded in a header, so it is decoded from
+/// base64 as it is read.
 @_spi(SchemaBasedSerde)
 public final class HTTPHeaderDeserializer: ShapeDeserializer {
 
@@ -140,7 +145,13 @@ public final class HTTPHeaderDeserializer: ShapeDeserializer {
     }
 
     public func readString(_ schema: Schema) throws -> String {
-        try string()
+        let string = try string()
+        // A string carrying the mediaType trait is always base64 encoded in a header.
+        guard schema.hasTrait(MediaTypeTrait.self) else { return string }
+        guard let data = Data(base64Encoded: string), let decoded = String(data: data, encoding: .utf8) else {
+            throw Self.notA("base64-encoded string", string, schema)
+        }
+        return decoded
     }
 
     public func readDocument(_ schema: Schema) throws -> any SmithyDocument {

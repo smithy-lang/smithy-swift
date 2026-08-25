@@ -73,7 +73,7 @@ final class EventContentSerializer: ShapeSerializer {
             let payloadSerializer = try codec.makeSerializer()
             let unboundValue = UnboundMembers(value: value)
             try payloadSerializer.writeStruct(eventSchema, unboundValue)
-            payload = try payloadSerializer.data
+            payload = try payloadSerializer.data ?? Data()
             headers.append(Header(name: ":content-type", value: .string(contentType)))
         }
     }
@@ -142,7 +142,7 @@ final class EventContentSerializer: ShapeSerializer {
         throw notImplemented
     }
 
-    var data: Data {
+    var data: Data? {
         get throws { throw notImplemented }
     }
 

@@ -161,7 +161,9 @@ public final class EventStreamSerializer: ShapeSerializer {
         // Members other than the event stream are not part of the event stream body.
     }
 
-    public var data: Data {
+    public var data: Data? {
         get throws { throw SerializerError("Not implemented") }
     }
+
+    public var mediaType: String { "application/vnd.amazon.eventstream" }
 }

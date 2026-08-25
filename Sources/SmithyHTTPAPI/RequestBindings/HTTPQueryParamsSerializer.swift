@@ -115,7 +115,7 @@ public final class HTTPQueryParamsSerializer: ShapeSerializer {
         addToQueryString(value: "null")
     }
 
-    public var data: Data { Data() } // not used for this serializer
+    public var data: Data? { nil } // not used for this serializer
 
     // MARK: - Private methods
 

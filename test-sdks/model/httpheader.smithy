@@ -24,6 +24,8 @@ service HTTPHeader {
         TimestampListHTTPHeader
         FormattedTimestampListHTTPHeader
         MultipleHTTPHeader
+        MediaTypeHTTPHeader
+        MediaTypeListHTTPHeader
         ErrorHTTPHeader
     ]
 }
@@ -360,6 +362,52 @@ structure FormattedTimestampListHTTPHeaderOutput {
 list FormattedTimestampList {
     @timestampFormat("date-time")
     member: Timestamp
+}
+
+// A string that carries the mediaType trait is base64 encoded when bound to a header.
+@http(method: "GET", uri: "/MediaTypeHTTPHeader")
+operation MediaTypeHTTPHeader {
+    input: MediaTypeHTTPHeaderInput
+    output: MediaTypeHTTPHeaderOutput
+}
+
+@input
+structure MediaTypeHTTPHeaderInput {
+    @httpHeader("X-Json")
+    @required
+    value: JSONString
+}
+
+@output
+structure MediaTypeHTTPHeaderOutput {
+    @httpHeader("X-Json")
+    value: JSONString
+}
+
+// Each element of a list of media type strings is base64 encoded on its own.
+@http(method: "GET", uri: "/MediaTypeListHTTPHeader")
+operation MediaTypeListHTTPHeader {
+    input: MediaTypeListHTTPHeaderInput
+    output: MediaTypeListHTTPHeaderOutput
+}
+
+@input
+structure MediaTypeListHTTPHeaderInput {
+    @httpHeader("X-Json")
+    values: JSONStringList
+}
+
+@output
+structure MediaTypeListHTTPHeaderOutput {
+    @httpHeader("X-Json")
+    values: JSONStringList
+}
+
+@mediaType("application/json")
+string JSONString
+
+list JSONStringList {
+    member: JSONString
 }
 
 // An error response binds headers to the members of the error structure, same as a success response.

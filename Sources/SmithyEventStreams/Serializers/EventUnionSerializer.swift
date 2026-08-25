@@ -127,7 +127,7 @@ final class EventUnionSerializer: ShapeSerializer {
         throw notImplemented
     }
 
-    var data: Data {
+    var data: Data? {
         get throws { throw notImplemented }
     }
 
@@ -227,7 +227,7 @@ private final class EventSerializer: ShapeSerializer {
         throw notImplemented
     }
 
-    var data: Data {
+    var data: Data? {
         get throws { throw notImplemented }
     }
 

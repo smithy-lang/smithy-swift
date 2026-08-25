@@ -102,7 +102,7 @@ final class EventHeaderSerializer: ShapeSerializer {
         // A nil header is simply omitted from the message.
     }
 
-    var data: Data {
+    var data: Data? {
         get throws { throw notImplemented }
     }
 

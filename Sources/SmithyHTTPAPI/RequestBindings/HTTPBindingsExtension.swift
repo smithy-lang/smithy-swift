@@ -21,6 +21,7 @@ import class Smithy.HTTPQueryTrait
 import class Smithy.HTTPResponseCodeTrait
 @_spi(SchemaBasedSerde)
 import class Smithy.Schema
+import enum Smithy.ShapeType
 @_spi(SchemaBasedSerde)
 import protocol Smithy.SchemaExtension
 @_spi(SchemaBasedSerde)
@@ -32,7 +33,10 @@ public final class HTTPBindingsExtension: SchemaExtension {
 
     public let bindings: [HTTPBinding]
 
+    public let payloadType: ShapeType?
+
     public required init(schema: Schema) throws {
+        var payloadType: ShapeType?
         self.bindings = schema.members.map { member in
             if member.hasTrait(HTTPHeaderTrait.self) {
                 return .header
@@ -41,6 +45,7 @@ public final class HTTPBindingsExtension: SchemaExtension {
             } else if member.hasTrait(HTTPLabelTrait.self) {
                 return .label
             } else if member.hasTrait(HTTPPayloadTrait.self) {
+                payloadType = member.type
                 return .payload
             } else if member.hasTrait(HTTPQueryTrait.self) {
                 return .query
@@ -53,6 +58,7 @@ public final class HTTPBindingsExtension: SchemaExtension {
                 return .body
             }
         }
+        self.payloadType = payloadType
     }
 
 }
