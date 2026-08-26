@@ -19,7 +19,7 @@ final class HTTPBindingsSerializerTests: XCTestCase {
         let operation = HTTPBindingsClient.allUnboundMembersOperation
         let input = AllUnboundMembersInput(a: "xyz", b: 321, c: true)
 
-        let subject = try HTTPBindingsSerializer(codec: TestCodec(), operation: operation, contentType: "application/json")
+        let subject = try HTTPBindingsSerializer(codec: TestCodec(), operation: operation)
         try input.serialize(subject)
 
         XCTAssertEqual(try subject.data, Data(#"{"a":"xyz","b":321,"c":true}"#.utf8))
@@ -29,10 +29,11 @@ final class HTTPBindingsSerializerTests: XCTestCase {
         let operation = HTTPBindingsClient.allBoundMembersOperation
         let input = AllBoundMembersInput(a: "xyz", b: 321, c: true)
 
-        let subject = try HTTPBindingsSerializer(codec: TestCodec(), operation: operation, contentType: "application/json")
+        let subject = try HTTPBindingsSerializer(codec: TestCodec(), operation: operation)
         try input.serialize(subject)
 
-        XCTAssertEqual(try subject.data, Data(#"{}"#.utf8))
+        XCTAssertNil(try subject.data)
+        XCTAssertNil(subject.mediaType)
     }
 
     // MARK: - Headers
@@ -47,7 +48,7 @@ final class HTTPBindingsSerializerTests: XCTestCase {
             specific: "Specific"
         )
 
-        let subject = try HTTPBindingsSerializer(codec: TestCodec(), operation: operation, contentType: "application/json")
+        let subject = try HTTPBindingsSerializer(codec: TestCodec(), operation: operation)
         try input.serialize(subject)
 
         XCTAssertEqual(
@@ -67,7 +68,7 @@ final class HTTPBindingsSerializerTests: XCTestCase {
             specific: "fromHeader"
         )
 
-        let subject = try HTTPBindingsSerializer(codec: TestCodec(), operation: operation, contentType: "application/json")
+        let subject = try HTTPBindingsSerializer(codec: TestCodec(), operation: operation)
         try input.serialize(subject)
 
         XCTAssertEqual(
@@ -84,7 +85,7 @@ final class HTTPBindingsSerializerTests: XCTestCase {
             specific: "fromHeader"
         )
 
-        let subject = try HTTPBindingsSerializer(codec: TestCodec(), operation: operation, contentType: "application/json")
+        let subject = try HTTPBindingsSerializer(codec: TestCodec(), operation: operation)
         try input.serialize(subject)
 
         XCTAssertEqual(
@@ -99,7 +100,7 @@ final class HTTPBindingsSerializerTests: XCTestCase {
         let operation = HTTPBindingsClient.headerAndPrefixHeadersOperation
         let input = HeaderAndPrefixHeadersInput(prefixHeaders: ["X-Foo": "Foo"], specific: "Specific")
 
-        let subject = try HTTPBindingsSerializer(codec: TestCodec(), operation: operation, contentType: "application/json")
+        let subject = try HTTPBindingsSerializer(codec: TestCodec(), operation: operation)
         try input.serialize(subject)
 
         XCTAssertEqual(subject.headers, subject.headers)
@@ -117,7 +118,7 @@ final class HTTPBindingsSerializerTests: XCTestCase {
         let operation = HTTPBindingsClient.queryAndQueryParamsOperation
         let input = QueryAndQueryParamsInput(words: ["a", "b", "c"])
 
-        let subject = try HTTPBindingsSerializer(codec: TestCodec(), operation: operation, contentType: "application/json")
+        let subject = try HTTPBindingsSerializer(codec: TestCodec(), operation: operation)
         try input.serialize(subject)
 
         XCTAssertEqual(subject.queryItems, [
@@ -133,7 +134,7 @@ final class HTTPBindingsSerializerTests: XCTestCase {
         let operation = HTTPBindingsClient.queryAndQueryParamsOperation
         let input = QueryAndQueryParamsInput(params: ["Extra": "x"], words: ["a", "b"])
 
-        let subject = try HTTPBindingsSerializer(codec: TestCodec(), operation: operation, contentType: "application/json")
+        let subject = try HTTPBindingsSerializer(codec: TestCodec(), operation: operation)
         try input.serialize(subject)
 
         XCTAssertEqual(subject.queryItems, [
@@ -150,7 +151,7 @@ final class HTTPBindingsSerializerTests: XCTestCase {
         let operation = HTTPBindingsClient.queryAndQueryParamsOperation
         let input = QueryAndQueryParamsInput(params: ["Word": "dropped", "Kept": "yes"], words: ["a", "b"])
 
-        let subject = try HTTPBindingsSerializer(codec: TestCodec(), operation: operation, contentType: "application/json")
+        let subject = try HTTPBindingsSerializer(codec: TestCodec(), operation: operation)
         try input.serialize(subject)
 
         XCTAssertEqual(subject.queryItems, [
@@ -165,7 +166,7 @@ final class HTTPBindingsSerializerTests: XCTestCase {
         let operation = HTTPBindingsClient.scalarQueryAndQueryParamsOperation
         let input = ScalarQueryAndQueryParamsInput(key: "fromQuery", params: ["Key": "dropped", "Kept": "yes"])
 
-        let subject = try HTTPBindingsSerializer(codec: TestCodec(), operation: operation, contentType: "application/json")
+        let subject = try HTTPBindingsSerializer(codec: TestCodec(), operation: operation)
         try input.serialize(subject)
 
         XCTAssertEqual(subject.queryItems, [
@@ -181,7 +182,7 @@ final class HTTPBindingsSerializerTests: XCTestCase {
         let operation = HTTPBindingsClient.allBoundMembersOperation
         let input = AllBoundMembersInput(a: "a b/c")
 
-        let subject = try HTTPBindingsSerializer(codec: TestCodec(), operation: operation, contentType: "application/json")
+        let subject = try HTTPBindingsSerializer(codec: TestCodec(), operation: operation)
         try input.serialize(subject)
 
         XCTAssertEqual(subject.uri, "/AllBoundMembers/a%20b%2Fc/")
@@ -193,7 +194,7 @@ final class HTTPBindingsSerializerTests: XCTestCase {
         let operation = HTTPBindingsClient.literalQueryOperation
         let input = LiteralQueryInput(name: "a b")
 
-        let subject = try HTTPBindingsSerializer(codec: TestCodec(), operation: operation, contentType: "application/json")
+        let subject = try HTTPBindingsSerializer(codec: TestCodec(), operation: operation)
         try input.serialize(subject)
 
         XCTAssertEqual(subject.uri, "/LiteralQuery/a%20b")
@@ -208,7 +209,7 @@ final class HTTPBindingsSerializerTests: XCTestCase {
         let operation = HTTPBindingsClient.literalQueryOperation
         let input = LiteralQueryInput(name: "a?b")
 
-        let subject = try HTTPBindingsSerializer(codec: TestCodec(), operation: operation, contentType: "application/json")
+        let subject = try HTTPBindingsSerializer(codec: TestCodec(), operation: operation)
         try input.serialize(subject)
 
         XCTAssertEqual(subject.uri, "/LiteralQuery/a%3Fb")
@@ -227,7 +228,7 @@ final class HTTPBindingsSerializerTests: XCTestCase {
         let operation = HTTPBindingsClient.verbatimLiteralQueryOperation
         let input = VerbatimLiteralQueryInput()
 
-        let subject = try HTTPBindingsSerializer(codec: TestCodec(), operation: operation, contentType: "application/json")
+        let subject = try HTTPBindingsSerializer(codec: TestCodec(), operation: operation)
         try input.serialize(subject)
 
         XCTAssertEqual(subject.uri, "/VerbatimLiteralQuery")
@@ -243,7 +244,7 @@ final class HTTPBindingsSerializerTests: XCTestCase {
         let operation = HTTPBindingsClient.literalQueryOperation
         let input = LiteralQueryInput(name: "n", params: ["Extra": "x"], words: ["a", "b"])
 
-        let subject = try HTTPBindingsSerializer(codec: TestCodec(), operation: operation, contentType: "application/json")
+        let subject = try HTTPBindingsSerializer(codec: TestCodec(), operation: operation)
         try input.serialize(subject)
 
         XCTAssertEqual(subject.queryItems, [
@@ -264,7 +265,7 @@ final class HTTPBindingsSerializerTests: XCTestCase {
             params: ["x-id": "dropped", "uploads": "dropped", "Kept": "yes"]
         )
 
-        let subject = try HTTPBindingsSerializer(codec: TestCodec(), operation: operation, contentType: "application/json")
+        let subject = try HTTPBindingsSerializer(codec: TestCodec(), operation: operation)
         try input.serialize(subject)
 
         XCTAssertEqual(subject.queryItems, [
@@ -279,7 +280,7 @@ final class HTTPBindingsSerializerTests: XCTestCase {
         let operation = HTTPBindingsClient.literalQueryOperation
         let input = LiteralQueryInput(name: "n", words: ["a"])
 
-        let subject = try HTTPBindingsSerializer(codec: TestCodec(), operation: operation, contentType: "application/json")
+        let subject = try HTTPBindingsSerializer(codec: TestCodec(), operation: operation)
         try input.serialize(subject)
 
         XCTAssertEqual(subject.queryItems, subject.queryItems)

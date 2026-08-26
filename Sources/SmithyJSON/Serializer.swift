@@ -271,6 +271,8 @@ public final class Serializer: ShapeSerializer {
         }
     }
 
+    public var mediaType: String? { !_data.isEmpty ? "application/json" : nil }
+
     // MARK: - Private methods
 
     // An implementation of Smithy's floating point encoding, usable for any Swift floating point type.

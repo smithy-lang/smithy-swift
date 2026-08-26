@@ -5,30 +5,24 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
-import struct Foundation.Data
-import struct Foundation.Date
-@_spi(SchemaBasedSerde)
-import class Smithy.EventHeaderTrait
 @_spi(SchemaBasedSerde)
 import class Smithy.EventPayloadTrait
 @_spi(SchemaBasedSerde)
 import class Smithy.Schema
-import protocol Smithy.SmithyDocument
 import struct SmithyEventStreamsAPI.Message
 @_spi(SchemaBasedSerde)
 import protocol SmithySerialization.Codec
 @_spi(SchemaBasedSerde)
 import protocol SmithySerialization.DeserializableStruct
-import struct SmithySerialization.SerializerError
 @_spi(SchemaBasedSerde)
-import protocol SmithySerialization.ShapeDeserializer
+import protocol SmithySerialization.ThrowByDefaultShapeDeserializer
 
 /// Deserializes the associated value (event or exception) from a case of a streaming union.
-struct EventContentDeserializer: ShapeDeserializer {
+struct EventContentDeserializer: ThrowByDefaultShapeDeserializer {
     let codec: any Codec
     let message: Message
 
-    func readStruct<T: DeserializableStruct>(_ schema: Schema, _ value: inout T) throws {
+    mutating func readStruct<T: DeserializableStruct>(_ schema: Schema, _ value: inout T) throws {
 
         // Deserialize the event payload, to the member marked with @eventPayload if it exists,
         // to the structure's members otherwise.
@@ -39,6 +33,7 @@ struct EventContentDeserializer: ShapeDeserializer {
         } else {
             try payloadDeserializer.readStruct(schema, &value)
         }
+        self.mediaType = payloadDeserializer.mediaType
 
         // Attempt to match the headers in the message to members in the structure.
         for header in message.headers {
@@ -48,65 +43,5 @@ struct EventContentDeserializer: ShapeDeserializer {
         }
     }
 
-    func readList<E>(_ schema: Schema, _ consumer: (any ShapeDeserializer) throws -> E) throws -> [E] {
-        throw notImplemented
-    }
-
-    func readMap<V>(_ schema: Schema, _ consumer: (any ShapeDeserializer) throws -> V) throws -> [String: V] {
-        throw notImplemented
-    }
-
-    func readBoolean(_ schema: Schema) throws -> Bool {
-        throw notImplemented
-    }
-
-    func readBlob(_ schema: Schema) throws -> Data {
-        throw notImplemented
-    }
-
-    func readByte(_ schema: Schema) throws -> Int8 {
-        throw notImplemented
-    }
-
-    func readShort(_ schema: Schema) throws -> Int16 {
-        throw notImplemented
-    }
-
-    func readInteger(_ schema: Schema) throws -> Int32 {
-        throw notImplemented
-    }
-
-    func readLong(_ schema: Schema) throws -> Int64 {
-        throw notImplemented
-    }
-
-    func readFloat(_ schema: Schema) throws -> Float {
-        throw notImplemented
-    }
-
-    func readDouble(_ schema: Schema) throws -> Double {
-        throw notImplemented
-    }
-
-    func readBigInteger(_ schema: Schema) throws -> Int64 {
-        throw notImplemented
-    }
-
-    func readBigDecimal(_ schema: Schema) throws -> Double {
-        throw notImplemented
-    }
-
-    func readString(_ schema: Schema) throws -> String {
-        throw notImplemented
-    }
-
-    func readDocument(_ schema: Schema) throws -> any SmithyDocument {
-        throw notImplemented
-    }
-
-    func readTimestamp(_ schema: Schema) throws -> Date {
-        throw notImplemented
-    }
-
-    private var notImplemented: SerializerError { .init("Not implemented") }
+    var mediaType: String?
 }

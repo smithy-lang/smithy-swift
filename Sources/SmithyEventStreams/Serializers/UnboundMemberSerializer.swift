@@ -120,6 +120,10 @@ struct UnboundMemberSerializer: ShapeSerializer {
         get throws { try base.data }
     }
 
+    var mediaType: String? {
+        self.base.mediaType
+    }
+
     private func isEventHeader(_ schema: Schema) -> Bool {
         schema.hasTrait(EventHeaderTrait.self)
     }

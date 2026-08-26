@@ -5,8 +5,6 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
-import struct Foundation.Data
-import struct Foundation.Date
 import enum Smithy.ByteStream
 @_spi(SchemaBasedSerde)
 import class Smithy.Schema
@@ -19,6 +17,8 @@ import protocol SmithyEventStreamsAPI.MessageEncoder
 import protocol SmithyEventStreamsAuthAPI.MessageSigner
 @_spi(SchemaBasedSerde)
 import protocol SmithySerialization.Codec
+@_spi(SchemaBasedSerde)
+import protocol SmithySerialization.NoOpByDefaultShapeSerializer
 @_spi(SchemaBasedSerde)
 import protocol SmithySerialization.SerializableStruct
 import struct SmithySerialization.SerializerError
@@ -34,7 +34,7 @@ import typealias SmithySerialization.WriteValueConsumer
 /// member, it will throw an error.
 /// It will throw a "not implemented" error if serialization of any other type is attempted.
 @_spi(SchemaBasedSerde)
-public final class EventStreamSerializer: ShapeSerializer {
+public final class EventStreamSerializer: NoOpByDefaultShapeSerializer {
     let codec: any Codec
     let contentType: String
     let messageEncoder: MessageEncoder
@@ -97,73 +97,5 @@ public final class EventStreamSerializer: ShapeSerializer {
         ))
     }
 
-    public func writeList<E>(_ schema: Schema, _ value: [E], _ consumer: WriteValueConsumer<E>) throws {
-        // Members other than the event stream are not part of the event stream body.
-    }
-
-    public func writeMap<V>(_ schema: Schema, _ value: [String: V], _ consumer: WriteValueConsumer<V>) throws {
-        // Members other than the event stream are not part of the event stream body.
-    }
-
-    public func writeBoolean(_ schema: Schema, _ value: Bool) throws {
-        // Members other than the event stream are not part of the event stream body.
-    }
-
-    public func writeByte(_ schema: Schema, _ value: Int8) throws {
-        // Members other than the event stream are not part of the event stream body.
-    }
-
-    public func writeShort(_ schema: Schema, _ value: Int16) throws {
-        // Members other than the event stream are not part of the event stream body.
-    }
-
-    public func writeInteger(_ schema: Schema, _ value: Int32) throws {
-        // Members other than the event stream are not part of the event stream body.
-    }
-
-    public func writeLong(_ schema: Schema, _ value: Int64) throws {
-        // Members other than the event stream are not part of the event stream body.
-    }
-
-    public func writeFloat(_ schema: Schema, _ value: Float) throws {
-        // Members other than the event stream are not part of the event stream body.
-    }
-
-    public func writeDouble(_ schema: Schema, _ value: Double) throws {
-        // Members other than the event stream are not part of the event stream body.
-    }
-
-    public func writeBigInteger(_ schema: Schema, _ value: Int64) throws {
-        // Members other than the event stream are not part of the event stream body.
-    }
-
-    public func writeBigDecimal(_ schema: Schema, _ value: Double) throws {
-        // Members other than the event stream are not part of the event stream body.
-    }
-
-    public func writeString(_ schema: Schema, _ value: String) throws {
-        // Members other than the event stream are not part of the event stream body.
-    }
-
-    public func writeBlob(_ schema: Schema, _ value: Data) throws {
-        // Members other than the event stream are not part of the event stream body.
-    }
-
-    public func writeTimestamp(_ schema: Schema, _ value: Date) throws {
-        // Members other than the event stream are not part of the event stream body.
-    }
-
-    public func writeDocument(_ schema: Schema, _ value: any SmithyDocument) throws {
-        // Members other than the event stream are not part of the event stream body.
-    }
-
-    public func writeNull(_ schema: Schema) throws {
-        // Members other than the event stream are not part of the event stream body.
-    }
-
-    public var data: Data? {
-        get throws { throw SerializerError("Not implemented") }
-    }
-
-    public var mediaType: String { "application/vnd.amazon.eventstream" }
+    public var mediaType: String? { "application/vnd.amazon.eventstream" }
 }

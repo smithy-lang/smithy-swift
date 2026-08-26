@@ -127,6 +127,8 @@ public final class Serializer: ShapeSerializer {
         return !encoded.isEmpty ? encoded : nil
     }
 
+    public var mediaType: String? { "application/cbor" }
+
     // MARK: - Private methods
 
     private func writeMember(schema: Schema) {

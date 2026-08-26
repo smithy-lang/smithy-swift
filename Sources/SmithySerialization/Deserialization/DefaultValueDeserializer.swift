@@ -87,5 +87,5 @@ public class DefaultValueDeserializer: ShapeDeserializer {
         Date(timeIntervalSince1970: 0.0)
     }
 
-    public var containerSize: Int { 0 }
+    public var mediaType: String? { nil }
 }

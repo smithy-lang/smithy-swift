@@ -155,4 +155,6 @@ public class StringSerializer: ShapeSerializer {
     public var data: Data? {
         Data(string.utf8)
     }
+
+    public var mediaType: String? { "application/text" }
 }

@@ -45,9 +45,11 @@ public class HTTPBindingsDeserializer: ThrowByDefaultShapeDeserializer {
             let payloadMemberSchema = schema.members[payloadIndex]
             let payloadDeserializer = HTTPPayloadDeserializer(codec: codec, data: data)
             try value.deserializeMember(payloadMemberSchema, payloadDeserializer)
+            self.mediaType = payloadDeserializer.mediaType
         } else if let data {
             let bodyDeserializer = try codec.makeDeserializer(data: data)
             try bodyDeserializer.readStruct(schema, &value)
+            self.mediaType = bodyDeserializer.mediaType
         }
 
         // Deserialize the members bound to HTTP headers, then the map member bound to prefixed
@@ -61,4 +63,6 @@ public class HTTPBindingsDeserializer: ThrowByDefaultShapeDeserializer {
             try value.deserializeMember(schema.members[index], HTTPResponseCodeDeserializer(response: response))
         }
     }
+
+    public var mediaType: String?
 }

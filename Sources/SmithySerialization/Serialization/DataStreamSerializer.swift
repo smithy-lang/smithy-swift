@@ -17,7 +17,7 @@ import class Smithy.StreamingTrait
 @_spi(SchemaBasedSerde)
 public class DataStreamSerializer: NoOpByDefaultShapeSerializer {
     public var body: ByteStream = .noStream
-    public var mediaType = "application/octet-stream"
+    public var mediaType: String? = "application/octet-stream"
 
     public init() {}
 

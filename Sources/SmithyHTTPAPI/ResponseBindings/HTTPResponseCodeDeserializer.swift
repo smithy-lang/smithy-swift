@@ -24,4 +24,6 @@ public class HTTPResponseCodeDeserializer: ThrowByDefaultShapeDeserializer {
     public func readInteger(_ schema: Schema) throws -> Int32 {
         Int32(response.statusCode.rawValue)
     }
+
+    public var mediaType: String? { nil }
 }

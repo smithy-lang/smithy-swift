@@ -21,7 +21,7 @@ final class DeeplyNestedTests: XCTestCase {
         let subject = Serializer(usesJSONNameTrait: false)
         let input = DeeplyNestedInput(list: [[["a", "b"]]])
         try input.serialize(subject)
-        let string = try String(data: subject.data, encoding: .utf8)
+        let string = try String(data: subject.data ?? Data(), encoding: .utf8)
         XCTAssertEqual(string, #"{"list":[[["a","b"]]]}"#)
     }
 
@@ -29,7 +29,7 @@ final class DeeplyNestedTests: XCTestCase {
         let subject = Serializer(usesJSONNameTrait: false)
         let input = DeeplyNestedInput(map: ["a": ["b": ["c": "d"]]])
         try input.serialize(subject)
-        let string = try String(data: subject.data, encoding: .utf8)
+        let string = try String(data: subject.data ?? Data(), encoding: .utf8)
         XCTAssertEqual(string, #"{"map":{"a":{"b":{"c":"d"}}}}"#)
     }
 

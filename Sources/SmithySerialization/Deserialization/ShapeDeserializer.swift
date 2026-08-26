@@ -39,6 +39,8 @@ public protocol ShapeDeserializer {
         _ schema: Schema
     ) throws -> AsyncThrowingStream<E, any Error>
     var containerSize: Int { get }
+
+    var mediaType: String? { get }
 }
 
 @_spi(SchemaBasedSerde)

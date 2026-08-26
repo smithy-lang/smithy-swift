@@ -130,6 +130,8 @@ public final class HTTPQuerySerializer: ShapeSerializer {
 
     public var data: Data? { nil } // not used for this serializer
 
+    public var mediaType: String? { nil }
+
     // MARK: - Private methods
 
     /// Returns the already-percent-encoded query name for the value described by the passed schema,

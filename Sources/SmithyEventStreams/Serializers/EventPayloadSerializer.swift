@@ -128,6 +128,9 @@ final class EventPayloadSerializer: ShapeSerializer {
         get throws { payload }
     }
 
+    // todo: replace the headers property with serializer mediaType
+    var mediaType: String? { nil }
+
     // MARK: - Private methods
 
     private func setPayload(_ payload: Data, contentType: String) throws {

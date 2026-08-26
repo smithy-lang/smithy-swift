@@ -8,6 +8,8 @@
 import struct Foundation.Data
 import enum Smithy.ByteStream
 @_spi(SchemaBasedSerde)
+import class Smithy.MediaTypeTrait
+@_spi(SchemaBasedSerde)
 import class Smithy.Schema
 import protocol Smithy.SmithyDocument
 @_spi(SchemaBasedSerde)
@@ -27,6 +29,7 @@ import class SmithyStreams.BufferedStream
 public class HTTPPayloadDeserializer: ThrowByDefaultShapeDeserializer {
     let codec: any Codec
     let data: Data
+    public var mediaType: String?
 
     public init(codec: any Codec, data: Data) {
         self.codec = codec
@@ -35,11 +38,13 @@ public class HTTPPayloadDeserializer: ThrowByDefaultShapeDeserializer {
 
     public func readStruct<T: DeserializableStruct>(_ schema: Schema, _ value: inout T) throws {
         let payloadDeserializer = try codec.makeDeserializer(data: data)
+        self.mediaType = payloadDeserializer.mediaType
         try payloadDeserializer.readStruct(schema, &value)
     }
 
     public func readDocument(_ schema: Schema) throws -> any SmithyDocument {
         let payloadDeserializer = try codec.makeDeserializer(data: data)
+        self.mediaType = payloadDeserializer.mediaType
         return try payloadDeserializer.readDocument(schema)
     }
 
@@ -47,10 +52,12 @@ public class HTTPPayloadDeserializer: ThrowByDefaultShapeDeserializer {
         guard let string = String(data: data, encoding: .utf8) else {
             throw SerializerError("Expected UTF-8 string payload but body is not valid UTF-8")
         }
+        self.mediaType = schema.getTrait(MediaTypeTrait.self)?.type ?? "text/plain"
         return string
     }
 
     public func readBlob(_ schema: Schema) throws -> Data {
+        self.mediaType = schema.getTrait(MediaTypeTrait.self)?.type ?? "application/octet-stream"
         return data
     }
 }

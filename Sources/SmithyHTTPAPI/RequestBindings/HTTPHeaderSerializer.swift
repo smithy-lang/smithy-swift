@@ -127,6 +127,8 @@ public final class HTTPHeaderSerializer: ShapeSerializer {
 
     public var data: Data? { nil } // not used for this serializer
 
+    public var mediaType: String? { nil }
+
     // MARK: - Private methods
 
     private func headerName(for schema: Schema) -> String? {

@@ -261,6 +261,8 @@ public final class Deserializer: ShapeDeserializer {
         }
     }
 
+    public var mediaType: String? { "application/json" }
+
     // MARK: - Private methods
 
     private func match(key: String, memberSchemas: [Schema]) throws -> Schema? {

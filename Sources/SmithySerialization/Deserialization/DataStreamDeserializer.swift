@@ -22,4 +22,6 @@ public struct DataStreamDeserializer: ThrowByDefaultShapeDeserializer {
     public func readDataStream(_ schema: Schema) throws -> ByteStream {
         response.body
     }
+
+    public var mediaType: String? { "application/octet-stream" }
 }

@@ -74,4 +74,6 @@ public struct EventStreamDeserializer: ThrowByDefaultShapeDeserializer {
             unmarshalClosure: unmarshalClosure
         ).toAsyncStream()
     }
+
+    public var mediaType: String? { "application/vnd.amazon.eventstream" }
 }

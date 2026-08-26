@@ -87,5 +87,7 @@ struct SDKUnknownDeserializer: ShapeDeserializer {
         throw notImplemented
     }
 
+    var mediaType: String? { nil }
+
     private var notImplemented: SerializerError { .init("Not implemented") }
 }

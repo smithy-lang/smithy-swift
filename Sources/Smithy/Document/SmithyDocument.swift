@@ -147,15 +147,13 @@ extension SmithyDocument {
             return (try? lhs.asShort() == rhs.asShort()) ?? false
         case (.integer, .integer):
             return (try? lhs.asInteger() == rhs.asInteger()) ?? false
-        case (.long, .long):
-            return (try? lhs.asLong() == rhs.asLong()) ?? false
         case (.float, .float):
             return (try? lhs.asFloat() == rhs.asFloat()) ?? false
-        case (.double, .double):
-            return (try? lhs.asDouble() == rhs.asDouble()) ?? false
-        case (.bigDecimal, .bigDecimal), (.bigDecimal, .double), (.double, .bigDecimal):
+        case (.bigDecimal, .bigDecimal), (.bigDecimal, .double), (.double, .bigDecimal), (.double, .double):
+            // bigDecimal and double are interchangeably compared since they're the same underlying type
             return (try? lhs.asBigDecimal() == rhs.asBigDecimal()) ?? false
-        case (.bigInteger, .bigInteger), (.long, .bigInteger), (.bigInteger, .long):
+        case (.bigInteger, .bigInteger), (.long, .bigInteger), (.bigInteger, .long), (.long, .long):
+            // bigInteger and long are interchangeably compared since they're the same underlying type
             return (try? lhs.asBigInteger() == rhs.asBigInteger()) ?? false
         case (.list, .list):
             guard let lhsList = try? lhs.asList(), let rhsList = try? rhs.asList() else { return false }

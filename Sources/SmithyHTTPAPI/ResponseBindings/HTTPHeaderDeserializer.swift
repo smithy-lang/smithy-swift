@@ -176,6 +176,8 @@ public final class HTTPHeaderDeserializer: ShapeDeserializer {
         return headers.headers.count
     }
 
+    public var mediaType: String? { nil }
+
     // MARK: - Private methods
 
     /// The string to be read as a value by this deserializer.

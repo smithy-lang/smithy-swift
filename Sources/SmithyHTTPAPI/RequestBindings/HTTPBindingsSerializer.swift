@@ -38,15 +38,13 @@ public final class HTTPBindingsSerializer: NoOpByDefaultShapeSerializer {
     let bindings: [HTTPBinding]
     public let method: HTTPMethodType
     private let mux: RequestBindingMultiplexer
-    private let contentType: String
-    private let defaultBody: Data?
 
     /// The query items from the literal query string, if any, in the operation's `@http` URI.
     ///
     /// These are fixed by the model, so they are parsed once when this serializer is created.
     private let uriQueryItems: [URIQueryItem]
 
-    public init<Input, Output>(codec: any Codec, operation: Operation<Input, Output>, contentType: String, defaultBody: Data?) throws {
+    public init<Input, Output>(codec: any Codec, operation: Operation<Input, Output>) throws {
         guard let httpTrait = operation.schema.getTrait(HTTPTrait.self) else {
             throw SerializerError("no HTTP trait for operation \(operation.schema.id)")
         }
@@ -62,9 +60,12 @@ public final class HTTPBindingsSerializer: NoOpByDefaultShapeSerializer {
         // only the path portion of the URI is subject to label substitution.
         let (path, literalQuery) = Self.split(uri: httpTrait.uri)
         self.uriQueryItems = Self.queryItems(literalQuery: literalQuery)
-        self.mux = try RequestBindingMultiplexer(codec: codec, bindings: self.bindings, uri: path, payloadType: payloadType, defaultBody: defaultBody)
-        self.contentType = contentType
-        self.defaultBody = defaultBody
+        self.mux = try RequestBindingMultiplexer(
+            codec: codec,
+            bindings: self.bindings,
+            uri: path,
+            payloadType: payloadType
+        )
     }
 
     /// Splits a URI into its path and its literal query string, if it has one.
@@ -123,7 +124,11 @@ public final class HTTPBindingsSerializer: NoOpByDefaultShapeSerializer {
         // Return all sources of query items together
         return queryItems + queryParamsItems
     }
-
+    
+    /// The headers to be added to this HTTP request.
+    ///
+    /// Headers include those populated from `@httpHeader` and `@httpPrefixHeader` bindings, and a `Content-Type` header
+    /// (if a mediaType is resolvable from either the payload or the body.)
     public var headers: Headers {
         // An explicit `@httpHeader` binding takes precedence over an `@httpPrefixHeaders` entry that
         // resolves to the same header name; that entry is dropped.  A collision is only possible when
@@ -132,6 +137,9 @@ public final class HTTPBindingsSerializer: NoOpByDefaultShapeSerializer {
         let prefixHeaders = self.mux.prefixHeadersSerializer.headers.headers
         for prefixHeader in prefixHeaders where !headers.exists(name: prefixHeader.name) {
             headers.add(prefixHeader)
+        }
+        if !headers.exists(name: "Content-Type"), let mediaType = mux.mediaType {
+            headers.add(name: "Content-Type", value: mediaType)
         }
         return headers
     }
@@ -143,19 +151,16 @@ public final class HTTPBindingsSerializer: NoOpByDefaultShapeSerializer {
     }
 
     public var body: ByteStream {
-        guard let resolvedData = self.mux.resolvedData else {
-            return .noStream
+        get throws {
+            guard let data = try self.mux.data else {
+                return .noStream
+            }
+            return .data(data)
         }
-        return .data(resolvedData)
     }
 
     public var mediaType: String? {
-        switch body {
-        case .noStream:
-            nil
-        default:
-            self.mux.payloadSerializer?.contentType ?? self.contentType
-        }
+        self.mux.mediaType
     }
 }
 
@@ -171,7 +176,7 @@ private struct RequestBindingMultiplexer: InterceptingSerializer {
     let payloadSerializer: HTTPPayloadSerializer?
     let noOpSerializer: NoOpSerializer
 
-    init(codec: any Codec, bindings: [HTTPBinding], uri: String, payloadType: ShapeType?, defaultBody: Data?) throws {
+    init(codec: any Codec, bindings: [HTTPBinding], uri: String, payloadType: ShapeType?) throws {
         self.bindings = bindings
         self.headerSerializer = HTTPHeaderSerializer()
         self.labelSerializer = HTTPLabelSerializer(uri: uri)
@@ -180,8 +185,7 @@ private struct RequestBindingMultiplexer: InterceptingSerializer {
         self.queryParamsSerializer = HTTPQueryParamsSerializer()
         self.bodySerializer = try codec.makeSerializer()
         if let payloadType {
-            let resolvedDefaultBody = [ShapeType.structure, .union, .document].contains(payloadType) ? defaultBody : nil
-            self.payloadSerializer = HTTPPayloadSerializer(serializer: self.bodySerializer, defaultBody: resolvedDefaultBody)
+            self.payloadSerializer = HTTPPayloadSerializer(codec: codec, payloadType: payloadType)
         } else {
             self.payloadSerializer = nil
         }
@@ -212,11 +216,11 @@ private struct RequestBindingMultiplexer: InterceptingSerializer {
     // Return the payload if there is one, else the body.
     var data: Data? {
         get throws {
-            resolvedData
+            try self.payloadSerializer?.data ?? self.bodySerializer.data
         }
     }
 
-    var resolvedData: Data? {
-        try? self.payloadSerializer?.data ?? self.bodySerializer.data
+    var mediaType: String? {
+        (payloadSerializer ?? bodySerializer).mediaType
     }
 }

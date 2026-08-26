@@ -68,9 +68,7 @@ public struct HTTPClientProtocol: ClientProtocol {
         // Create a HTTP binding serializer & serialize the input to it
         let serializer = try HTTPBindingsSerializer(
             codec: self.codec,
-            operation: operation,
-            contentType: "application/json",
-            defaultBody: Data("{}".utf8)
+            operation: operation
         )
         try input.serialize(serializer)
 
@@ -96,17 +94,18 @@ public struct HTTPClientProtocol: ClientProtocol {
             )
             try input.serializeMembers(operation.inputSchema, eventStreamSerializer)
             requestBuilder.withBody(eventStreamSerializer.body)
-            requestBuilder.updateHeader(name: "Content-Type", value: eventStreamSerializer.mediaType)
+            if let mediaType = eventStreamSerializer.mediaType {
+                requestBuilder.updateHeader(name: "Content-Type", value: mediaType)
+            }
         case .data:
             let dataStreamSerializer = DataStreamSerializer()
             try input.serializeMembers(operation.inputSchema, dataStreamSerializer)
             requestBuilder.withBody(dataStreamSerializer.body)
-            requestBuilder.updateHeader(name: "Content-Type", value: dataStreamSerializer.mediaType)
-        case .none:
-            requestBuilder.withBody(serializer.body)
-            if !requestBuilder.headers.exists(name: "Content-Type"), let mediaType = serializer.mediaType {
-                requestBuilder.withHeader(name: "Content-Type", value: mediaType)
+            if let mediaType = dataStreamSerializer.mediaType {
+                requestBuilder.updateHeader(name: "Content-Type", value: mediaType)
             }
+        case .none:
+            requestBuilder.withBody(try serializer.body)
         }
 
         // Set the path in the context

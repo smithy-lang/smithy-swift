@@ -117,6 +117,8 @@ public final class HTTPQueryParamsSerializer: ShapeSerializer {
 
     public var data: Data? { nil } // not used for this serializer
 
+    public var mediaType: String? { nil }
+
     // MARK: - Private methods
 
     private func encoded<FP: FloatingPoint>(_ value: FP) -> String {

@@ -35,4 +35,8 @@ public final class HTTPBodySerializer: InterceptingSerializer {
             try self.serializer.data
         }
     }
+
+    public var mediaType: String? {
+        serializer.mediaType
+    }
 }

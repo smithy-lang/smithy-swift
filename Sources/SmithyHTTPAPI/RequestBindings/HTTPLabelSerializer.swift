@@ -161,5 +161,7 @@ public final class HTTPLabelSerializer: ShapeSerializer {
         Data(transformed.utf8)
     }
 
+    public var mediaType: String? { nil }
+
     public var uri: String { transformed }
 }

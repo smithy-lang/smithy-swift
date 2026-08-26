@@ -103,8 +103,10 @@ final class EventHeaderSerializer: ShapeSerializer {
     }
 
     var data: Data? {
-        get throws { throw notImplemented }
+        get throws { nil }
     }
+
+    var mediaType: String? { nil }
 
     // MARK: - Private methods
 

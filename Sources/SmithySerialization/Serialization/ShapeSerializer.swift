@@ -40,6 +40,8 @@ public protocol ShapeSerializer {
     ) throws
 
     var data: Data? { get throws }
+
+    var mediaType: String? { get }
 }
 
 @_spi(SchemaBasedSerde)
