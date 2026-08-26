@@ -21,11 +21,11 @@ import class Smithy.HTTPQueryTrait
 import class Smithy.HTTPResponseCodeTrait
 @_spi(SchemaBasedSerde)
 import class Smithy.Schema
-import enum Smithy.ShapeType
 @_spi(SchemaBasedSerde)
 import protocol Smithy.SchemaExtension
 @_spi(SchemaBasedSerde)
 import var Smithy.schemaExtensionUniqueIndexCounter
+import enum Smithy.ShapeType
 
 @_spi(SchemaBasedSerde)
 public final class HTTPBindingsExtension: SchemaExtension {

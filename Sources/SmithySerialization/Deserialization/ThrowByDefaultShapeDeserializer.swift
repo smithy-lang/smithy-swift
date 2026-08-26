@@ -26,7 +26,7 @@ public extension ThrowByDefaultShapeDeserializer {
         throw notImplemented
     }
 
-    func readMap<V>(_ schema: Schema, _ consumer: (any ShapeDeserializer) throws -> V) throws -> [String : V] {
+    func readMap<V>(_ schema: Schema, _ consumer: (any ShapeDeserializer) throws -> V) throws -> [String: V] {
         throw notImplemented
     }
 

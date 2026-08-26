@@ -5,10 +5,10 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
-import protocol Smithy.RequestMessageBuilder
 import enum Smithy.ByteStream
 @_spi(SchemaBasedSerde)
 import class Smithy.MediaTypeTrait
+import protocol Smithy.RequestMessageBuilder
 @_spi(SchemaBasedSerde)
 import class Smithy.Schema
 @_spi(SchemaBasedSerde)

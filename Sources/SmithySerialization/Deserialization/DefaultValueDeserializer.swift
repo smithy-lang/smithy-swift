@@ -8,11 +8,11 @@
 import struct Foundation.Data
 import struct Foundation.Date
 import enum Smithy.ByteStream
-@_spi(SmithyDocumentImpl)
-import struct Smithy.StringMapDocument
 @_spi(SchemaBasedSerde)
 import class Smithy.Schema
 import protocol Smithy.SmithyDocument
+@_spi(SmithyDocumentImpl)
+import struct Smithy.StringMapDocument
 
 /// Provides a last-ditch default value suitable for filling in the value of a `@required` member
 /// that was not sent by the server.
@@ -38,39 +38,39 @@ public class DefaultValueDeserializer: ShapeDeserializer {
     public func readBoolean(_ schema: Schema) throws -> Bool {
         false
     }
-    
+
     public func readBlob(_ schema: Schema) throws -> Data {
         Data()
     }
-    
+
     public func readByte(_ schema: Schema) throws -> Int8 {
         0
     }
-    
+
     public func readShort(_ schema: Schema) throws -> Int16 {
         0
     }
-    
+
     public func readInteger(_ schema: Schema) throws -> Int32 {
         0
     }
-    
+
     public func readLong(_ schema: Schema) throws -> Int64 {
         0
     }
-    
+
     public func readFloat(_ schema: Schema) throws -> Float {
         0.0
     }
-    
+
     public func readDouble(_ schema: Schema) throws -> Double {
         0.0
     }
-    
+
     public func readBigInteger(_ schema: Schema) throws -> Int64 {
         0
     }
-    
+
     public func readBigDecimal(_ schema: Schema) throws -> Double {
         0.0
     }

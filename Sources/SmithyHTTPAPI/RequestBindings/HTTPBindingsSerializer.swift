@@ -124,7 +124,7 @@ public final class HTTPBindingsSerializer: NoOpByDefaultShapeSerializer {
         // Return all sources of query items together
         return queryItems + queryParamsItems
     }
-    
+
     /// The headers to be added to this HTTP request.
     ///
     /// Headers include those populated from `@httpHeader` and `@httpPrefixHeader` bindings, and a `Content-Type` header
