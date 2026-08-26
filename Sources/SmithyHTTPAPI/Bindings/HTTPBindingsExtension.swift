@@ -12,6 +12,8 @@ import class Smithy.HTTPLabelTrait
 @_spi(SchemaBasedSerde)
 import class Smithy.HTTPPayloadTrait
 @_spi(SchemaBasedSerde)
+import class Smithy.HTTPPrefixHeadersTrait
+@_spi(SchemaBasedSerde)
 import class Smithy.HTTPQueryParamsTrait
 @_spi(SchemaBasedSerde)
 import class Smithy.HTTPQueryTrait
@@ -32,6 +34,8 @@ public final class HTTPBindingsExtension: SchemaExtension {
         self.bindings = schema.members.map { member in
             if member.hasTrait(HTTPHeaderTrait.self) {
                 return .header
+            } else if member.hasTrait(HTTPPrefixHeadersTrait.self) {
+                return .prefixHeaders
             } else if member.hasTrait(HTTPLabelTrait.self) {
                 return .label
             } else if member.hasTrait(HTTPPayloadTrait.self) {
@@ -53,6 +57,7 @@ public enum HTTPBinding: Sendable {
     case header
     case label
     case payload
+    case prefixHeaders
     case query
     case queryParams
     case body

@@ -14,6 +14,7 @@ service HTTPBindings {
         ScalarQueryAndQueryParams
         LiteralQuery
         VerbatimLiteralQuery
+        HeaderAndPrefixHeaders
     ]
 }
 
@@ -104,6 +105,25 @@ operation VerbatimLiteralQuery {
 structure VerbatimLiteralQueryInput {
     @httpHeader("X-A")
     a: String
+}
+
+// An `@httpPrefixHeaders` map alongside an `@httpHeader` binding, so that the merge of explicit
+// headers with prefix headers can be exercised, including a name collision.  An unbound member is
+// included so that the prefix-bound member can be confirmed absent from the body.  The prefix is
+// empty because a non-empty prefix must not overlap with an `@httpHeader` binding.
+@http(method: "PUT", uri: "/HeaderAndPrefixHeaders")
+operation HeaderAndPrefixHeaders {
+    input: HeaderAndPrefixHeadersInput
+}
+
+structure HeaderAndPrefixHeadersInput {
+    @httpPrefixHeaders("")
+    prefixHeaders: StringMap
+
+    @httpHeader("X-Specific")
+    specific: String
+
+    body: String
 }
 
 list StringList {
