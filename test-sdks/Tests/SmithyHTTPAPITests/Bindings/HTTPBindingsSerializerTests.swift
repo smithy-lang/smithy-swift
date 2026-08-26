@@ -35,6 +35,68 @@ final class HTTPBindingsSerializerTests: XCTestCase {
         XCTAssertEqual(try subject.data, Data(#"{}"#.utf8))
     }
 
+    // MARK: - Headers
+
+    // Explicit `@httpHeader` bindings and `@httpPrefixHeaders` entries both appear when their names
+    // don't collide, and neither is included in the body.
+    func test_headerAndPrefixHeaders_noCollision_mergesBoth() throws {
+        let operation = HTTPBindingsClient.headerAndPrefixHeadersOperation
+        let input = HeaderAndPrefixHeadersInput(
+            body: "abc",
+            prefixHeaders: ["X-Foo": "Foo"],
+            specific: "Specific"
+        )
+
+        let subject = try HTTPBindingsSerializer(codec: TestCodec(), operation: operation)
+        try input.serialize(subject)
+
+        XCTAssertEqual(subject.headers, Headers(["X-Specific": "Specific", "X-Foo": "Foo"]))
+        XCTAssertEqual(try subject.data, Data(#"{"body":"abc"}"#.utf8))
+    }
+
+    // When a `@httpPrefixHeaders` entry resolves to the name of an explicit `@httpHeader` binding,
+    // the header binding wins and the colliding entry is dropped.  The prefix-bound member is
+    // serialized before the header-bound one here, so the merge cannot depend on member order.
+    func test_headerAndPrefixHeaders_collision_headerWinsAndPrefixEntryDropped() throws {
+        let operation = HTTPBindingsClient.headerAndPrefixHeadersOperation
+        let input = HeaderAndPrefixHeadersInput(
+            prefixHeaders: ["X-Specific": "dropped", "X-Kept": "yes"],
+            specific: "fromHeader"
+        )
+
+        let subject = try HTTPBindingsSerializer(codec: TestCodec(), operation: operation)
+        try input.serialize(subject)
+
+        XCTAssertEqual(subject.headers, Headers(["X-Specific": "fromHeader", "X-Kept": "yes"]))
+    }
+
+    // A colliding name is matched case-insensitively, as HTTP header names are.
+    func test_headerAndPrefixHeaders_collisionInDifferentCase_headerStillWins() throws {
+        let operation = HTTPBindingsClient.headerAndPrefixHeadersOperation
+        let input = HeaderAndPrefixHeadersInput(
+            prefixHeaders: ["x-specific": "dropped"],
+            specific: "fromHeader"
+        )
+
+        let subject = try HTTPBindingsSerializer(codec: TestCodec(), operation: operation)
+        try input.serialize(subject)
+
+        XCTAssertEqual(subject.headers, Headers(["X-Specific": "fromHeader"]))
+    }
+
+    // Merging prefix headers into the explicit headers must not accumulate into the header
+    // serializer, so the headers are the same no matter how many times they are read.
+    func test_headerAndPrefixHeaders_headersAreStableAcrossReads() throws {
+        let operation = HTTPBindingsClient.headerAndPrefixHeadersOperation
+        let input = HeaderAndPrefixHeadersInput(prefixHeaders: ["X-Foo": "Foo"], specific: "Specific")
+
+        let subject = try HTTPBindingsSerializer(codec: TestCodec(), operation: operation)
+        try input.serialize(subject)
+
+        XCTAssertEqual(subject.headers, subject.headers)
+        XCTAssertEqual(subject.headers, Headers(["X-Specific": "Specific", "X-Foo": "Foo"]))
+    }
+
     // MARK: - Query items
 
     // A list-valued `@httpQuery` member must produce one query item per element, in order.

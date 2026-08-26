@@ -118,7 +118,16 @@ public final class HTTPBindingsSerializer: NoOpByDefaultShapeSerializer {
     }
 
     public var headers: Headers {
-        self.mux.headerSerializer.headers
+
+        // An explicit `@httpHeader` binding takes precedence over an `@httpPrefixHeaders` entry that
+        // resolves to the same header name; that entry is dropped.  A collision is only possible when
+        // the prefix is empty, since a non-empty prefix may not overlap with an `@httpHeader` binding.
+        var headers = self.mux.headerSerializer.headers
+        let prefixHeaders = self.mux.prefixHeadersSerializer.headers.headers
+        for prefixHeader in prefixHeaders where !headers.exists(name: prefixHeader.name) {
+            headers.add(prefixHeader)
+        }
+        return headers
     }
 
     public var data: Data {
@@ -133,6 +142,7 @@ private struct BindingMultiplexer: InterceptingSerializer {
     let bindings: [HTTPBinding]
     let headerSerializer: HTTPHeaderSerializer
     let labelSerializer: HTTPLabelSerializer
+    let prefixHeadersSerializer: HTTPPrefixHeadersSerializer
     let querySerializer: HTTPQuerySerializer
     let queryParamsSerializer: HTTPQueryParamsSerializer
     let bodySerializer: any ShapeSerializer
@@ -143,6 +153,7 @@ private struct BindingMultiplexer: InterceptingSerializer {
         self.bindings = bindings
         self.headerSerializer = HTTPHeaderSerializer()
         self.labelSerializer = HTTPLabelSerializer(uri: uri)
+        self.prefixHeadersSerializer = HTTPPrefixHeadersSerializer()
         self.querySerializer = HTTPQuerySerializer()
         self.queryParamsSerializer = HTTPQueryParamsSerializer()
         self.bodySerializer = try codec.makeSerializer()
@@ -160,6 +171,8 @@ private struct BindingMultiplexer: InterceptingSerializer {
             labelSerializer
         case .payload:
             payloadSerializer
+        case .prefixHeaders:
+            prefixHeadersSerializer
         case .query:
             querySerializer
         case .queryParams:

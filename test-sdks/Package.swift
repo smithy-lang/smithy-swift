@@ -26,6 +26,7 @@ let package = Package(
         testSDKPackage("HTTPHeader"),
         testSDKPackage("HTTPLabel"),
         testSDKPackage("HTTPPayload"),
+        testSDKPackage("HTTPPrefixHeaders"),
         testSDKPackage("HTTPQuery"),
         testSDKPackage("HTTPQueryParams"),
         testSDKPackage("JSONName"),
@@ -196,6 +197,7 @@ let package = Package(
                 testSDKProduct("HTTPHeader"),
                 testSDKProduct("HTTPLabel"),
                 testSDKProduct("HTTPPayload"),
+                testSDKProduct("HTTPPrefixHeaders"),
                 testSDKProduct("HTTPQuery"),
                 testSDKProduct("HTTPQueryParams"),
             ]
