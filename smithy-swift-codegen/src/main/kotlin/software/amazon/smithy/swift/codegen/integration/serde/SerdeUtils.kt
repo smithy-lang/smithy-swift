@@ -2,6 +2,7 @@ package software.amazon.smithy.swift.codegen.integration.serde
 
 import software.amazon.smithy.aws.traits.protocols.AwsJson1_0Trait
 import software.amazon.smithy.aws.traits.protocols.AwsJson1_1Trait
+import software.amazon.smithy.aws.traits.protocols.RestJson1Trait
 import software.amazon.smithy.model.Model
 import software.amazon.smithy.model.shapes.ServiceShape
 import software.amazon.smithy.protocol.traits.Rpcv2CborTrait
@@ -27,6 +28,7 @@ class SerdeUtils {
             service.hasTrait<Rpcv2CborTrait>() ||
                 service.hasTrait<AwsJson1_0Trait>() ||
                 service.hasTrait<AwsJson1_1Trait>() ||
+                service.hasTrait<RestJson1Trait>() ||
                 settings.forceSchemaBased
     }
 }

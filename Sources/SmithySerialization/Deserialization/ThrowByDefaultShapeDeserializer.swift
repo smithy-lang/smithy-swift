@@ -7,14 +7,11 @@
 
 import struct Foundation.Data
 import struct Foundation.Date
+import enum Smithy.ByteStream
 @_spi(SchemaBasedSerde)
 import class Smithy.Schema
 @_spi(SchemaBasedSerde)
 import protocol Smithy.SmithyDocument
-@_spi(SchemaBasedSerde)
-import protocol SmithySerialization.DeserializableStruct
-@_spi(SchemaBasedSerde)
-import protocol SmithySerialization.ShapeDeserializer
 
 @_spi(SchemaBasedSerde)
 public protocol ThrowByDefaultShapeDeserializer: ShapeDeserializer {}
@@ -82,6 +79,14 @@ public extension ThrowByDefaultShapeDeserializer {
     }
 
     func readTimestamp(_ schema: Schema) throws -> Date {
+        throw notImplemented
+    }
+
+    public func readDataStream(_ schema: Schema) throws -> ByteStream {
+        throw notImplemented
+    }
+
+    public func readEventStream<E: DeserializableStruct>(_ schema: Schema) throws -> AsyncThrowingStream<E, any Error> {
         throw notImplemented
     }
 }
