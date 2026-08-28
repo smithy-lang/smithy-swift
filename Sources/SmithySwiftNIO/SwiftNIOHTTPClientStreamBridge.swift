@@ -46,30 +46,34 @@ final class SwiftNIOHTTPClientStreamBridge {
         }
     }
 
-    /// Convert AsyncHTTPClient response body to Smithy ByteStream
+    /// Convert AsyncHTTPClient response body to Smithy ByteStream.
+    ///
+    /// The response body is bridged into a `ByteBufferStream`, which holds NIO `ByteBuffer`s
+    /// directly — the inbound buffers are appended without the `getBytes` → `[UInt8]` → `Data`
+    /// round-trip the legacy path performed. Bridging happens on a detached task and is pulled
+    /// lazily with backpressure (`writeBufferAsync` suspends when the stream's buffer is full),
+    /// so the socket is not drained into memory faster than the consumer reads.
     static func convertResponseBody(
         from response: AsyncHTTPClient.HTTPClientResponse
     ) async -> ByteStream {
-        let bufferedStream = BufferedStream()
+        let stream = ByteBufferStream()
 
-        do {
-            var iterator = response.body.makeAsyncIterator()
-            while let buffer = try await iterator.next() {
-                // Convert ByteBuffer to Data and write to buffered stream
-                if let bytes = buffer.getBytes(
-                    at: buffer.readerIndex,
-                    length: buffer.readableBytes
-                ) {
-                    let data = Data(bytes)
-                    try bufferedStream.write(contentsOf: data)
+        // Pull the NIO response body on a background task so backpressure can flow:
+        // `writeBufferAsync` suspends this loop when the stream is full, which stops us
+        // pulling `iterator.next()`, which lets NIO's high/low watermark throttle the socket.
+        Task {
+            do {
+                var iterator = response.body.makeAsyncIterator()
+                while let buffer = try await iterator.next() {
+                    try await stream.writeBufferAsync(buffer)  // zero-copy append (COW)
                 }
+                stream.close()
+            } catch {
+                stream.closeWithError(error)
             }
-            bufferedStream.close()
-        } catch {
-            bufferedStream.closeWithError(error)
         }
 
-        return .stream(bufferedStream)
+        return .stream(stream)
     }
 
     /// Convert a Smithy Stream to AsyncHTTPClient request body
@@ -131,7 +135,21 @@ internal struct StreamToAsyncSequence: AsyncSequence, Sendable {
             guard !isFinished else { return nil }
 
             do {
-                // Read a chunk from the stream (using configurable chunk size)
+                // Fast path: if the source is a ByteBufferStream, pull a ByteBuffer slice
+                // directly (zero-copy COW) instead of round-tripping through Data + a fresh
+                // ByteBuffer allocation.
+                if let fast = stream as? ByteBufferStream {
+                    if let buffer = try await fast.readBufferAsync(upToCount: chunkSize),
+                       buffer.readableBytes > 0 {
+                        return buffer
+                    } else {
+                        isFinished = true
+                        stream.close()
+                        return nil
+                    }
+                }
+
+                // Default path: read a Data chunk and copy it into a fresh ByteBuffer.
                 let data = try await stream.readAsync(upToCount: chunkSize)
 
                 if let data = data, !data.isEmpty {
