@@ -22,6 +22,7 @@ struct EventContentDeserializer: ThrowByDefaultShapeDeserializer {
     let codec: any Codec
     let message: Message
 
+    // swiftlint:disable:next unused_declaration
     mutating func readStruct<T: DeserializableStruct>(_ schema: Schema, _ value: inout T) throws {
 
         // Deserialize the event payload, to the member marked with @eventPayload if it exists,

@@ -129,6 +129,4 @@ final class EventHeaderSerializer: ShapeSerializer {
     private func isEventHeader(_ schema: Schema) -> Bool {
         schema.hasTrait(EventHeaderTrait.self)
     }
-
-    private var notImplemented: SerializerError { .init("Not implemented") }
 }
