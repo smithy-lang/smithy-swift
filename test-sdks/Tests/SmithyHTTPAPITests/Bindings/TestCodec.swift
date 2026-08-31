@@ -24,12 +24,4 @@ struct TestCodec: Codec {
     func makeDeserializer(data: Data) throws -> any ShapeDeserializer {
         try SmithyJSON.Deserializer(usesJSONNameTrait: false, data: data)
     }
-
-    var emptyRequest: Data? { Data("{}".utf8) }
-
-    var emptyResponse: Data? { Data("{}".utf8) }
-
-    var serializerMediaType: String? { "application/json" }
-
-    var deserializerMediaType: String? { "application/json" }
 }

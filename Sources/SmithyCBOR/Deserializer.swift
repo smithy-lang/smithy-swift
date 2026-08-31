@@ -400,8 +400,6 @@ public class Deserializer: ShapeDeserializer {
     /// Container size is not implemented & returns unknown size, even for definite CBOR maps & arrays
     public var containerSize: Int = -1
 
-    public var mediaType: String? { "application/cbor" }
-
     private func nullCheck() throws {
         if try decoder.isNull() {
             _ = try decoder.popNext()

@@ -131,7 +131,7 @@ extension SmithyDocument {
     ///   - lhs: The first `SmithyDocument` to compare.
     ///   - rhs: The second `SmithyDocument` to compare.
     /// - Returns: `true` if the two `SmithyDocument`s are equal, `false` otherwise.
-    public static func isEqual(_ lhs: any SmithyDocument, _ rhs: any SmithyDocument) -> Bool {
+    public static func isEqual(_ lhs: SmithyDocument, _ rhs: SmithyDocument) -> Bool {
         switch (lhs.type, rhs.type) {
         case (.blob, .blob):
             return (try? lhs.asBlob() == rhs.asBlob()) ?? false
@@ -147,13 +147,15 @@ extension SmithyDocument {
             return (try? lhs.asShort() == rhs.asShort()) ?? false
         case (.integer, .integer):
             return (try? lhs.asInteger() == rhs.asInteger()) ?? false
+        case (.long, .long):
+            return (try? lhs.asLong() == rhs.asLong()) ?? false
         case (.float, .float):
             return (try? lhs.asFloat() == rhs.asFloat()) ?? false
-        case (.bigDecimal, .bigDecimal), (.bigDecimal, .double), (.double, .bigDecimal), (.double, .double):
-            // bigDecimal and double are interchangeably compared since they're the same underlying type
+        case (.double, .double):
+            return (try? lhs.asDouble() == rhs.asDouble()) ?? false
+        case (.bigDecimal, .bigDecimal):
             return (try? lhs.asBigDecimal() == rhs.asBigDecimal()) ?? false
-        case (.bigInteger, .bigInteger), (.long, .bigInteger), (.bigInteger, .long), (.long, .long):
-            // bigInteger and long are interchangeably compared since they're the same underlying type
+        case (.bigInteger, .bigInteger):
             return (try? lhs.asBigInteger() == rhs.asBigInteger()) ?? false
         case (.list, .list):
             guard let lhsList = try? lhs.asList(), let rhsList = try? rhs.asList() else { return false }

@@ -32,8 +32,7 @@ final class HTTPBindingsSerializerTests: XCTestCase {
         let subject = try HTTPBindingsSerializer(codec: TestCodec(), operation: operation)
         try input.serialize(subject)
 
-        XCTAssertNil(try subject.data)
-        XCTAssertNil(subject.mediaType)
+        XCTAssertEqual(try subject.data, Data(#"{}"#.utf8))
     }
 
     // MARK: - Headers
@@ -51,10 +50,7 @@ final class HTTPBindingsSerializerTests: XCTestCase {
         let subject = try HTTPBindingsSerializer(codec: TestCodec(), operation: operation)
         try input.serialize(subject)
 
-        XCTAssertEqual(
-            subject.headers,
-            Headers(["X-Specific": "Specific", "X-Foo": "Foo", "Content-Type": "application/json"])
-        )
+        XCTAssertEqual(subject.headers, Headers(["X-Specific": "Specific", "X-Foo": "Foo"]))
         XCTAssertEqual(try subject.data, Data(#"{"body":"abc"}"#.utf8))
     }
 
@@ -71,10 +67,7 @@ final class HTTPBindingsSerializerTests: XCTestCase {
         let subject = try HTTPBindingsSerializer(codec: TestCodec(), operation: operation)
         try input.serialize(subject)
 
-        XCTAssertEqual(
-            subject.headers,
-            Headers(["X-Specific": "fromHeader", "X-Kept": "yes", "Content-Type": "application/json"])
-        )
+        XCTAssertEqual(subject.headers, Headers(["X-Specific": "fromHeader", "X-Kept": "yes"]))
     }
 
     // A colliding name is matched case-insensitively, as HTTP header names are.
@@ -88,10 +81,7 @@ final class HTTPBindingsSerializerTests: XCTestCase {
         let subject = try HTTPBindingsSerializer(codec: TestCodec(), operation: operation)
         try input.serialize(subject)
 
-        XCTAssertEqual(
-            subject.headers,
-            Headers(["X-Specific": "fromHeader", "Content-Type": "application/json"])
-        )
+        XCTAssertEqual(subject.headers, Headers(["X-Specific": "fromHeader"]))
     }
 
     // Merging prefix headers into the explicit headers must not accumulate into the header
@@ -104,10 +94,7 @@ final class HTTPBindingsSerializerTests: XCTestCase {
         try input.serialize(subject)
 
         XCTAssertEqual(subject.headers, subject.headers)
-        XCTAssertEqual(
-            subject.headers,
-            Headers(["X-Specific": "Specific", "X-Foo": "Foo", "Content-Type": "application/json"])
-        )
+        XCTAssertEqual(subject.headers, Headers(["X-Specific": "Specific", "X-Foo": "Foo"]))
     }
 
     // MARK: - Query items

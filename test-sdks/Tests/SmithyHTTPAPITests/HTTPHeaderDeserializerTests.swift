@@ -118,57 +118,6 @@ final class HTTPHeaderDeserializerTests: XCTestCase {
         XCTAssertEqual(output.value, "\"a,b (c)\"")
     }
 
-    // MARK: - media type HTTP header
-
-    func test_mediaType_decodesBase64EncodedStringFromHeader() throws {
-        // A string carrying the mediaType trait is always base64 encoded in a header.
-        let output = try deserialize(MediaTypeHTTPHeaderOutput.self, ["X-Json": "eyJhIjoxfQ=="])
-
-        XCTAssertEqual(output.value, #"{"a":1}"#)
-    }
-
-    func test_mediaType_decodesEmptyHeaderValueAsEmptyString() throws {
-        let output = try deserialize(MediaTypeHTTPHeaderOutput.self, ["X-Json": ""])
-
-        XCTAssertEqual(output.value, "")
-    }
-
-    func test_mediaType_throwsWhenHeaderIsNotValidBase64() throws {
-        XCTAssertThrowsError(try deserialize(MediaTypeHTTPHeaderOutput.self, ["X-Json": #"{"a":1}"#]))
-    }
-
-    func test_mediaType_roundTripsValueWrittenByTheSerializer() throws {
-        let operation = HTTPHeaderClient.mediaTypeHTTPHeaderOperation
-        let value = #"{"a":1}"#
-        let serializer = HTTPHeaderSerializer()
-        try MediaTypeHTTPHeaderInput(value: value).serializeMembers(operation.inputSchema, serializer)
-
-        let output = try deserialize(MediaTypeHTTPHeaderOutput.self, serializer.headers)
-
-        XCTAssertEqual(output.value, value)
-    }
-
-    func test_mediaTypeList_decodesEachElementFromBase64() throws {
-        // The trait is resolved from each element of the list, so every element is decoded.
-        let output = try deserialize(
-            MediaTypeListHTTPHeaderOutput.self,
-            ["X-Json": "eyJhIjoxfQ==,eyJiIjoyfQ=="]
-        )
-
-        XCTAssertEqual(output.values, [#"{"a":1}"#, #"{"b":2}"#])
-    }
-
-    func test_mediaTypeList_roundTripsValuesWrittenByTheSerializer() throws {
-        let operation = HTTPHeaderClient.mediaTypeListHTTPHeaderOperation
-        let values = [#"{"a":1}"#, #"{"b":2}"#]
-        let serializer = HTTPHeaderSerializer()
-        try MediaTypeListHTTPHeaderInput(values: values).serializeMembers(operation.inputSchema, serializer)
-
-        let output = try deserialize(MediaTypeListHTTPHeaderOutput.self, serializer.headers)
-
-        XCTAssertEqual(output.values, values)
-    }
-
     // MARK: - timestamp HTTP header
 
     func test_timestamp_deserializesTimestampAsHTTPDateByDefault() throws {

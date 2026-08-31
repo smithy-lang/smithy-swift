@@ -39,9 +39,7 @@ public protocol ShapeSerializer {
         _ value: AsyncThrowingStream<E, any Error>
     ) throws
 
-    var data: Data? { get throws }
-
-    var mediaType: String? { get }
+    var data: Data { get throws }
 }
 
 @_spi(SchemaBasedSerde)
