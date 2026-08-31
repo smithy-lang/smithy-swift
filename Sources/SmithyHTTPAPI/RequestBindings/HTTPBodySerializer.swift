@@ -30,9 +30,13 @@ public final class HTTPBodySerializer: InterceptingSerializer {
         self.bindings[schema.index] == .body ? self.serializer : self.noOpSerializer
     }
 
-    public var data: Data {
+    public var data: Data? {
         get throws {
             try self.serializer.data
         }
+    }
+
+    public var mediaType: String? {
+        serializer.mediaType
     }
 }

@@ -157,9 +157,11 @@ public final class HTTPLabelSerializer: ShapeSerializer {
     }
 
     /// Returns a UTF-8 representation of the URI.
-    public var data: Data {
+    public var data: Data? {
         Data(transformed.utf8)
     }
+
+    public var mediaType: String? { nil }
 
     public var uri: String { transformed }
 }

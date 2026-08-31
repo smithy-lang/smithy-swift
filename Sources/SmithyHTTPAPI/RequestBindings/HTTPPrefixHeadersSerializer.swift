@@ -51,4 +51,6 @@ public final class HTTPPrefixHeadersSerializer: NoOpByDefaultShapeSerializer {
         // A map value is a scalar string, never a list element, so it is added without quoting.
         headers.add(name: name, value: value)
     }
+
+    public var mediaType: String? { nil }
 }

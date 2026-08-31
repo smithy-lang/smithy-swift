@@ -109,5 +109,5 @@ public extension NoOpByDefaultShapeSerializer {
         // no operation
     }
 
-    var data: Data { Data() }
+    var data: Data? { nil }
 }

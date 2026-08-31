@@ -116,8 +116,12 @@ struct UnboundMemberSerializer: ShapeSerializer {
         try base.writeNull(schema)
     }
 
-    var data: Data {
+    var data: Data? {
         get throws { try base.data }
+    }
+
+    var mediaType: String? {
+        self.base.mediaType
     }
 
     private func isEventHeader(_ schema: Schema) -> Bool {
