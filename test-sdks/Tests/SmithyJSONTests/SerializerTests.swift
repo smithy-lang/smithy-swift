@@ -27,7 +27,7 @@ final class SerializerTests: XCTestCase {
         let input = SerdeOperationInput(string: "")
         try input.serialize(subject)
 
-        let json = String(data: try subject.data ?? Data(), encoding: .utf8)
+        let json = String(data: try subject.data, encoding: .utf8)
         XCTAssertEqual(json, #"{"string":""}"#)
     }
 
@@ -41,7 +41,7 @@ final class SerializerTests: XCTestCase {
         let input = SerdeOperationInput(string: original)
         try input.serialize(subject)
 
-        let json = String(data: try subject.data ?? Data(), encoding: .utf8)
+        let json = String(data: try subject.data, encoding: .utf8)
         XCTAssertEqual(json, #"{"string":"\b\f\r\t\n\"\\"}"#)
     }
 
@@ -53,7 +53,7 @@ final class SerializerTests: XCTestCase {
         let input = SerdeOperationInput(string: "line1\r\nline2")
         try input.serialize(subject)
 
-        let json = String(data: try subject.data ?? Data(), encoding: .utf8)
+        let json = String(data: try subject.data, encoding: .utf8)
         XCTAssertEqual(json, #"{"string":"line1\r\nline2"}"#)
     }
 
@@ -63,7 +63,7 @@ final class SerializerTests: XCTestCase {
         let input = SerdeOperationInput(string: "🗑️ + 🐼 = 🦝")
         try input.serialize(subject)
 
-        let json = String(data: try subject.data ?? Data(), encoding: .utf8)
+        let json = String(data: try subject.data, encoding: .utf8)
         XCTAssertEqual(json, #"{"string":"🗑️ + 🐼 = 🦝"}"#)
     }
 
@@ -77,7 +77,7 @@ final class SerializerTests: XCTestCase {
         )
         try input.serialize(subject)
 
-        let json = String(data: try subject.data ?? Data(), encoding: .utf8)
+        let json = String(data: try subject.data, encoding: .utf8)
         let expected = #"{"string":"\u0000\u0001\u0002\u0003\u0004\u0005\u0006\u0007\u000b\u000e\u000f"# +
             #"\u0010\u0011\u0012\u0013\u0014\u0015\u0016\u0017\u0018\u0019\u001a\u001b\u001c\u001d\u001e\u001f"}"#
         XCTAssertEqual(json, expected)
@@ -92,7 +92,7 @@ final class SerializerTests: XCTestCase {
         let input = SerdeOperationInput(blob: data)
         try input.serialize(subject)
 
-        let json = String(data: try subject.data ?? Data(), encoding: .utf8)
+        let json = String(data: try subject.data, encoding: .utf8)
         XCTAssertEqual(json, #"{"blob":""}"#)
     }
 
@@ -103,7 +103,7 @@ final class SerializerTests: XCTestCase {
         let input = SerdeOperationInput(blob: data)
         try input.serialize(subject)
 
-        let json = String(data: try subject.data ?? Data(), encoding: .utf8)
+        let json = String(data: try subject.data, encoding: .utf8)
         XCTAssertEqual(json, #"{"blob":"YmxvYmJ5IGJsb2IgYmxvYg=="}"#)
     }
 
@@ -115,7 +115,7 @@ final class SerializerTests: XCTestCase {
         let input = SerdeOperationInput(list: [])
         try input.serialize(subject)
 
-        let json = String(data: try subject.data ?? Data(), encoding: .utf8)
+        let json = String(data: try subject.data, encoding: .utf8)
         XCTAssertEqual(json, #"{"list":[]}"#)
     }
 
@@ -125,7 +125,7 @@ final class SerializerTests: XCTestCase {
         let input = SerdeOperationInput(list: [123])
         try input.serialize(subject)
 
-        let json = String(data: try subject.data ?? Data(), encoding: .utf8)
+        let json = String(data: try subject.data, encoding: .utf8)
         XCTAssertEqual(json, #"{"list":[123]}"#)
     }
 
@@ -135,7 +135,7 @@ final class SerializerTests: XCTestCase {
         let input = SerdeOperationInput(list: [123, 456, 789])
         try input.serialize(subject)
 
-        let json = String(data: try subject.data ?? Data(), encoding: .utf8)
+        let json = String(data: try subject.data, encoding: .utf8)
         XCTAssertEqual(json, #"{"list":[123,456,789]}"#)
     }
 
@@ -145,7 +145,7 @@ final class SerializerTests: XCTestCase {
         let input = SerdeOperationInput(nestedList: [["inner", "list"], ["another", "inner", "list"]])
         try input.serialize(subject)
 
-        let json = String(data: try subject.data ?? Data(), encoding: .utf8)
+        let json = String(data: try subject.data, encoding: .utf8)
         XCTAssertEqual(json, #"{"nestedList":[["inner","list"],["another","inner","list"]]}"#)
     }
 
@@ -157,7 +157,7 @@ final class SerializerTests: XCTestCase {
         let input = SerdeOperationInput(boolean: false)
         try input.serialize(subject)
 
-        let json = String(data: try subject.data ?? Data(), encoding: .utf8)
+        let json = String(data: try subject.data, encoding: .utf8)
         XCTAssertEqual(json, #"{"boolean":false}"#)
     }
 
@@ -167,7 +167,7 @@ final class SerializerTests: XCTestCase {
         let input = SerdeOperationInput(boolean: true)
         try input.serialize(subject)
 
-        let json = String(data: try subject.data ?? Data(), encoding: .utf8)
+        let json = String(data: try subject.data, encoding: .utf8)
         XCTAssertEqual(json, #"{"boolean":true}"#)
     }
 
@@ -179,7 +179,7 @@ final class SerializerTests: XCTestCase {
         let input = SerdeOperationInput(double: 0.0)
         try input.serialize(subject)
 
-        let json = String(data: try subject.data ?? Data(), encoding: .utf8)
+        let json = String(data: try subject.data, encoding: .utf8)
         XCTAssertEqual(json, #"{"double":0.0}"#)
     }
 
@@ -189,7 +189,7 @@ final class SerializerTests: XCTestCase {
         let input = SerdeOperationInput(double: 123.0)
         try input.serialize(subject)
 
-        let json = String(data: try subject.data ?? Data(), encoding: .utf8)
+        let json = String(data: try subject.data, encoding: .utf8)
         XCTAssertEqual(json, #"{"double":123.0}"#)
     }
 
@@ -199,7 +199,7 @@ final class SerializerTests: XCTestCase {
         let input = SerdeOperationInput(double: -123.0)
         try input.serialize(subject)
 
-        let json = String(data: try subject.data ?? Data(), encoding: .utf8)
+        let json = String(data: try subject.data, encoding: .utf8)
         XCTAssertEqual(json, #"{"double":-123.0}"#)
     }
 
@@ -209,7 +209,7 @@ final class SerializerTests: XCTestCase {
         let input = SerdeOperationInput(double: .nan)
         try input.serialize(subject)
 
-        let json = String(data: try subject.data ?? Data(), encoding: .utf8)
+        let json = String(data: try subject.data, encoding: .utf8)
         XCTAssertEqual(json, #"{"double":"NaN"}"#)
     }
 
@@ -219,7 +219,7 @@ final class SerializerTests: XCTestCase {
         let input = SerdeOperationInput(double: .infinity)
         try input.serialize(subject)
 
-        let json = String(data: try subject.data ?? Data(), encoding: .utf8)
+        let json = String(data: try subject.data, encoding: .utf8)
         XCTAssertEqual(json, #"{"double":"Infinity"}"#)
     }
 
@@ -229,7 +229,7 @@ final class SerializerTests: XCTestCase {
         let input = SerdeOperationInput(double: -.infinity)
         try input.serialize(subject)
 
-        let json = String(data: try subject.data ?? Data(), encoding: .utf8)
+        let json = String(data: try subject.data, encoding: .utf8)
         XCTAssertEqual(json, #"{"double":"-Infinity"}"#)
     }
 
@@ -243,7 +243,7 @@ final class SerializerTests: XCTestCase {
         let input = SerdeOperationInput(httpDateTimestamp: date)
         try input.serialize(subject)
 
-        let json = String(data: try subject.data ?? Data(), encoding: .utf8)
+        let json = String(data: try subject.data, encoding: .utf8)
         XCTAssertEqual(json, "{\"httpDateTimestamp\":\"\(httpDate)\"}")
     }
 
@@ -255,7 +255,7 @@ final class SerializerTests: XCTestCase {
         let input = SerdeOperationInput(dateTimeTimestamp: date)
         try input.serialize(subject)
 
-        let json = String(data: try subject.data ?? Data(), encoding: .utf8)
+        let json = String(data: try subject.data, encoding: .utf8)
         XCTAssertEqual(json, "{\"dateTimeTimestamp\":\"\(dateTime)\"}")
     }
 
@@ -267,7 +267,7 @@ final class SerializerTests: XCTestCase {
         let input = SerdeOperationInput(epochSecondsTimestamp: date)
         try input.serialize(subject)
 
-        let json = String(data: try subject.data ?? Data(), encoding: .utf8)
+        let json = String(data: try subject.data, encoding: .utf8)
         XCTAssertEqual(json, "{\"epochSecondsTimestamp\":\(epochSeconds)}")
     }
 
@@ -279,7 +279,7 @@ final class SerializerTests: XCTestCase {
         let input = SerdeOperationInput(sparseList: [nil])
         try input.serialize(subject)
 
-        let json = String(data: try subject.data ?? Data(), encoding: .utf8)
+        let json = String(data: try subject.data, encoding: .utf8)
         XCTAssertEqual(json, #"{"sparseList":[null]}"#)
     }
 
@@ -291,7 +291,7 @@ final class SerializerTests: XCTestCase {
         let input = SerdeOperationInput(map: [:])
         try input.serialize(subject)
 
-        let json = String(data: try subject.data ?? Data(), encoding: .utf8)
+        let json = String(data: try subject.data, encoding: .utf8)
         XCTAssertEqual(json, #"{"map":{}}"#)
     }
 
@@ -301,7 +301,7 @@ final class SerializerTests: XCTestCase {
         let input = SerdeOperationInput(map: ["a": 123])
         try input.serialize(subject)
 
-        let json = String(data: try subject.data ?? Data(), encoding: .utf8)
+        let json = String(data: try subject.data, encoding: .utf8)
         XCTAssertEqual(json, #"{"map":{"a":123}}"#)
     }
 
@@ -311,7 +311,7 @@ final class SerializerTests: XCTestCase {
         let input = SerdeOperationInput(map: ["a": 123, "b": 456])
         try input.serialize(subject)
 
-        let json = String(data: try subject.data ?? Data(), encoding: .utf8)
+        let json = String(data: try subject.data, encoding: .utf8)
         // Key-value pairs may be rendered in any order, so check for either possible order
         XCTAssert(json == #"{"map":{"a":123,"b":456}}"# || json == #"{"map":{"b":456,"a":123}}"#)
     }
@@ -322,7 +322,7 @@ final class SerializerTests: XCTestCase {
         let input = SerdeOperationInput(nestedMap: ["outer": ["inner": "nested"]])
         try input.serialize(subject)
 
-        let json = String(data: try subject.data ?? Data(), encoding: .utf8)
+        let json = String(data: try subject.data, encoding: .utf8)
         XCTAssertEqual(json, #"{"nestedMap":{"outer":{"inner":"nested"}}}"#)
     }
 
@@ -334,7 +334,7 @@ final class SerializerTests: XCTestCase {
         let input = SerdeOperationInput(structure: .init())
         try input.serialize(subject)
 
-        let json = String(data: try subject.data ?? Data(), encoding: .utf8)
+        let json = String(data: try subject.data, encoding: .utf8)
         XCTAssertEqual(json, #"{"structure":{}}"#)
     }
 
@@ -344,7 +344,7 @@ final class SerializerTests: XCTestCase {
         let input = SerdeOperationInput(structure: .init(a: "123"))
         try input.serialize(subject)
 
-        let json = String(data: try subject.data ?? Data(), encoding: .utf8)
+        let json = String(data: try subject.data, encoding: .utf8)
         XCTAssertEqual(json, #"{"structure":{"a":"123"}}"#)
     }
 
@@ -354,7 +354,7 @@ final class SerializerTests: XCTestCase {
         let input = SerdeOperationInput(structure: .init(a: "123", b: 456, c: true))
         try input.serialize(subject)
 
-        let json = String(data: try subject.data ?? Data(), encoding: .utf8)
+        let json = String(data: try subject.data, encoding: .utf8)
         // Structure members do serialize in determinate order, based on how the structure's
         // members are ordered in the schema
         XCTAssertEqual(json, #"{"structure":{"a":"123","b":456,"c":true}}"#)
@@ -368,7 +368,7 @@ final class SerializerTests: XCTestCase {
         let input = SerdeOperationInput(union: .x("123"))
         try input.serialize(subject)
 
-        let json = String(data: try subject.data ?? Data(), encoding: .utf8)
+        let json = String(data: try subject.data, encoding: .utf8)
         XCTAssertEqual(json, #"{"union":{"x":"123"}}"#)
     }
 
@@ -378,7 +378,7 @@ final class SerializerTests: XCTestCase {
         let input = SerdeOperationInput(union: .sdkUnknown("what"))
         try input.serialize(subject)
 
-        let json = String(data: try subject.data ?? Data(), encoding: .utf8)
+        let json = String(data: try subject.data, encoding: .utf8)
         XCTAssertEqual(json, #"{"union":{}}"#)
     }
 
@@ -391,7 +391,7 @@ final class SerializerTests: XCTestCase {
         let input = SerdeOperationInput(document: document)
         try input.serialize(subject)
 
-        let json = String(data: try subject.data ?? Data(), encoding: .utf8)
+        let json = String(data: try subject.data, encoding: .utf8)
         XCTAssertEqual(json, #"{"document":true}"#)
     }
 
@@ -405,7 +405,7 @@ final class SerializerTests: XCTestCase {
         ]))
         try subject.writeDocument(Smithy.Prelude.documentSchema, document)
 
-        let json = String(data: try subject.data ?? Data(), encoding: .utf8)
+        let json = String(data: try subject.data, encoding: .utf8)
         XCTAssertEqual(json, #"["123",456,789.0]"#)
     }
 
@@ -420,7 +420,7 @@ final class SerializerTests: XCTestCase {
         let input = SerdeOperationInput(document: document)
         try input.serialize(subject)
 
-        let json = String(data: try subject.data ?? Data(), encoding: .utf8)
+        let json = String(data: try subject.data, encoding: .utf8)
         XCTAssertEqual(json, #"{"document":["123",456,789.0]}"#)
     }
 
@@ -433,7 +433,7 @@ final class SerializerTests: XCTestCase {
         ]))
         try subject.writeDocument(Smithy.Prelude.documentSchema, document)
 
-        let json = String(data: try subject.data ?? Data(), encoding: .utf8)
+        let json = String(data: try subject.data, encoding: .utf8)
         // check the 2 possible orders for map elements
         XCTAssert(json == #"{"b":456,"a":"123"}"# || json == #"{"a":"123","b":456}"#)
     }
@@ -448,7 +448,7 @@ final class SerializerTests: XCTestCase {
         let input = SerdeOperationInput(document: document)
         try input.serialize(subject)
 
-        let json = String(data: try subject.data ?? Data(), encoding: .utf8)
+        let json = String(data: try subject.data, encoding: .utf8)
         // check the 2 possible orders for map elements
         XCTAssert(json == #"{"document":{"b":456,"a":"123"}}"# || json == #"{"document":{"a":"123","b":456}}"#)
     }
@@ -460,7 +460,7 @@ final class SerializerTests: XCTestCase {
         let input = SerdeOperationInput(myDocument: document)
         try input.serialize(subject)
 
-        let json = String(data: try subject.data ?? Data(), encoding: .utf8)
+        let json = String(data: try subject.data, encoding: .utf8)
         XCTAssertEqual(json, #"{"myDocument":true}"#)
     }
 }

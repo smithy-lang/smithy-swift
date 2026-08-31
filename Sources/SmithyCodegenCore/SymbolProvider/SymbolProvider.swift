@@ -16,8 +16,6 @@ import class Smithy.ServiceTrait
 import struct Smithy.ShapeID
 @_spi(SchemaBasedSerde)
 import class Smithy.StreamingTrait
-@_spi(SchemaBasedSerde)
-import class Smithy.UnitTypeTrait
 
 @_spi(SchemaBasedSerde)
 public struct SymbolProvider {

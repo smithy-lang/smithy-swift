@@ -128,9 +128,7 @@ public final class HTTPQuerySerializer: ShapeSerializer {
         addToQueryString(name: listName, value: "null")
     }
 
-    public var data: Data? { nil } // not used for this serializer
-
-    public var mediaType: String? { nil }
+    public var data: Data { Data() } // not used for this serializer
 
     // MARK: - Private methods
 

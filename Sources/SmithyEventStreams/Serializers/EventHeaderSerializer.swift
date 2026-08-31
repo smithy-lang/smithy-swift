@@ -102,11 +102,9 @@ final class EventHeaderSerializer: ShapeSerializer {
         // A nil header is simply omitted from the message.
     }
 
-    var data: Data? {
-        get throws { nil }
+    var data: Data {
+        get throws { throw notImplemented }
     }
-
-    var mediaType: String? { nil }
 
     // MARK: - Private methods
 
@@ -129,4 +127,6 @@ final class EventHeaderSerializer: ShapeSerializer {
     private func isEventHeader(_ schema: Schema) -> Bool {
         schema.hasTrait(EventHeaderTrait.self)
     }
+
+    private var notImplemented: SerializerError { .init("Not implemented") }
 }

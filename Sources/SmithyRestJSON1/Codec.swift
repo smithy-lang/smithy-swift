@@ -27,11 +27,4 @@ struct Codec: SmithySerialization.Codec {
         try SmithyJSON.Deserializer(usesJSONNameTrait: true, data: data)
     }
 
-    var emptyRequest: Data? { Data("{}".utf8) }
-
-    var emptyResponse: Data? { Data("{}".utf8) }
-
-    var serializerMediaType: String? { "application/json" }
-
-    var deserializerMediaType: String? { "application/json" }
 }

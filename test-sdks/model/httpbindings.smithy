@@ -15,7 +15,6 @@ service HTTPBindings {
         LiteralQuery
         VerbatimLiteralQuery
         HeaderAndPrefixHeaders
-        AllBoundResponseMembers
     ]
 }
 
@@ -123,30 +122,6 @@ structure HeaderAndPrefixHeadersInput {
 
     @httpHeader("X-Specific")
     specific: String
-
-    body: String
-}
-
-// An output structure with a member for every response binding, so that the deserializer selected
-// for each of them can be exercised in one response.  The header-bound member is `@required` so
-// that the deserialization of the body, which fills in a placeholder for a required member that
-// the body omits, cannot displace the value carried by the header.
-@http(method: "GET", uri: "/AllBoundResponseMembers")
-operation AllBoundResponseMembers {
-    output: AllBoundResponseMembersOutput
-}
-
-@output
-structure AllBoundResponseMembersOutput {
-    @httpHeader("X-Specific")
-    @required
-    specific: String
-
-    @httpPrefixHeaders("X-Meta-")
-    metadata: StringMap
-
-    @httpResponseCode
-    status: Integer
 
     body: String
 }

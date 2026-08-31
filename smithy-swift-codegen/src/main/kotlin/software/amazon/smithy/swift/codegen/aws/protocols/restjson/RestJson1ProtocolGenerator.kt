@@ -60,7 +60,6 @@ open class RestJson1ProtocolGenerator(
         // to the orchestrator
         operationMiddleware.removeMiddleware(operation, "OperationInputBodyMiddleware")
         operationMiddleware.removeMiddleware(operation, "DeserializeMiddleware")
-        operationMiddleware.removeMiddleware(operation, "ContentTypeMiddleware")
 
         // Remove this middleware as it will be handled by HTTP binding serializers
         operationMiddleware.removeMiddleware(operation, "OperationInputUrlPathMiddleware")

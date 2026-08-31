@@ -6,22 +6,24 @@
 //
 
 import struct Foundation.Data
+import struct Foundation.Date
 @_spi(SchemaBasedSerde)
 import class Smithy.EventHeaderTrait
 @_spi(SchemaBasedSerde)
 import class Smithy.EventPayloadTrait
 @_spi(SchemaBasedSerde)
 import class Smithy.Schema
+import protocol Smithy.SmithyDocument
 import struct SmithyEventStreamsAPI.Header
 @_spi(SchemaBasedSerde)
 import protocol SmithySerialization.Codec
-@_spi(SchemaBasedSerde)
-import protocol SmithySerialization.NoOpByDefaultShapeSerializer
 @_spi(SchemaBasedSerde)
 import protocol SmithySerialization.SerializableStruct
 import struct SmithySerialization.SerializerError
 @_spi(SchemaBasedSerde)
 import protocol SmithySerialization.ShapeSerializer
+@_spi(SchemaBasedSerde)
+import typealias SmithySerialization.WriteValueConsumer
 
 /// Serializes the associated value (an event) of a case of a streaming union to a message.
 ///
@@ -32,7 +34,7 @@ import protocol SmithySerialization.ShapeSerializer
 ///   to the message payload as a structure, using the codec for the protocol in use.
 ///
 /// See https://smithy.io/2.0/spec/streaming.html#event-message-serialization
-final class EventContentSerializer: NoOpByDefaultShapeSerializer {
+final class EventContentSerializer: ShapeSerializer {
     let codec: any Codec
     let contentType: String
 
@@ -71,12 +73,80 @@ final class EventContentSerializer: NoOpByDefaultShapeSerializer {
             let payloadSerializer = try codec.makeSerializer()
             let unboundValue = UnboundMembers(value: value)
             try payloadSerializer.writeStruct(eventSchema, unboundValue)
-            payload = try payloadSerializer.data ?? Data()
+            payload = try payloadSerializer.data
             headers.append(Header(name: ":content-type", value: .string(contentType)))
         }
     }
 
-    var mediaType: String? { nil }
+    func writeList<E>(_ schema: Schema, _ value: [E], _ consumer: WriteValueConsumer<E>) throws {
+        throw notImplemented
+    }
+
+    func writeMap<V>(_ schema: Schema, _ value: [String: V], _ consumer: WriteValueConsumer<V>) throws {
+        throw notImplemented
+    }
+
+    func writeBoolean(_ schema: Schema, _ value: Bool) throws {
+        throw notImplemented
+    }
+
+    func writeByte(_ schema: Schema, _ value: Int8) throws {
+        throw notImplemented
+    }
+
+    func writeShort(_ schema: Schema, _ value: Int16) throws {
+        throw notImplemented
+    }
+
+    func writeInteger(_ schema: Schema, _ value: Int32) throws {
+        throw notImplemented
+    }
+
+    func writeLong(_ schema: Schema, _ value: Int64) throws {
+        throw notImplemented
+    }
+
+    func writeFloat(_ schema: Schema, _ value: Float) throws {
+        throw notImplemented
+    }
+
+    func writeDouble(_ schema: Schema, _ value: Double) throws {
+        throw notImplemented
+    }
+
+    func writeBigInteger(_ schema: Schema, _ value: Int64) throws {
+        throw notImplemented
+    }
+
+    func writeBigDecimal(_ schema: Schema, _ value: Double) throws {
+        throw notImplemented
+    }
+
+    func writeString(_ schema: Schema, _ value: String) throws {
+        throw notImplemented
+    }
+
+    func writeBlob(_ schema: Schema, _ value: Data) throws {
+        throw notImplemented
+    }
+
+    func writeTimestamp(_ schema: Schema, _ value: Date) throws {
+        throw notImplemented
+    }
+
+    func writeDocument(_ schema: Schema, _ value: any SmithyDocument) throws {
+        throw notImplemented
+    }
+
+    func writeNull(_ schema: Schema) throws {
+        throw notImplemented
+    }
+
+    var data: Data {
+        get throws { throw notImplemented }
+    }
+
+    private var notImplemented: SerializerError { .init("Not implemented") }
 }
 
 /// Wraps an event so that the members bound to event headers are left out of the event payload.

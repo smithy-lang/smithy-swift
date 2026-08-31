@@ -125,7 +125,7 @@ public final class HTTPPrefixHeadersDeserializer: ShapeDeserializer {
         throw notBound("A timestamp")
     }
 
-    public var mediaType: String? { nil }
+    public var containerSize: Int { -1 } // not used for this deserializer
 
     // MARK: - Private methods
 
