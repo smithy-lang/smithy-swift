@@ -12,6 +12,11 @@ permissions:
 env:
   AWS_SWIFT_SDK_USE_LOCAL_DEPS: 1
   AWS_SWIFT_SDK_USE_PRERELEASE_CRT: 1
+  # Keep the Gradle user home inside the workspace so that it resolves identically
+  # for Gradle and for setup-gradle's cache.  In container jobs the runner sets
+  # HOME=/github/home, but the JVM derives user.home from the passwd entry (/root),
+  # so the default ~/.gradle refers to two different directories.
+  GRADLE_USER_HOME: ${{ github.workspace }}/.gradle-home
 
 jobs:
   apple-ci:

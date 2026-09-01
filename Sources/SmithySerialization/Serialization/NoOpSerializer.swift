@@ -10,4 +10,6 @@
 public final class NoOpSerializer: NoOpByDefaultShapeSerializer {
 
     public init() {}
+
+    public var mediaType: String? { nil }
 }

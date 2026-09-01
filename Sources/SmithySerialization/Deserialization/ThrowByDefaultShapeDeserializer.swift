@@ -7,23 +7,18 @@
 
 import struct Foundation.Data
 import struct Foundation.Date
+import enum Smithy.ByteStream
 @_spi(SchemaBasedSerde)
 import class Smithy.Schema
+@_spi(SchemaBasedSerde)
 import protocol Smithy.SmithyDocument
+
 @_spi(SchemaBasedSerde)
-import protocol SmithySerialization.DeserializableStruct
-import struct SmithySerialization.SerializerError
-@_spi(SchemaBasedSerde)
-import protocol SmithySerialization.ShapeDeserializer
+public protocol ThrowByDefaultShapeDeserializer: ShapeDeserializer {}
 
-struct SDKUnknownDeserializer: ShapeDeserializer {
-    let string: String
+public extension ThrowByDefaultShapeDeserializer {
 
-    init(string: String) {
-        self.string = string
-    }
-
-    func readStruct<T>(_ schema: Schema, _ value: inout T) throws where T: DeserializableStruct {
+    func readStruct<T: DeserializableStruct>(_ schema: Schema, _ value: inout T) throws {
         throw notImplemented
     }
 
@@ -76,7 +71,7 @@ struct SDKUnknownDeserializer: ShapeDeserializer {
     }
 
     func readString(_ schema: Schema) throws -> String {
-        string
+        throw notImplemented
     }
 
     func readDocument(_ schema: Schema) throws -> any SmithyDocument {
@@ -87,7 +82,13 @@ struct SDKUnknownDeserializer: ShapeDeserializer {
         throw notImplemented
     }
 
-    var mediaType: String? { nil }
+    public func readDataStream(_ schema: Schema) throws -> ByteStream {
+        throw notImplemented
+    }
 
-    private var notImplemented: SerializerError { .init("Not implemented") }
+    public func readEventStream<E: DeserializableStruct>(_ schema: Schema) throws -> AsyncThrowingStream<E, any Error> {
+        throw notImplemented
+    }
 }
+
+private var notImplemented: SerializerError { .init("Not implemented") }

@@ -264,13 +264,14 @@ public final class Serializer: ShapeSerializer {
         _data.append(contentsOf: Self.nullBytes)
     }
 
-    public var data: Data {
+    public var data: Data? {
         get throws {
-            // Return the encoded data, substituting '{}' if empty
-            guard !_data.isEmpty else { return Data("{}".utf8) }
-            return Data(_data)
+            // Return the encoded data, substituting `nil` if empty
+            !_data.isEmpty ? Data(_data) : nil
         }
     }
+
+    public var mediaType: String? { !_data.isEmpty ? "application/json" : nil }
 
     // MARK: - Private methods
 
@@ -334,7 +335,7 @@ public final class Serializer: ShapeSerializer {
 
         // Get the data, append a colon (UTF-8 58) to the end, and create a new array
         // to trim extra capacity and flatten.
-        var data = try serializer.data
+        var data = try serializer._data
         data.append(Self.colon)
         return [UInt8](data)
     }
