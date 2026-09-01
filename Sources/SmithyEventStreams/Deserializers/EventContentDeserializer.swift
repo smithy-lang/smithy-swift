@@ -18,12 +18,16 @@ import protocol SmithySerialization.DeserializableStruct
 import protocol SmithySerialization.ThrowByDefaultShapeDeserializer
 
 /// Deserializes the associated value (event or exception) from a case of a streaming union.
-struct EventContentDeserializer: ThrowByDefaultShapeDeserializer {
+class EventContentDeserializer: ThrowByDefaultShapeDeserializer {
     let codec: any Codec
     let message: Message
 
-    // swiftlint:disable:next unused_declaration
-    mutating func readStruct<T: DeserializableStruct>(_ schema: Schema, _ value: inout T) throws {
+    init(codec: any Codec, message: Message) {
+        self.codec = codec
+        self.message = message
+    }
+
+    func readStruct<T: DeserializableStruct>(_ schema: Schema, _ value: inout T) throws {
 
         // Deserialize the event payload, to the member marked with @eventPayload if it exists,
         // to the structure's members otherwise.
