@@ -166,7 +166,7 @@ struct EventHeaderDeserializer: ShapeDeserializer {
         return value
     }
 
-    var containerSize: Int { -1 }
+    var mediaType: String? { nil }
 
     private var notImplemented: SerializerError { .init("Not implemented") }
 }

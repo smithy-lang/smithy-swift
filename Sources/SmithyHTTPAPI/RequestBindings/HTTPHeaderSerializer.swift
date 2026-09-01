@@ -9,6 +9,8 @@ import Foundation
 @_spi(SchemaBasedSerde)
 import class Smithy.HTTPHeaderTrait
 @_spi(SchemaBasedSerde)
+import class Smithy.MediaTypeTrait
+@_spi(SchemaBasedSerde)
 import class Smithy.Schema
 @_spi(SchemaBasedSerde)
 import class Smithy.TimestampFormatTrait
@@ -123,7 +125,9 @@ public final class HTTPHeaderSerializer: ShapeSerializer {
         headers.add(name: listName, value: "null")
     }
 
-    public var data: Data { Data() } // not used for this serializer
+    public var data: Data? { nil } // not used for this serializer
+
+    public var mediaType: String? { nil }
 
     // MARK: - Private methods
 
@@ -143,7 +147,12 @@ public final class HTTPHeaderSerializer: ShapeSerializer {
 
     private func addToHeaders(schema: Schema, value: String) {
         guard let name = headerName(for: schema) else { return }
-        headers.add(name: name, value: listName != nil ? Self.quoteHeaderValue(value) : value)
+        if schema.hasTrait(MediaTypeTrait.self) {
+            // Any string with a media type trait gets Base64-encoded
+            headers.add(name: name, value: Data(value.utf8).base64EncodedString())
+        } else {
+            headers.add(name: name, value: listName != nil ? Self.quoteHeaderValue(value) : value)
+        }
     }
 
     private static let quotableHeaderValueChars = "\",()"

@@ -31,7 +31,7 @@ public final class Deserializer: ShapeDeserializer {
             self.value = .object([:])
             return
         }
-        let jsonObject = try JSONSerialization.jsonObject(with: data)
+        let jsonObject = try JSONSerialization.jsonObject(with: data, options: .fragmentsAllowed)
         let node = try JSONValue(from: jsonObject)
         self.value = node
     }
@@ -260,6 +260,8 @@ public final class Deserializer: ShapeDeserializer {
             return -1
         }
     }
+
+    public var mediaType: String? { "application/json" }
 
     // MARK: - Private methods
 

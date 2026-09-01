@@ -133,7 +133,7 @@ struct EventUnionDeserializer: ShapeDeserializer {
         throw notImplemented
     }
 
-    var containerSize: Int { -1 }
+    var mediaType: String? { nil }
 
     private var notImplemented: SerializerError { .init("Not implemented") }
 }
