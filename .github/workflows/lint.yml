@@ -9,6 +9,13 @@ on:
 permissions:
   contents: read
 
+env:
+  # Keep the Gradle user home inside the workspace so that it resolves identically
+  # for Gradle and for setup-gradle's cache.  In container jobs the runner sets
+  # HOME=/github/home, but the JVM derives user.home from the passwd entry (/root),
+  # so the default ~/.gradle refers to two different directories.
+  GRADLE_USER_HOME: ${{ github.workspace }}/.gradle-home
+
 jobs:
   ktlint:
     if: github.repository == 'smithy-lang/smithy-swift' || github.event_name == 'pull_request'
@@ -16,6 +23,8 @@ jobs:
     steps:
       - name: Checkout sources
         uses: actions/checkout@v6
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v5
       - name: Run ktlint
         run: ./gradlew ktlint
 
@@ -25,6 +34,8 @@ jobs:
     steps:
       - name: Checkout sources
         uses: actions/checkout@v6
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v5
       - name: Install Swiftlint
         run: |
           HOMEBREW_NO_AUTO_UPDATE=1 brew install swiftlint
