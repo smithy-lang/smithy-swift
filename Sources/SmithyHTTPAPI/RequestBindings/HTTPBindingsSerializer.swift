@@ -27,6 +27,8 @@ import class SmithySerialization.NoOpSerializer
 @_spi(SchemaBasedSerde)
 import struct SmithySerialization.Operation
 @_spi(SchemaBasedSerde)
+import protocol SmithySerialization.OperationProperties
+@_spi(SchemaBasedSerde)
 import protocol SmithySerialization.SerializableStruct
 @_spi(SchemaBasedSerde)
 import struct SmithySerialization.SerializerError
@@ -63,7 +65,7 @@ public final class HTTPBindingsSerializer: NoOpByDefaultShapeSerializer {
         self.mux = try RequestBindingMultiplexer(
             codec: codec,
             bindings: self.bindings,
-            uri: path,
+            operation: operation,
             payloadType: payloadType
         )
     }
@@ -176,10 +178,10 @@ private struct RequestBindingMultiplexer: InterceptingSerializer {
     let payloadSerializer: HTTPPayloadSerializer?
     let noOpSerializer: NoOpSerializer
 
-    init(codec: any Codec, bindings: [HTTPBinding], uri: String, payloadType: ShapeType?) throws {
+    init(codec: any Codec, bindings: [HTTPBinding], operation: any OperationProperties, payloadType: ShapeType?) throws {
         self.bindings = bindings
         self.headerSerializer = HTTPHeaderSerializer()
-        self.labelSerializer = HTTPLabelSerializer(uri: uri)
+        self.labelSerializer = try HTTPLabelSerializer(operation: operation)
         self.prefixHeadersSerializer = HTTPPrefixHeadersSerializer()
         self.querySerializer = HTTPQuerySerializer()
         self.queryParamsSerializer = HTTPQueryParamsSerializer()
