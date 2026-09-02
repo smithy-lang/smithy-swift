@@ -27,8 +27,6 @@ import class SmithySerialization.NoOpSerializer
 @_spi(SchemaBasedSerde)
 import struct SmithySerialization.Operation
 @_spi(SchemaBasedSerde)
-import protocol SmithySerialization.OperationProperties
-@_spi(SchemaBasedSerde)
 import protocol SmithySerialization.SerializableStruct
 @_spi(SchemaBasedSerde)
 import struct SmithySerialization.SerializerError
@@ -54,44 +52,14 @@ public final class HTTPBindingsSerializer: NoOpByDefaultShapeSerializer {
             throw SerializerError("unsupported HTTP method \(httpTrait.method) for operation \(operation.schema.id)")
         }
         self.method = method
-        let bindingsExtension = try operation.inputSchema.getOrCreateExtension(HTTPBindingsExtension.self)
-        self.bindings = bindingsExtension.bindings
-        let payloadType = bindingsExtension.payloadType
+        self.mux = try RequestBindingMultiplexer(codec: codec, operation: operation)
 
-        // The URI may end with a literal query string.  Split it off & parse its query items now;
-        // only the path portion of the URI is subject to label substitution.
-        let (path, literalQuery) = Self.split(uri: httpTrait.uri)
-        self.uriQueryItems = Self.queryItems(literalQuery: literalQuery)
-        self.mux = try RequestBindingMultiplexer(
-            codec: codec,
-            bindings: self.bindings,
-            operation: operation,
-            payloadType: payloadType
-        )
-    }
+        // Keep a local copy of the bindings
+        self.bindings = self.mux.bindings
 
-    /// Splits a URI into its path and its literal query string, if it has one.
-    private static func split(uri: String) -> (path: String, literalQuery: Substring?) {
-        guard let separator = uri.firstIndex(of: "?") else { return (uri, nil) }
-        return (String(uri[uri.startIndex..<separator]), uri[uri.index(after: separator)...])
-    }
-
-    /// Parses the literal query string from a URI into query items.
-    ///
-    /// Names & values are used exactly as they appear in the model.  A name with no value, i.e. `?uploads`,
-    /// becomes a query item with a `nil` value, which is rendered without a `=`.
-    private static func queryItems(literalQuery: Substring?) -> [URIQueryItem] {
-        guard let literalQuery else { return [] }
-        return literalQuery.split(separator: "&").map { pair in
-            guard let separator = pair.firstIndex(of: "=") else {
-                return URIQueryItem(name: String(pair), value: nil)
-            }
-            let value = pair[pair.index(after: separator)...]
-            return URIQueryItem(
-                name: String(pair[pair.startIndex..<separator]),
-                value: value.isEmpty ? nil : String(value)
-            )
-        }
+        // The HTTPLabelSerializer extracts query items from the URI on creation,
+        // URI query items are always static so they may be set now, before any serializing.
+        self.uriQueryItems = self.mux.labelSerializer.uriQueryItems
     }
 
     public func writeStruct<S: SerializableStruct>(_ schema: Schema, _ value: S) throws {
@@ -178,15 +146,16 @@ private struct RequestBindingMultiplexer: InterceptingSerializer {
     let payloadSerializer: HTTPPayloadSerializer?
     let noOpSerializer: NoOpSerializer
 
-    init(codec: any Codec, bindings: [HTTPBinding], operation: any OperationProperties, payloadType: ShapeType?) throws {
-        self.bindings = bindings
+    init<Input, Output>(codec: any Codec, operation: Operation<Input, Output>) throws {
+        let bindingsExtension = try operation.inputSchema.getOrCreateExtension(HTTPBindingsExtension.self)
+        self.bindings = bindingsExtension.bindings
         self.headerSerializer = HTTPHeaderSerializer()
         self.labelSerializer = try HTTPLabelSerializer(operation: operation)
         self.prefixHeadersSerializer = HTTPPrefixHeadersSerializer()
         self.querySerializer = HTTPQuerySerializer()
         self.queryParamsSerializer = HTTPQueryParamsSerializer()
         self.bodySerializer = try codec.makeSerializer()
-        if let payloadType {
+        if let payloadType = bindingsExtension.payloadType {
             self.payloadSerializer = HTTPPayloadSerializer(codec: codec, payloadType: payloadType)
         } else {
             self.payloadSerializer = nil

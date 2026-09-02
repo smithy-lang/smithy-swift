@@ -18,8 +18,11 @@ import protocol Smithy.SchemaExtension
 import var Smithy.schemaExtensionUniqueIndexCounter
 @_spi(SchemaBasedSerde)
 import class Smithy.TimestampFormatTrait
+import struct Smithy.URIQueryItem
 @_spi(SchemaBasedSerde)
 import SmithySerialization
+@_spi(SchemaBasedSerde)
+import struct SmithySerialization.Operation
 @_spi(SmithyTimestamps)
 import struct SmithyTimestamps.TimestampFormatter
 
@@ -29,9 +32,12 @@ import struct SmithyTimestamps.TimestampFormatter
 @_spi(SchemaBasedSerde)
 public final class HTTPLabelSerializer: ShapeSerializer {
     var segments: [Substring.SubSequence]
+    let uriQueryItems: [URIQueryItem]
 
-    public init(operation: any OperationProperties) throws {
-        self.segments = try operation.schema.getOrCreateExtension(HTTPLabelOperationExtension.self).segments
+    public init<Input, Output>(operation: Operation<Input, Output>) throws {
+        let ext = try operation.schema.getOrCreateExtension(HTTPLabelOperationExtension.self)
+        self.segments = ext.segments
+        self.uriQueryItems = ext.uriQueryItems
     }
 
     public func writeStruct<S: SerializableStruct>(_ schema: Schema, _ value: S) throws {
@@ -55,59 +61,43 @@ public final class HTTPLabelSerializer: ShapeSerializer {
     }
 
     public func writeBoolean(_ schema: Schema, _ value: Bool) throws {
-        guard let label = checkForTraitAndGetLabel(schema: schema) else { return }
         writeSegment(schema: schema, value: value ? "true" : "false")
     }
 
     public func writeByte(_ schema: Schema, _ value: Int8) throws {
-        guard let label = checkForTraitAndGetLabel(schema: schema) else { return }
         writeSegment(schema: schema, value: "\(value)")
     }
 
     public func writeShort(_ schema: Schema, _ value: Int16) throws {
-        guard let label = checkForTraitAndGetLabel(schema: schema) else { return }
         writeSegment(schema: schema, value: "\(value)")
     }
 
     public func writeInteger(_ schema: Schema, _ value: Int32) throws {
-        guard let label = checkForTraitAndGetLabel(schema: schema) else { return }
         writeSegment(schema: schema, value: "\(value)")
     }
 
     public func writeLong(_ schema: Schema, _ value: Int64) throws {
-        guard let label = checkForTraitAndGetLabel(schema: schema) else { return }
         writeSegment(schema: schema, value: "\(value)")
     }
 
     public func writeFloat(_ schema: Schema, _ value: Float) throws {
-        guard let label = checkForTraitAndGetLabel(schema: schema) else { return }
         writeSegment(schema: schema, value: encoded(value))
     }
 
     public func writeDouble(_ schema: Schema, _ value: Double) throws {
-        guard let label = checkForTraitAndGetLabel(schema: schema) else { return }
         writeSegment(schema: schema, value: encoded(value))
     }
 
     public func writeBigInteger(_ schema: Schema, _ value: Int64) throws {
-        guard let label = checkForTraitAndGetLabel(schema: schema) else { return }
         writeSegment(schema: schema, value: "\(value)")
     }
 
     public func writeBigDecimal(_ schema: Schema, _ value: Double) throws {
-        guard let label = checkForTraitAndGetLabel(schema: schema) else { return }
         writeSegment(schema: schema, value: encoded(value))
     }
 
     public func writeString(_ schema: Schema, _ value: String) throws {
-        guard let label = checkForTraitAndGetLabel(schema: schema) else { return }
         writeSegment(schema: schema, value: value)
-    }
-
-    private func checkForTraitAndGetLabel(schema: Schema) -> String? {
-        // Return nil unless this schema has the httpLabel trait & is a member
-        guard schema.hasTrait(HTTPLabelTrait.self), let label = schema.id.member else { return nil }
-        return label
     }
 
     /// Renders a floating-point value as a string, using the Smithy-defined tokens for
@@ -126,7 +116,6 @@ public final class HTTPLabelSerializer: ShapeSerializer {
     }
 
     public func writeTimestamp(_ schema: Schema, _ value: Date) throws {
-        guard let label = checkForTraitAndGetLabel(schema: schema) else { return }
         let timestampFormat = schema.getTrait(TimestampFormatTrait.self)?.format ?? .dateTime
         let timestamp = TimestampFormatter(format: timestampFormat).string(from: value)
         writeSegment(schema: schema, value: timestamp)
@@ -155,42 +144,79 @@ public final class HTTPLabelSerializer: ShapeSerializer {
     }
 }
 
-final class HTTPLabelOperationExtension: SchemaExtension {
+// MARK: - Schema extensions
+
+/// Extracts the path and query string from an operation schema's URI.
+///
+/// The path is converted to segments and the members that are bound to segments are marked with their own schema extension.  This allows
+/// maximum performance when serializing a path.
+///
+/// The query string is converted to `URIQueryItem`s and stored for future use.
+private final class HTTPLabelOperationExtension: SchemaExtension {
     static let uniqueIndex: Int = schemaExtensionUniqueIndexCounter.getNextIndex()
 
     let segments: [Substring.SubSequence]
+    let uriQueryItems: [URIQueryItem]
 
     init(schema: Schema) throws {
+
+        // Extract the uri from the HTTP trait & break it down into segments separated by '/'
         guard let httpTrait = schema.getTrait(HTTPTrait.self) else {
             throw SerializerError("Schema does not have HTTPTrait")
         }
-        let uri = httpTrait.uri
-        let index = uri.firstIndex(of: "?") ?? uri.endIndex
-        let path = uri[..<index]
+        let (path, literalQuery) = Self.split(uri: httpTrait.uri)
         self.segments = path.split(separator: "/", omittingEmptySubsequences: false)
+        self.uriQueryItems = Self.queryItems(literalQuery: literalQuery)
 
-        for (segmentIndex, var segment) in segments.enumerated() {
-            if segment.hasPrefix("{") {
-                segment = segment.dropFirst(1)
-                let isGreedy: Bool
-                if segment.hasSuffix("+}") {
-                    isGreedy = true
-                    segment = segment.dropLast(2)
-                } else { // presume segment ends in '}' if it didn't end with '+}'
-                    isGreedy = false
-                    segment = segment.dropLast(1)
-                }
-                let matchingMember = schema.input.members.first { memberSchema in
-                    guard let memberName = memberSchema.id.member else { return false }
-                    return memberName == segment
-                }
-                matchingMember?.setExtension(HTTPLabelMemberExtension(segmentIndex: segmentIndex, isGreedy: isGreedy))
+        // For segments that bind to members, locate the member by extracting the member name from the segment
+        // & put an extension on that member.
+        // Segments that bind to members have format '{membername}' for non-greedy, '{membername+}' for greedy
+        for (segmentIndex, var segment) in segments.enumerated() where segment.hasPrefix("{") {
+            segment = segment.dropFirst(1)
+            let isGreedy: Bool
+            if segment.hasSuffix("+}") {
+                isGreedy = true
+                segment = segment.dropLast(2)
+            } else { // presume segment ends in '}' if it didn't end with '+}'
+                isGreedy = false
+                segment = segment.dropLast(1)
             }
+            let matchingMember = schema.input.members.first { memberSchema in
+                guard let memberName = memberSchema.id.member else { return false }
+                return memberName == segment
+            }
+            matchingMember?.setExtension(HTTPLabelMemberExtension(segmentIndex: segmentIndex, isGreedy: isGreedy))
+        }
+    }
+
+    // MARK: Private methods
+
+    /// Splits a URI into its path and its literal query string, if it has one.
+    private static func split(uri: String) -> (path: String, literalQuery: Substring?) {
+        guard let separator = uri.firstIndex(of: "?") else { return (uri, nil) }
+        return (String(uri[uri.startIndex..<separator]), uri[uri.index(after: separator)...])
+    }
+
+    /// Parses the literal query string from a URI into query items.
+    ///
+    /// Names & values are used exactly as they appear in the model.  A name with no value, i.e. `?uploads`,
+    /// becomes a query item with a `nil` value, which is rendered without a `=`.
+    private static func queryItems(literalQuery: Substring?) -> [URIQueryItem] {
+        guard let literalQuery else { return [] }
+        return literalQuery.split(separator: "&").map { pair in
+            guard let separator = pair.firstIndex(of: "=") else {
+                return URIQueryItem(name: String(pair), value: nil)
+            }
+            let value = pair[pair.index(after: separator)...]
+            return URIQueryItem(
+                name: String(pair[pair.startIndex..<separator]),
+                value: value.isEmpty ? nil : String(value)
+            )
         }
     }
 }
 
-final class HTTPLabelMemberExtension: SchemaExtension {
+private final class HTTPLabelMemberExtension: SchemaExtension {
     static let uniqueIndex: Int = schemaExtensionUniqueIndexCounter.getNextIndex()
 
     let segmentIndex: Int
