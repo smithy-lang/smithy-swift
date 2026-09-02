@@ -39,11 +39,6 @@ public final class HTTPBindingsSerializer: NoOpByDefaultShapeSerializer {
     public let method: HTTPMethodType
     private let mux: RequestBindingMultiplexer
 
-    /// The query items from the literal query string, if any, in the operation's `@http` URI.
-    ///
-    /// These are fixed by the model, so they are parsed once when this serializer is created.
-    private let uriQueryItems: [URIQueryItem]
-
     public init<Input, Output>(codec: any Codec, operation: Operation<Input, Output>) throws {
         guard let httpTrait = operation.schema.getTrait(HTTPTrait.self) else {
             throw SerializerError("no HTTP trait for operation \(operation.schema.id)")
@@ -56,10 +51,6 @@ public final class HTTPBindingsSerializer: NoOpByDefaultShapeSerializer {
 
         // Keep a local copy of the bindings
         self.bindings = self.mux.bindings
-
-        // The HTTPLabelSerializer extracts query items from the URI on creation,
-        // URI query items are always static so they may be set now, before any serializing.
-        self.uriQueryItems = self.mux.labelSerializer.uriQueryItems
     }
 
     public func writeStruct<S: SerializableStruct>(_ schema: Schema, _ value: S) throws {
@@ -73,7 +64,7 @@ public final class HTTPBindingsSerializer: NoOpByDefaultShapeSerializer {
             // Wrap the structure in a proxy and serialize it
             // The proxy writes members that are bound elsewhere to a no-op serializer
             let proxy = HTTPRequestBodyProxy(bindings: self.bindings, input: value)
-            try mux.bodySerializer.writeStruct(schema, proxy)
+            try mux.bodySerializer?.writeStruct(schema, proxy)
         }
     }
 
@@ -87,7 +78,7 @@ public final class HTTPBindingsSerializer: NoOpByDefaultShapeSerializer {
         // `@httpQueryParams`; when a name is bound more than one way, the query-params entries for that
         // name are dropped.  All explicit query items are preserved as-is, including repeats produced
         // by list-valued query members.
-        let queryItems = self.uriQueryItems + self.mux.querySerializer.queryItems
+        let queryItems = self.mux.labelSerializer.uriQueryItems + self.mux.querySerializer.queryItems
         let queryNames = Set(queryItems.map(\.name))
         let queryParamsItems = self.mux.queryParamsSerializer.queryItems.filter { !queryNames.contains($0.name) }
 
@@ -142,7 +133,7 @@ private struct RequestBindingMultiplexer: InterceptingSerializer {
     let prefixHeadersSerializer: HTTPPrefixHeadersSerializer
     let querySerializer: HTTPQuerySerializer
     let queryParamsSerializer: HTTPQueryParamsSerializer
-    let bodySerializer: any ShapeSerializer
+    let bodySerializer: (any ShapeSerializer)?
     let payloadSerializer: HTTPPayloadSerializer?
     let noOpSerializer: NoOpSerializer
 
@@ -154,10 +145,11 @@ private struct RequestBindingMultiplexer: InterceptingSerializer {
         self.prefixHeadersSerializer = HTTPPrefixHeadersSerializer()
         self.querySerializer = HTTPQuerySerializer()
         self.queryParamsSerializer = HTTPQueryParamsSerializer()
-        self.bodySerializer = try codec.makeSerializer()
         if let payloadType = bindingsExtension.payloadType {
+            self.bodySerializer = nil
             self.payloadSerializer = HTTPPayloadSerializer(codec: codec, payloadType: payloadType)
         } else {
+            self.bodySerializer = try codec.makeSerializer()
             self.payloadSerializer = nil
         }
         self.noOpSerializer = NoOpSerializer()
@@ -187,11 +179,11 @@ private struct RequestBindingMultiplexer: InterceptingSerializer {
     // Return the payload if there is one, else the body.
     var data: Data? {
         get throws {
-            try self.payloadSerializer?.data ?? self.bodySerializer.data
+            try self.payloadSerializer?.data ?? self.bodySerializer?.data
         }
     }
 
     var mediaType: String? {
-        (payloadSerializer ?? bodySerializer).mediaType
+        (payloadSerializer ?? bodySerializer)?.mediaType
     }
 }
