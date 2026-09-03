@@ -5,8 +5,6 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
-import class Foundation.NSLock
-
 /// A mutable collection of uniquely indexed values that provides O(1) access to elements.
 ///
 /// Elements are stored in a sparse array of pointers to elements, at their own unique index in the sparse array.
@@ -15,10 +13,12 @@ import class Foundation.NSLock
 ///
 /// A non-recursive lock is used because no method on this type acquires the lock while already holding it;
 /// it is roughly twice as fast as a recursive lock, and access to this type is on the serialization hot path.
+/// For the same reason the lock is ``UnfairLock`` rather than `NSLock`, whose every acquisition and release
+/// costs an Objective-C message send.
 final class UniquelyIndexedMutableCollection: @unchecked Sendable {
     private var _storage: [(any UniquelyIndexedByType)?]
 
-    private let lock = NSLock()
+    private let lock = UnfairLock()
 
     /// Creates a uniquely indexed collection from an array of uniquely indexed instances.
     /// - Parameter collection: The array of instances to be stored.
@@ -33,10 +33,13 @@ final class UniquelyIndexedMutableCollection: @unchecked Sendable {
     /// - Parameter _: The type of the element to be returned
     /// - Returns: The element of the requested type, or `nil` if there is no element of that type.
     func get<T: UniquelyIndexedByType>(_ _: T.Type) -> T? {
+        // Read the index before locking; resolving it may run this type's static initializer, which
+        // must not happen while the lock is held.
+        let index = T.uniqueIndex
         lock.lock()
         defer { lock.unlock() }
-        guard T.uniqueIndex < _storage.count else { return nil }
-        return _storage[T.uniqueIndex] as? T
+        guard index < _storage.count else { return nil }
+        return _storage[index] as? T
     }
 
     /// Sets the passed value as the stored value for that type, replacing any previously stored value.
@@ -44,13 +47,14 @@ final class UniquelyIndexedMutableCollection: @unchecked Sendable {
     /// Use ``clear(_:)`` to remove a stored value.
     /// - Parameter value: The element to be stored in the collection.
     func set<T: UniquelyIndexedByType>(_ value: T) {
+        let index = T.uniqueIndex
         lock.lock()
         defer { lock.unlock() }
-        if T.uniqueIndex >= _storage.count {
-            let additionalSlots = T.uniqueIndex - _storage.count + 1
+        if index >= _storage.count {
+            let additionalSlots = index - _storage.count + 1
             _storage.append(contentsOf: Array(repeating: nil, count: additionalSlots))
         }
-        _storage[T.uniqueIndex] = value
+        _storage[index] = value
     }
 
     // The members below round out the collection's API but currently have no callers in production
@@ -63,10 +67,11 @@ final class UniquelyIndexedMutableCollection: @unchecked Sendable {
     /// Capacity in the storage is not added or reduced by this method.
     /// - Parameter type: The type of the element to be set to `nil`.
     func clear<T: UniquelyIndexedByType>(_ type: T.Type) {
+        let index = T.uniqueIndex
         lock.lock()
         defer { lock.unlock() }
-        if T.uniqueIndex < _storage.count {
-            _storage[T.uniqueIndex] = nil
+        if index < _storage.count {
+            _storage[index] = nil
         }
     }
 
