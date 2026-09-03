@@ -35,6 +35,12 @@ public final class HTTPBindingsExtension: SchemaExtension {
 
     public let payloadType: ShapeType?
 
+    /// The parts of the HTTP request that this schema's members are bound to.
+    ///
+    /// A serializer for a part that appears here is needed; one for any other part would have nothing
+    /// to serialize, so it is never created.
+    public let boundParts: Set<HTTPBinding>
+
     public required init(schema: Schema) throws {
         var payloadType: ShapeType?
         self.bindings = schema.members.map { member in
@@ -59,11 +65,12 @@ public final class HTTPBindingsExtension: SchemaExtension {
             }
         }
         self.payloadType = payloadType
+        self.boundParts = Set(self.bindings)
     }
 
 }
 
-public enum HTTPBinding: Sendable {
+public enum HTTPBinding: Hashable, Sendable {
     case header
     case label
     case payload

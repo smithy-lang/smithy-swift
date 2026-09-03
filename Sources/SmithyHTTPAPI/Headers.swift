@@ -144,10 +144,15 @@ public struct Headers: @unchecked Sendable {
     /// - Returns: The values of the header, if they exist.
     public func values(for name: String) -> [String]? {
         access { headers in
-            guard let indices = headers.indices(of: name), !indices.isEmpty else { return nil }
-            var values = [String]()
-            for index in indices {
-                values.append(contentsOf: headers[index].value)
+            var values: [String]?
+            for header in headers where header.name.isCaseInsensitivelyEqual(to: name) {
+                if values == nil {
+                    // A name almost always matches a single header, whose values are then returned
+                    // as-is rather than copied into a fresh array.
+                    values = header.value
+                } else {
+                    values?.append(contentsOf: header.value)
+                }
             }
             return values
         }
@@ -207,14 +212,53 @@ extension Headers: Hashable {
 extension Array where Element == Header {
     /// Case-insensitively finds the index of an `Header` with the provided name, if it exists.
     func index(of name: String) -> Int? {
-        let lowercasedName = name.lowercased()
-        return firstIndex { $0.name.lowercased() == lowercasedName }
+        firstIndex { $0.name.isCaseInsensitivelyEqual(to: name) }
+    }
+}
+
+extension String {
+
+    /// Whether this string and `other` are equal, ignoring case.
+    ///
+    /// An HTTP field name is a token, and so is ASCII, by specification:
+    /// https://www.rfc-editor.org/rfc/rfc9110#section-5.1
+    /// Equality is therefore decided by comparing UTF-8 bytes with ASCII case folding, which unlike
+    /// `lowercased()` allocates nothing.  ASCII case folding also preserves length, so names of
+    /// different lengths are rejected without comparing them at all.
+    ///
+    /// Header names are compared once per stored header on every lookup, so this is on the hot path
+    /// for both request serialization and response deserialization.
+    func isCaseInsensitivelyEqual(to other: String) -> Bool {
+        let lhs = self.utf8
+        let rhs = other.utf8
+        guard lhs.count == rhs.count else { return false }
+        var lhsIterator = lhs.makeIterator()
+        var rhsIterator = rhs.makeIterator()
+        while let lhsByte = lhsIterator.next(), let rhsByte = rhsIterator.next() {
+            guard lhsByte.asciiLowercased == rhsByte.asciiLowercased else { return false }
+        }
+        return true
     }
 
-    /// Case-insensitively finds the indexes of an `Header` with the provided name, if it exists.
-    func indices(of name: String) -> [Int]? {
-        let lowercasedName = name.lowercased()
-        return enumerated().compactMap { $0.element.name.lowercased() == lowercasedName ? $0.offset : nil }
+    /// Whether this string begins with `prefix`, ignoring case.
+    ///
+    /// Folds ASCII case over UTF-8 bytes for the same reasons as ``isCaseInsensitivelyEqual(to:)``.
+    func hasCaseInsensitivePrefix(_ prefix: String) -> Bool {
+        var iterator = self.utf8.makeIterator()
+        for prefixByte in prefix.utf8 {
+            guard let byte = iterator.next() else { return false } // This string is the shorter one.
+            guard byte.asciiLowercased == prefixByte.asciiLowercased else { return false }
+        }
+        return true
+    }
+}
+
+extension UInt8 {
+
+    /// This byte, lowercased if it is an uppercase ASCII letter and unchanged otherwise.
+    @inline(__always)
+    var asciiLowercased: UInt8 {
+        (UInt8(ascii: "A")...UInt8(ascii: "Z")).contains(self) ? self | 0x20 : self
     }
 }
 
