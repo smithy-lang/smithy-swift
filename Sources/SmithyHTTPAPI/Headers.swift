@@ -5,28 +5,9 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
-import class Foundation.NSRecursiveLock
+public struct Headers: Sendable {
 
-public struct Headers: @unchecked Sendable {
-    private let lock = NSRecursiveLock()
-
-    private var _headers: [Header] = []
-    public var headers: [Header] {
-        get { access { $0 } }
-        set { mutate { $0 = newValue } }
-    }
-
-    private mutating func mutate(_ block: (inout [Header]) -> Void) {
-        lock.lock()
-        defer { lock.unlock() }
-        block(&_headers)
-    }
-
-    private func access<T>(_ block: ([Header]) throws -> T) rethrows -> T {
-        lock.lock()
-        defer { lock.unlock() }
-        return try block(_headers)
-    }
+    public var headers: [Header] = []
 
     /// Creates an empty instance.
     public init() {}
@@ -73,13 +54,11 @@ public struct Headers: @unchecked Sendable {
     /// - Parameters:
     ///   - header:  The `Header` to be added or updated.
     public mutating func add(_ header: Header) {
-        mutate { headers in
-            guard let index = headers.index(of: header.name) else {
-                headers.append(header)
-                return
-            }
-            headers[index].value.append(contentsOf: header.value)
+        guard let index = headers.index(of: header.name) else {
+            headers.append(header)
+            return
         }
+        headers[index].value.append(contentsOf: header.value)
     }
 
     /// Case-insensitively updates the value of a `Header` by replacing the values of it or appends a `Header`
@@ -88,13 +67,11 @@ public struct Headers: @unchecked Sendable {
     /// - Parameters:
     ///   - header:  The `Header` to be added or updated.
     public mutating func update(_ header: Header) {
-        mutate { headers in
-            guard let index = headers.index(of: header.name) else {
-                headers.append(header)
-                return
-            }
-            headers.replaceSubrange(index...index, with: [header])
+        guard let index = headers.index(of: header.name) else {
+            headers.append(header)
+            return
         }
+        headers.replaceSubrange(index...index, with: [header])
     }
 
     /// Case-insensitively updates the value of a `Header` by replacing the values of it or appends a `Header`
@@ -122,19 +99,15 @@ public struct Headers: @unchecked Sendable {
     /// - Parameters:
     ///   - headers:  The `Headers` object.
     public mutating func addAll(headers otherHeaders: Headers) {
-        mutate { headers in
-            headers.append(contentsOf: otherHeaders.headers)
-        }
+        headers.append(contentsOf: otherHeaders.headers)
     }
 
     /// Case-insensitively removes a `Header`, if it exists, from the instance.
     ///
     /// - Parameter name: The name of the `HTTPHeader` to remove.
     public mutating func remove(name: String) {
-        mutate { headers in
-            guard let index = headers.index(of: name) else { return }
-            headers.remove(at: index)
-        }
+        guard let index = headers.index(of: name) else { return }
+        headers.remove(at: index)
     }
 
     /// Case-insensitively find a header's values by name.
@@ -143,19 +116,17 @@ public struct Headers: @unchecked Sendable {
     ///
     /// - Returns: The values of the header, if they exist.
     public func values(for name: String) -> [String]? {
-        access { headers in
-            var values: [String]?
-            for header in headers where header.name.isCaseInsensitivelyEqual(to: name) {
-                if values == nil {
-                    // A name almost always matches a single header, whose values are then returned
-                    // as-is rather than copied into a fresh array.
-                    values = header.value
-                } else {
-                    values?.append(contentsOf: header.value)
-                }
+        var values: [String]?
+        for header in headers where header.name.isCaseInsensitivelyEqual(to: name) {
+            if values == nil {
+                // A name almost always matches a single header, whose values are then returned
+                // as-is rather than copied into a fresh array.
+                values = header.value
+            } else {
+                values?.append(contentsOf: header.value)
             }
-            return values
         }
+        return values
     }
 
     /// Case-insensitively find a header's value by name.
@@ -169,23 +140,21 @@ public struct Headers: @unchecked Sendable {
     }
 
     public func exists(name: String) -> Bool {
-        access { $0.index(of: name) != nil }
+        headers.index(of: name) != nil
     }
 
     /// The dictionary representation of all headers.
     ///
     /// This representation does not preserve the current order of the instance.
     public var dictionary: [String: [String]] {
-        access { headers in
-            let namesAndValues = headers.map { ($0.name, $0.value) }
-            return Dictionary(namesAndValues) { (first, last) -> [String] in
-                first + last
-            }
+        let namesAndValues = headers.map { ($0.name, $0.value) }
+        return Dictionary(namesAndValues) { (first, last) -> [String] in
+            first + last
         }
     }
 
     public var isEmpty: Bool {
-        access { $0.isEmpty }
+        headers.isEmpty
     }
 }
 
@@ -196,8 +165,8 @@ extension Headers: Equatable {
     ///   - rhs: The second `Headers` to compare.
     /// - Returns: `true` if the two values are equal irrespective of order, otherwise `false`.
     public static func == (lhs: Headers, rhs: Headers) -> Bool {
-        let lhsHeaders = lhs.access { $0 }.sorted()
-        let rhsHeaders = rhs.access { $0 }.sorted()
+        let lhsHeaders = lhs.headers.sorted()
+        let rhsHeaders = rhs.headers.sorted()
         return lhsHeaders == rhsHeaders
     }
 }
@@ -205,7 +174,7 @@ extension Headers: Equatable {
 extension Headers: Hashable {
 
     public func hash(into hasher: inout Hasher) {
-        access { hasher.combine($0.sorted()) }
+        hasher.combine(headers.sorted())
     }
 }
 

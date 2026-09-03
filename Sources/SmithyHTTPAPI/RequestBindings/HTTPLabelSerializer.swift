@@ -7,15 +7,7 @@
 
 import Foundation
 @_spi(SchemaBasedSerde)
-import class Smithy.HTTPLabelTrait
-@_spi(SchemaBasedSerde)
-import class Smithy.HTTPTrait
-@_spi(SchemaBasedSerde)
 import class Smithy.Schema
-@_spi(SchemaBasedSerde)
-import protocol Smithy.SchemaExtension
-@_spi(SchemaBasedSerde)
-import var Smithy.schemaExtensionUniqueIndexCounter
 @_spi(SchemaBasedSerde)
 import class Smithy.TimestampFormatTrait
 import struct Smithy.URIQueryItem
@@ -31,13 +23,23 @@ import struct SmithyTimestamps.TimestampFormatter
 /// This serializer is a no-op for all types except string, boolean, timestamp, and numbers.
 @_spi(SchemaBasedSerde)
 public final class HTTPLabelSerializer: ShapeSerializer {
-    var segments: [Substring.SubSequence]
-    let uriQueryItems: [URIQueryItem]
 
-    public init<Input, Output>(operation: Operation<Input, Output>) throws {
-        let ext = try operation.schema.getOrCreateExtension(HTTPLabelOperationExtension.self)
-        self.segments = ext.segments
-        self.uriQueryItems = ext.uriQueryItems
+    /// The operation's resolved bindings, which hold the URI template and the segment each member
+    /// is bound to.
+    private let operationBindings: HTTPOperationBindings
+
+    /// The URI's segments, with those already serialized replaced by their member's value.
+    var segments: [Substring.SubSequence]
+
+    var uriQueryItems: [URIQueryItem] { operationBindings.uriQueryItems }
+
+    public init(operationBindings: HTTPOperationBindings) {
+        self.operationBindings = operationBindings
+        self.segments = operationBindings.segments
+    }
+
+    public convenience init<Input, Output>(operation: Operation<Input, Output>) throws {
+        self.init(operationBindings: try operation.schema.getOrCreateExtension(HTTPOperationBindings.self))
     }
 
     public func writeStruct<S: SerializableStruct>(_ schema: Schema, _ value: S) throws {
@@ -135,99 +137,15 @@ public final class HTTPLabelSerializer: ShapeSerializer {
     public var uri: String { segments.joined(separator: "/") }
 
     private func writeSegment(schema: Schema, value: String) {
-        guard let ext = schema.getExtension(HTTPLabelMemberExtension.self) else { return }
-        if ext.isGreedy {
-            self.segments[ext.segmentIndex] = URLEncodingUtils.urlPercentEncodedForPath(value)[...]
-        } else {
-            self.segments[ext.segmentIndex] = URLEncodingUtils.urlPercentEncodedForQuery(value)[...]
-        }
-    }
-}
-
-// MARK: - Schema extensions
-
-/// Extracts the path and query string from an operation schema's URI.
-///
-/// The path is converted to segments and the members that are bound to segments are marked with their own schema extension.  This allows
-/// maximum performance when serializing a path.
-///
-/// The query string is converted to `URIQueryItem`s and stored for future use.
-private final class HTTPLabelOperationExtension: SchemaExtension {
-    static let uniqueIndex: Int = schemaExtensionUniqueIndexCounter.getNextIndex()
-
-    let segments: [Substring.SubSequence]
-    let uriQueryItems: [URIQueryItem]
-
-    init(schema: Schema) throws {
-
-        // Extract the uri from the HTTP trait & break it down into segments separated by '/'
-        guard let httpTrait = schema.getTrait(HTTPTrait.self) else {
-            throw SerializerError("Schema does not have HTTPTrait")
-        }
-        let (path, literalQuery) = Self.split(uri: httpTrait.uri)
-        self.segments = path.split(separator: "/", omittingEmptySubsequences: false)
-        self.uriQueryItems = Self.queryItems(literalQuery: literalQuery)
-
-        // For segments that bind to members, locate the member by extracting the member name from the segment
-        // & put an extension on that member.
-        // Segments that bind to members have format '{membername}' for non-greedy, '{membername+}' for greedy
-        for (segmentIndex, var segment) in segments.enumerated() where segment.hasPrefix("{") {
-            segment = segment.dropFirst(1)
-            let isGreedy: Bool
-            if segment.hasSuffix("+}") {
-                isGreedy = true
-                segment = segment.dropLast(2)
-            } else { // presume segment ends in '}' if it didn't end with '+}'
-                isGreedy = false
-                segment = segment.dropLast(1)
-            }
-            let matchingMember = schema.input.members.first { memberSchema in
-                guard let memberName = memberSchema.id.member else { return false }
-                return memberName == segment
-            }
-            matchingMember?.setExtension(HTTPLabelMemberExtension(segmentIndex: segmentIndex, isGreedy: isGreedy))
-        }
-    }
-
-    // MARK: Private methods
-
-    /// Splits a URI into its path and its literal query string, if it has one.
-    private static func split(uri: String) -> (path: String, literalQuery: Substring?) {
-        guard let separator = uri.firstIndex(of: "?") else { return (uri, nil) }
-        return (String(uri[uri.startIndex..<separator]), uri[uri.index(after: separator)...])
-    }
-
-    /// Parses the literal query string from a URI into query items.
-    ///
-    /// Names & values are used exactly as they appear in the model.  A name with no value, i.e. `?uploads`,
-    /// becomes a query item with a `nil` value, which is rendered without a `=`.
-    private static func queryItems(literalQuery: Substring?) -> [URIQueryItem] {
-        guard let literalQuery else { return [] }
-        return literalQuery.split(separator: "&").map { pair in
-            guard let separator = pair.firstIndex(of: "=") else {
-                return URIQueryItem(name: String(pair), value: nil)
-            }
-            let value = pair[pair.index(after: separator)...]
-            return URIQueryItem(
-                name: String(pair[pair.startIndex..<separator]),
-                value: value.isEmpty ? nil : String(value)
-            )
-        }
-    }
-}
-
-private final class HTTPLabelMemberExtension: SchemaExtension {
-    static let uniqueIndex: Int = schemaExtensionUniqueIndexCounter.getNextIndex()
-
-    let segmentIndex: Int
-    let isGreedy: Bool
-
-    init(schema: Schema) throws {
-        throw SerializerError("init(schema:) not implemented")
-    }
-
-    init(segmentIndex: Int, isGreedy: Bool) {
-        self.segmentIndex = segmentIndex
-        self.isGreedy = isGreedy
+        // A member not bound to a segment has no index in the table, and a schema that is not a member
+        // of the input has an index of -1.
+        let memberIndex = schema.index
+        guard memberIndex >= 0, memberIndex < operationBindings.labelSegmentIndex.count,
+              let segmentIndex = operationBindings.labelSegmentIndex[memberIndex]
+        else { return }
+        // A greedy label may span segments, so the slashes in its value are left unescaped.
+        self.segments[segmentIndex] = operationBindings.labelIsGreedy[memberIndex]
+            ? URLEncodingUtils.urlPercentEncodedForPath(value)[...]
+            : URLEncodingUtils.urlPercentEncodedForQuery(value)[...]
     }
 }

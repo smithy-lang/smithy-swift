@@ -8,8 +8,6 @@
 import struct Foundation.Data
 import enum Smithy.ByteStream
 @_spi(SchemaBasedSerde)
-import class Smithy.HTTPTrait
-@_spi(SchemaBasedSerde)
 import class Smithy.Schema
 @_spi(SchemaBasedSerde)
 import struct Smithy.ShapeID
@@ -36,23 +34,23 @@ import protocol SmithySerialization.ShapeSerializer
 @_spi(SchemaBasedSerde)
 public final class HTTPBindingsSerializer: NoOpByDefaultShapeSerializer {
     let bindings: [HTTPBinding]
-    private let boundParts: Set<HTTPBinding>
-    public let method: HTTPMethodType
+
+    /// This operation's bindings, resolved once for the operation and reused by every request.
+    public let operationBindings: HTTPOperationBindings
+
+    public var method: HTTPMethodType { operationBindings.method }
+
     private let mux: RequestBindingMultiplexer
 
     public init<Input, Output>(codec: any Codec, operation: Operation<Input, Output>) throws {
-        guard let httpTrait = operation.schema.getTrait(HTTPTrait.self) else {
-            throw SerializerError("no HTTP trait for operation \(operation.schema.id)")
-        }
-        guard let method = HTTPMethodType(rawValue: httpTrait.method.uppercased()) else {
-            throw SerializerError("unsupported HTTP method \(httpTrait.method) for operation \(operation.schema.id)")
-        }
-        self.method = method
-        self.mux = try RequestBindingMultiplexer(codec: codec, operation: operation)
+        // Everything derived from the model is resolved in this one extension, so this is the only
+        // schema extension lookup a request performs.
+        let operationBindings = try operation.schema.getOrCreateExtension(HTTPOperationBindings.self)
+        self.operationBindings = operationBindings
+        self.mux = try RequestBindingMultiplexer(codec: codec, operationBindings: operationBindings)
 
         // Keep a local copy of the bindings
-        self.bindings = self.mux.bindings
-        self.boundParts = self.mux.boundParts
+        self.bindings = operationBindings.input.bindings
     }
 
     public func writeStruct<S: SerializableStruct>(_ schema: Schema, _ value: S) throws {
@@ -62,7 +60,7 @@ public final class HTTPBindingsSerializer: NoOpByDefaultShapeSerializer {
         try value.serializeMembers(schema, self.mux)
 
         // If there was no payload, serialize the body-bound members
-        if !self.boundParts.contains(.payload) && self.boundParts.contains(.body) {
+        if !operationBindings.input.hasPayloadBinding && operationBindings.input.hasBodyBinding {
             // Wrap the structure in a proxy and serialize it
             // The proxy writes members that are bound elsewhere to a no-op serializer
             let proxy = HTTPRequestBodyProxy(bindings: self.bindings, input: value)
@@ -142,7 +140,6 @@ public final class HTTPBindingsSerializer: NoOpByDefaultShapeSerializer {
 /// from it even when the input binds no labels.
 private struct RequestBindingMultiplexer: InterceptingSerializer {
     let bindings: [HTTPBinding]
-    let boundParts: Set<HTTPBinding>
     let headerSerializer: HTTPHeaderSerializer?
     let labelSerializer: HTTPLabelSerializer
     let prefixHeadersSerializer: HTTPPrefixHeadersSerializer?
@@ -152,16 +149,15 @@ private struct RequestBindingMultiplexer: InterceptingSerializer {
     let payloadSerializer: HTTPPayloadSerializer?
     let noOpSerializer: NoOpSerializer
 
-    init<Input, Output>(codec: any Codec, operation: Operation<Input, Output>) throws {
-        let bindingsExtension = try operation.inputSchema.getOrCreateExtension(HTTPBindingsExtension.self)
-        let boundParts = bindingsExtension.boundParts
+    init(codec: any Codec, operationBindings: HTTPOperationBindings) throws {
+        let bindingsExtension = operationBindings.input
         self.bindings = bindingsExtension.bindings
-        self.boundParts = boundParts
-        self.headerSerializer = boundParts.contains(.header) ? HTTPHeaderSerializer() : nil
-        self.labelSerializer = try HTTPLabelSerializer(operation: operation)
-        self.prefixHeadersSerializer = boundParts.contains(.prefixHeaders) ? HTTPPrefixHeadersSerializer() : nil
-        self.querySerializer = boundParts.contains(.query) ? HTTPQuerySerializer() : nil
-        self.queryParamsSerializer = boundParts.contains(.queryParams) ? HTTPQueryParamsSerializer() : nil
+        self.headerSerializer = bindingsExtension.hasHeaderBinding ? HTTPHeaderSerializer() : nil
+        self.labelSerializer = HTTPLabelSerializer(operationBindings: operationBindings)
+        self.prefixHeadersSerializer =
+            bindingsExtension.hasPrefixHeadersBinding ? HTTPPrefixHeadersSerializer() : nil
+        self.querySerializer = bindingsExtension.hasQueryBinding ? HTTPQuerySerializer() : nil
+        self.queryParamsSerializer = bindingsExtension.hasQueryParamsBinding ? HTTPQueryParamsSerializer() : nil
         if let payloadType = bindingsExtension.payloadType {
             self.bodySerializer = nil
             self.payloadSerializer = HTTPPayloadSerializer(codec: codec, payloadType: payloadType)

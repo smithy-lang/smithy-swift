@@ -35,11 +35,17 @@ public final class HTTPBindingsExtension: SchemaExtension {
 
     public let payloadType: ShapeType?
 
-    /// The parts of the HTTP request that this schema's members are bound to.
+    /// Whether any member of the schema is bound to each part of the HTTP request.
     ///
-    /// A serializer for a part that appears here is needed; one for any other part would have nothing
-    /// to serialize, so it is never created.
-    public let boundParts: Set<HTTPBinding>
+    /// A serializer is created only for a part that some member is bound to; one for any other part
+    /// would have nothing to serialize.  These are resolved once here, since testing them against
+    /// ``bindings`` on every request would search it repeatedly.
+    public let hasHeaderBinding: Bool
+    public let hasPrefixHeadersBinding: Bool
+    public let hasQueryBinding: Bool
+    public let hasQueryParamsBinding: Bool
+    public let hasPayloadBinding: Bool
+    public let hasBodyBinding: Bool
 
     public required init(schema: Schema) throws {
         var payloadType: ShapeType?
@@ -65,12 +71,17 @@ public final class HTTPBindingsExtension: SchemaExtension {
             }
         }
         self.payloadType = payloadType
-        self.boundParts = Set(self.bindings)
+        self.hasHeaderBinding = self.bindings.contains { $0 == .header }
+        self.hasPrefixHeadersBinding = self.bindings.contains { $0 == .prefixHeaders }
+        self.hasQueryBinding = self.bindings.contains { $0 == .query }
+        self.hasQueryParamsBinding = self.bindings.contains { $0 == .queryParams }
+        self.hasPayloadBinding = self.bindings.contains { $0 == .payload }
+        self.hasBodyBinding = self.bindings.contains { $0 == .body }
     }
 
 }
 
-public enum HTTPBinding: Hashable, Sendable {
+public enum HTTPBinding: Sendable {
     case header
     case label
     case payload
