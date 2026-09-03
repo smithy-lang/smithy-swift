@@ -208,18 +208,6 @@ extension String {
         }
         return true
     }
-
-    /// Whether this string begins with `prefix`, ignoring case.
-    ///
-    /// Folds ASCII case over UTF-8 bytes for the same reasons as ``isCaseInsensitivelyEqual(to:)``.
-    func hasCaseInsensitivePrefix(_ prefix: String) -> Bool {
-        var iterator = self.utf8.makeIterator()
-        for prefixByte in prefix.utf8 {
-            guard let byte = iterator.next() else { return false } // This string is the shorter one.
-            guard byte.asciiLowercased == prefixByte.asciiLowercased else { return false }
-        }
-        return true
-    }
 }
 
 extension UInt8 {
