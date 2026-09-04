@@ -16,7 +16,7 @@ import struct Smithy.TraitCollection
 
 /// A ``Shape`` subclass specialized for Smithy operations.
 @_spi(SchemaBasedSerde)
-public class OperationShape: Shape, HasMembers {
+public class OperationShape: Shape {
     let inputID: ShapeID
     let outputID: ShapeID
     let errorIDs: [ShapeID]
@@ -51,21 +51,5 @@ public class OperationShape: Shape, HasMembers {
         let outputOrNone = try includeOutput ? [output] : []
         let errorsOrNone = try includeOutput ? errorIDs.map { try model.expectShape(id: $0) } : []
         return Set(inputOrNone + outputOrNone + errorsOrNone)
-    }
-}
-
-// Members are synthesized into the model for the input & output relations.
-// These will be rendered into schemas when code is generated.
-// Synthesized members are used instead of input/output properties on schema to prevent adding
-// new schema stored properties just for operations.
-public extension OperationShape {
-
-    var members: [MemberShape] {
-        let members = [
-            MemberShape(id: ShapeID(id: self.id, member: "input"), traits: [], targetID: self.inputID),
-            MemberShape(id: ShapeID(id: self.id, member: "output"), traits: [], targetID: self.outputID),
-        ]
-        members.forEach { $0.model = self.model }
-        return members
     }
 }
