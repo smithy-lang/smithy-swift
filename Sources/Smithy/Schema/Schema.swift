@@ -51,6 +51,16 @@ public final class Schema: Sendable {
     /// an infinite loop when accessed.
     private let _target: @Sendable () -> Schema?
 
+    /// Returns the input schema, or `nil` if none.
+    ///
+    /// Only set on a schema of type `.operation`.
+    public let input: Schema?
+
+    /// Returns the output schema, or `nil` if none.
+    ///
+    /// Only set on a schema of type `.operation`.
+    public let output: Schema?
+
     /// The index of this schema, if it represents a Smithy member.
     ///
     /// For a member schema, index will be set to its index in the members array.
@@ -83,6 +93,8 @@ public final class Schema: Sendable {
         type: ShapeType,
         traits: TraitCollection = TraitCollection(),
         members: [Schema] = [],
+        input: Schema? = nil,
+        output: Schema? = nil,
         containerType: ShapeType? = nil,
         target: @Sendable @escaping @autoclosure () -> Schema? = nil,
         index: Int = -1
@@ -91,6 +103,8 @@ public final class Schema: Sendable {
         self.type = type
         self.traits = traits
         self._members = members
+        self.input = input
+        self.output = output
         self.containerType = containerType
         self._target = target
         self.index = index
@@ -108,20 +122,6 @@ public final class Schema: Sendable {
     /// - Returns: The requested trait, or `nil` if the schema doesn't have that trait.
     public func getTrait<T: Trait>(_ type: T.Type) -> T? {
         traits.getTrait(type)
-    }
-
-    /// Returns the input schema.
-    ///
-    /// Only access this property on a schema of type `.operation`.
-    public var input: Schema {
-        members[0].target!
-    }
-
-    /// Returns the output schema.
-    ///
-    /// Only access this property on a schema of type `.operation`.
-    public var output: Schema {
-        members[1].target!
     }
 
     /// Returns the member for a List's element.

@@ -48,7 +48,7 @@ package struct SchemasCodegen {
             try writeSchema(ctx: ctx, writer: writer, shape: shape, containerType: nil, index: nil, scope: "")
 
             // Then render a schema var for each of the shape's members, if any
-            let memberShapes = try memberShapes(for: shape)
+            let memberShapes = try (shape as? HasMembers)?.members ?? []
             for (index, member) in memberShapes.enumerated() {
                 try writeSchema(
                     ctx: ctx,
@@ -103,8 +103,14 @@ package struct SchemasCodegen {
                 }
             }
 
+            // For an operation shape, set the input & output members
+            if let operationShape = shape as? OperationShape {
+                try writer.write("input: \(operationShape.input.schemaVarName),")
+                try writer.write("output: \(operationShape.output.schemaVarName),")
+            }
+
             // Get the members for this shape
-            let members = try memberShapes(for: shape)
+            let members = try (shape as? HasMembers)?.members ?? []
 
             // If there are any members, write the members param
             // Members are rendered to separate schema vars, and those vars are referenced here
@@ -136,21 +142,6 @@ package struct SchemasCodegen {
         }
         // Add whitespace before the next schema
         writer.write("")
-    }
-
-    private func memberShapes(for shape: Shape) throws -> [MemberShape] {
-        if let operationShape = shape as? OperationShape {
-            // For operation shapes, synthesize members for input and output.
-            let members = [
-                MemberShape(id: ShapeID(id: shape.id, member: "input"), traits: [], targetID: operationShape.inputID),
-                MemberShape(id: ShapeID(id: shape.id, member: "output"), traits: [], targetID: operationShape.outputID),
-            ]
-            members.forEach { $0.model = shape.model }
-            return members
-        } else {
-            // For any other type of shape, just get its members from the model.
-            return try (shape as? HasMembers)?.members ?? []
-        }
     }
 
     private func shapeType(for shape: Shape) throws -> ShapeType {
