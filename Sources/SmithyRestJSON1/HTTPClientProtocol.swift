@@ -26,7 +26,7 @@ import class SmithyHTTPAPI.HTTPBindingsDeserializer
 @_spi(SchemaBasedSerde)
 import class SmithyHTTPAPI.HTTPBindingsSerializer
 @_spi(SchemaBasedSerde)
-import class SmithyHTTPAPI.HTTPOperationBindings
+import class SmithyHTTPAPI.HTTPOperationExtension
 import class SmithyHTTPAPI.HTTPRequest
 import class SmithyHTTPAPI.HTTPRequestBuilder
 import class SmithyHTTPAPI.HTTPResponse
@@ -78,7 +78,7 @@ public struct HTTPClientProtocol: ClientProtocol {
         requestBuilder.withQueryItems(serializer.queryItems)
         requestBuilder.withHeaders(serializer.headers)
 
-        switch serializer.operationBindings.requestStreamingType {
+        switch serializer.operationExtension.requestStreamingType {
         case .event:
             guard let messageEncoder = context.messageEncoder else {
                 throw SerializerError("Message encoder was not configured")
@@ -118,8 +118,8 @@ public struct HTTPClientProtocol: ClientProtocol {
         response: HTTPResponse
     ) async throws -> Output where Input: SerializableStruct, Output: DeserializableStruct {
         if response.statusCode.isSuccess {
-            let operationBindings = try operation.schema.getOrCreateExtension(HTTPOperationBindings.self)
-            if let streamingMember = operationBindings.responseStreamingMember {
+            let operationExtension = try operation.schema.getOrCreateExtension(HTTPOperationExtension.self)
+            if let streamingMember = operationExtension.responseStreamingMember {
                 // Fill all output members other than the streaming members.
                 let deserializer = HTTPBindingsDeserializer(codec: codec, response: response, data: nil)
                 var output = try Output.deserialize(deserializer)

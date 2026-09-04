@@ -36,21 +36,21 @@ public final class HTTPBindingsSerializer: NoOpByDefaultShapeSerializer {
     let bindings: [HTTPBinding]
 
     /// This operation's bindings, resolved once for the operation and reused by every request.
-    public let operationBindings: HTTPOperationBindings
+    public let operationExtension: HTTPOperationExtension
 
-    public var method: HTTPMethodType { operationBindings.method }
+    public var method: HTTPMethodType { operationExtension.method }
 
     private let mux: RequestBindingMultiplexer
 
     public init<Input, Output>(codec: any Codec, operation: Operation<Input, Output>) throws {
         // Everything derived from the model is resolved in this one extension, so this is the only
         // schema extension lookup a request performs.
-        let operationBindings = try operation.schema.getOrCreateExtension(HTTPOperationBindings.self)
-        self.operationBindings = operationBindings
-        self.mux = try RequestBindingMultiplexer(codec: codec, operationBindings: operationBindings)
+        let operationExtension = try operation.schema.getOrCreateExtension(HTTPOperationExtension.self)
+        self.operationExtension = operationExtension
+        self.mux = try RequestBindingMultiplexer(codec: codec, operationExtension: operationExtension)
 
         // Keep a local copy of the bindings
-        self.bindings = operationBindings.input.bindings
+        self.bindings = operationExtension.input.bindings
     }
 
     public func writeStruct<S: SerializableStruct>(_ schema: Schema, _ value: S) throws {
@@ -60,7 +60,7 @@ public final class HTTPBindingsSerializer: NoOpByDefaultShapeSerializer {
         try value.serializeMembers(schema, self.mux)
 
         // If there was no payload, serialize the body-bound members
-        if !operationBindings.input.hasPayloadBinding && operationBindings.input.hasBodyBinding {
+        if !operationExtension.input.hasPayloadBinding && operationExtension.input.hasBodyBinding {
             // Wrap the structure in a proxy and serialize it
             // The proxy writes members that are bound elsewhere to a no-op serializer
             let proxy = HTTPRequestBodyProxy(bindings: self.bindings, input: value)
@@ -149,11 +149,11 @@ private struct RequestBindingMultiplexer: InterceptingSerializer {
     let payloadSerializer: HTTPPayloadSerializer?
     let noOpSerializer: NoOpSerializer
 
-    init(codec: any Codec, operationBindings: HTTPOperationBindings) throws {
-        let bindingsExtension = operationBindings.input
+    init(codec: any Codec, operationExtension: HTTPOperationExtension) throws {
+        let bindingsExtension = operationExtension.input
         self.bindings = bindingsExtension.bindings
         self.headerSerializer = bindingsExtension.hasHeaderBinding ? HTTPHeaderSerializer() : nil
-        self.labelSerializer = HTTPLabelSerializer(operationBindings: operationBindings)
+        self.labelSerializer = HTTPLabelSerializer(operationExtension: operationExtension)
         self.prefixHeadersSerializer =
             bindingsExtension.hasPrefixHeadersBinding ? HTTPPrefixHeadersSerializer() : nil
         self.querySerializer = bindingsExtension.hasQueryBinding ? HTTPQuerySerializer() : nil

@@ -25,7 +25,7 @@ import struct SmithySerialization.SerializerError
 /// per binding kind plus one per bound member; those lookups take a lock and a dynamic cast, and they
 /// were a measurable share of the time spent serializing a small request.
 @_spi(SchemaBasedSerde)
-public final class HTTPOperationBindings: SchemaExtension {
+public final class HTTPOperationExtension: SchemaExtension {
     public static let uniqueIndex: Int = schemaExtensionUniqueIndexCounter.getNextIndex()
 
     /// The HTTP method for this operation.

@@ -26,20 +26,20 @@ public final class HTTPLabelSerializer: ShapeSerializer {
 
     /// The operation's resolved bindings, which hold the URI template and the segment each member
     /// is bound to.
-    private let operationBindings: HTTPOperationBindings
+    private let operationExtension: HTTPOperationExtension
 
     /// The URI's segments, with those already serialized replaced by their member's value.
     var segments: [Substring.SubSequence]
 
-    var uriQueryItems: [URIQueryItem] { operationBindings.uriQueryItems }
+    var uriQueryItems: [URIQueryItem] { operationExtension.uriQueryItems }
 
-    public init(operationBindings: HTTPOperationBindings) {
-        self.operationBindings = operationBindings
-        self.segments = operationBindings.segments
+    public init(operationExtension: HTTPOperationExtension) {
+        self.operationExtension = operationExtension
+        self.segments = operationExtension.segments
     }
 
     public convenience init<Input, Output>(operation: Operation<Input, Output>) throws {
-        self.init(operationBindings: try operation.schema.getOrCreateExtension(HTTPOperationBindings.self))
+        self.init(operationExtension: try operation.schema.getOrCreateExtension(HTTPOperationExtension.self))
     }
 
     public func writeStruct<S: SerializableStruct>(_ schema: Schema, _ value: S) throws {
@@ -140,11 +140,11 @@ public final class HTTPLabelSerializer: ShapeSerializer {
         // A member not bound to a segment has no index in the table, and a schema that is not a member
         // of the input has an index of -1.
         let memberIndex = schema.index
-        guard memberIndex >= 0, memberIndex < operationBindings.labelSegmentIndex.count,
-              let segmentIndex = operationBindings.labelSegmentIndex[memberIndex]
+        guard memberIndex >= 0, memberIndex < operationExtension.labelSegmentIndex.count,
+              let segmentIndex = operationExtension.labelSegmentIndex[memberIndex]
         else { return }
         // A greedy label may span segments, so the slashes in its value are left unescaped.
-        self.segments[segmentIndex] = operationBindings.labelIsGreedy[memberIndex]
+        self.segments[segmentIndex] = operationExtension.labelIsGreedy[memberIndex]
             ? URLEncodingUtils.urlPercentEncodedForPath(value)[...]
             : URLEncodingUtils.urlPercentEncodedForQuery(value)[...]
     }
