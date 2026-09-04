@@ -159,7 +159,7 @@ class MiddlewareExecutionGenerator(
             it(op)
         } ?: run {
             val httpTrait = httpBindingResolver.httpTrait(op)
-            httpTrait.method.toLowerCase()
+            httpTrait.method.lowercase()
         }
 
     private fun renderMiddlewares(
