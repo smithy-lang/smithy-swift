@@ -110,6 +110,20 @@ public final class Schema: Sendable {
         traits.getTrait(type)
     }
 
+    /// Returns the input schema.
+    ///
+    /// Only access this property on a schema of type `.operation`.
+    public var input: Schema {
+        members[0].target!
+    }
+
+    /// Returns the output schema.
+    ///
+    /// Only access this property on a schema of type `.operation`.
+    public var output: Schema {
+        members[1].target!
+    }
+
     /// Returns the member for a List's element.
     ///
     /// Only access this property on a schema of type `.list` or `.document`.

@@ -335,7 +335,7 @@ public final class Serializer: ShapeSerializer {
 
         // Get the data, append a colon (UTF-8 58) to the end, and create a new array
         // to trim extra capacity and flatten.
-        var data = try serializer._data
+        var data = serializer._data
         data.append(Self.colon)
         return [UInt8](data)
     }

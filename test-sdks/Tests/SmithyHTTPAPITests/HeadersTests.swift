@@ -146,4 +146,35 @@ class HeadersTests: XCTestCase {
         let subject = Headers(["a": []])
         XCTAssertTrue(subject.exists(name: "a"))
     }
+
+    // MARK: - Case-insensitive name matching
+
+    func test_values_matchesNameIgnoringASCIICase() {
+        let subject = Headers(["X-Amz-Checksum-CRC32": "abc"])
+        XCTAssertEqual(subject.values(for: "x-amz-checksum-crc32"), ["abc"])
+        XCTAssertEqual(subject.values(for: "X-AMZ-CHECKSUM-CRC32"), ["abc"])
+    }
+
+    func test_values_doesNotMatchANameThatIsOnlyAPrefix() {
+        // Header names in the wild routinely share a prefix, i.e. these two from S3.
+        var subject = Headers(["x-amz-checksum-crc32": "abc"])
+        subject.add(name: "x-amz-checksum-crc32c", value: "def")
+        XCTAssertEqual(subject.values(for: "x-amz-checksum-crc32"), ["abc"])
+        XCTAssertEqual(subject.values(for: "x-amz-checksum-crc32c"), ["def"])
+        XCTAssertNil(subject.values(for: "x-amz-checksum-crc32cc"))
+    }
+
+    func test_values_doesNotMatchANameDifferingByANonLetter() {
+        // `-` and a carriage return differ only in the bit that distinguishes ASCII letter case.
+        let subject = Headers(["a-b": "abc"])
+        XCTAssertNil(subject.values(for: "a\rb"))
+    }
+
+    func test_values_concatenatesTheValuesOfEveryMatchingHeader() {
+        var subject = Headers()
+        // `addAll` appends without merging, so a name may appear more than once.
+        subject.addAll(headers: Headers(["Repeated": "first"]))
+        subject.addAll(headers: Headers(["repeated": "second"]))
+        XCTAssertEqual(subject.values(for: "REPEATED"), ["first", "second"])
+    }
 }
