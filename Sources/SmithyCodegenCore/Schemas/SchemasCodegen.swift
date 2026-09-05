@@ -48,7 +48,7 @@ package struct SchemasCodegen {
             try writeSchema(ctx: ctx, writer: writer, shape: shape, containerType: nil, index: nil, scope: "")
 
             // Then render a schema var for each of the shape's members, if any
-            guard let memberShapes = try (shape as? HasMembers)?.members else { continue }
+            let memberShapes = try (shape as? HasMembers)?.members ?? []
             for (index, member) in memberShapes.enumerated() {
                 try writeSchema(
                     ctx: ctx,
@@ -101,6 +101,12 @@ package struct SchemasCodegen {
                         writer.write("try? Smithy.\(TraitType)(node: \(node.rendered)),")
                     }
                 }
+            }
+
+            // For an operation shape, set the input & output members
+            if let operationShape = shape as? OperationShape {
+                try writer.write("input: \(operationShape.input.schemaVarName),")
+                try writer.write("output: \(operationShape.output.schemaVarName),")
             }
 
             // Get the members for this shape
