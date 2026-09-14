@@ -39,7 +39,7 @@ class HttpProtocolUnitTestErrorGeneratorTests : HttpProtocolUnitTestResponseGene
             awsCredentialIdentityResolver: try SmithyTestUtil.dummyIdentityResolver(),
             region: "us-west-2",
             signingRegion: "us-west-2",
-            endpointResolver: StaticEndpointResolver(endpoint: try SmithyHTTPAPI.Endpoint(
+            endpointResolver: example.StaticEndpointResolver(endpoint: try SmithyHTTPAPI.Endpoint(
                 urlString: "https://example.com"
             )),
             retryStrategyOptions: SmithyTestUtil.ProtocolTestRetryStrategyOptions.make(),
@@ -107,7 +107,7 @@ class HttpProtocolUnitTestErrorGeneratorTests : HttpProtocolUnitTestResponseGene
             awsCredentialIdentityResolver: try SmithyTestUtil.dummyIdentityResolver(),
             region: "us-west-2",
             signingRegion: "us-west-2",
-            endpointResolver: StaticEndpointResolver(endpoint: try SmithyHTTPAPI.Endpoint(
+            endpointResolver: example.StaticEndpointResolver(endpoint: try SmithyHTTPAPI.Endpoint(
                 urlString: "https://example.com"
             )),
             retryStrategyOptions: SmithyTestUtil.ProtocolTestRetryStrategyOptions.make(),

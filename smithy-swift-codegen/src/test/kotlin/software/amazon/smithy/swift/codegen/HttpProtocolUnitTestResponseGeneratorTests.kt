@@ -58,7 +58,7 @@ open class HttpProtocolUnitTestResponseGeneratorTests {
             awsCredentialIdentityResolver: try SmithyTestUtil.dummyIdentityResolver(),
             region: "us-west-2",
             signingRegion: "us-west-2",
-            endpointResolver: StaticEndpointResolver(endpoint: try SmithyHTTPAPI.Endpoint(
+            endpointResolver: example.StaticEndpointResolver(endpoint: try SmithyHTTPAPI.Endpoint(
                 urlString: "https://example.com"
             )),
             retryStrategyOptions: SmithyTestUtil.ProtocolTestRetryStrategyOptions.make(),
@@ -113,7 +113,7 @@ open class HttpProtocolUnitTestResponseGeneratorTests {
             awsCredentialIdentityResolver: try SmithyTestUtil.dummyIdentityResolver(),
             region: "us-west-2",
             signingRegion: "us-west-2",
-            endpointResolver: StaticEndpointResolver(endpoint: try SmithyHTTPAPI.Endpoint(
+            endpointResolver: example.StaticEndpointResolver(endpoint: try SmithyHTTPAPI.Endpoint(
                 urlString: "https://example.com"
             )),
             retryStrategyOptions: SmithyTestUtil.ProtocolTestRetryStrategyOptions.make(),
@@ -162,7 +162,7 @@ open class HttpProtocolUnitTestResponseGeneratorTests {
             awsCredentialIdentityResolver: try SmithyTestUtil.dummyIdentityResolver(),
             region: "us-west-2",
             signingRegion: "us-west-2",
-            endpointResolver: StaticEndpointResolver(endpoint: try SmithyHTTPAPI.Endpoint(
+            endpointResolver: example.StaticEndpointResolver(endpoint: try SmithyHTTPAPI.Endpoint(
                 urlString: "https://example.com"
             )),
             retryStrategyOptions: SmithyTestUtil.ProtocolTestRetryStrategyOptions.make(),
@@ -213,7 +213,7 @@ open class HttpProtocolUnitTestResponseGeneratorTests {
             awsCredentialIdentityResolver: try SmithyTestUtil.dummyIdentityResolver(),
             region: "us-west-2",
             signingRegion: "us-west-2",
-            endpointResolver: StaticEndpointResolver(endpoint: try SmithyHTTPAPI.Endpoint(
+            endpointResolver: example.StaticEndpointResolver(endpoint: try SmithyHTTPAPI.Endpoint(
                 urlString: "https://example.com"
             )),
             retryStrategyOptions: SmithyTestUtil.ProtocolTestRetryStrategyOptions.make(),
@@ -274,7 +274,7 @@ open class HttpProtocolUnitTestResponseGeneratorTests {
             awsCredentialIdentityResolver: try SmithyTestUtil.dummyIdentityResolver(),
             region: "us-west-2",
             signingRegion: "us-west-2",
-            endpointResolver: StaticEndpointResolver(endpoint: try SmithyHTTPAPI.Endpoint(
+            endpointResolver: example.StaticEndpointResolver(endpoint: try SmithyHTTPAPI.Endpoint(
                 urlString: "https://example.com"
             )),
             retryStrategyOptions: SmithyTestUtil.ProtocolTestRetryStrategyOptions.make(),
@@ -337,7 +337,7 @@ open class HttpProtocolUnitTestResponseGeneratorTests {
             awsCredentialIdentityResolver: try SmithyTestUtil.dummyIdentityResolver(),
             region: "us-west-2",
             signingRegion: "us-west-2",
-            endpointResolver: StaticEndpointResolver(endpoint: try SmithyHTTPAPI.Endpoint(
+            endpointResolver: example.StaticEndpointResolver(endpoint: try SmithyHTTPAPI.Endpoint(
                 urlString: "https://example.com"
             )),
             retryStrategyOptions: SmithyTestUtil.ProtocolTestRetryStrategyOptions.make(),
@@ -392,7 +392,7 @@ open class HttpProtocolUnitTestResponseGeneratorTests {
             awsCredentialIdentityResolver: try SmithyTestUtil.dummyIdentityResolver(),
             region: "us-west-2",
             signingRegion: "us-west-2",
-            endpointResolver: StaticEndpointResolver(endpoint: try SmithyHTTPAPI.Endpoint(
+            endpointResolver: example.StaticEndpointResolver(endpoint: try SmithyHTTPAPI.Endpoint(
                 urlString: "https://example.com"
             )),
             retryStrategyOptions: SmithyTestUtil.ProtocolTestRetryStrategyOptions.make(),

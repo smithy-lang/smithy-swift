@@ -82,11 +82,11 @@ public extension ThrowByDefaultShapeDeserializer {
         throw notImplemented
     }
 
-    public func readDataStream(_ schema: Schema) throws -> ByteStream {
+    func readDataStream(_ schema: Schema) throws -> ByteStream {
         throw notImplemented
     }
 
-    public func readEventStream<E: DeserializableStruct>(_ schema: Schema) throws -> AsyncThrowingStream<E, any Error> {
+    func readEventStream<E: DeserializableStruct>(_ schema: Schema) throws -> AsyncThrowingStream<E, any Error> {
         throw notImplemented
     }
 }
