@@ -198,8 +198,9 @@ open class HttpProtocolUnitTestResponseGenerator protected constructor(
             writer.write("signingRegion: \$S,", region)
             if (!ctx.service.hasTrait<EndpointRuleSetTrait>()) {
                 writer.openBlock(
-                    "endpointResolver: StaticEndpointResolver(endpoint: try \$N(",
+                    "endpointResolver: \$L.StaticEndpointResolver(endpoint: try \$N(",
                     ")),",
+                    ctx.settings.moduleName,
                     SmithyHTTPAPITypes.Endpoint,
                 ) {
                     writer.write("urlString: \"https://example.com\"")
