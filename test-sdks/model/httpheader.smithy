@@ -24,6 +24,7 @@ service HTTPHeader {
         TimestampListHTTPHeader
         FormattedTimestampListHTTPHeader
         MultipleHTTPHeader
+        MixedHTTPHeader
         MediaTypeHTTPHeader
         MediaTypeListHTTPHeader
         ErrorHTTPHeader
@@ -314,6 +315,38 @@ structure MultipleHTTPHeaderOutput {
 
     // Not bound to a header; it is left untouched by the header deserializer.
     unbound: String
+}
+
+// A list-valued header sits between two scalar headers, so that serializing the list cannot
+// spill its values into the header of a member that follows it.
+@http(method: "GET", uri: "/MixedHTTPHeader")
+operation MixedHTTPHeader {
+    input: MixedHTTPHeaderInput
+    output: MixedHTTPHeaderOutput
+}
+
+@input
+structure MixedHTTPHeaderInput {
+    @httpHeader("X-Alpha")
+    alpha: String
+
+    @httpHeader("X-Beta")
+    beta: StringList
+
+    @httpHeader("X-Gamma")
+    gamma: String
+}
+
+@output
+structure MixedHTTPHeaderOutput {
+    @httpHeader("X-Alpha")
+    alpha: String
+
+    @httpHeader("X-Beta")
+    beta: StringList
+
+    @httpHeader("X-Gamma")
+    gamma: String
 }
 
 // Lists of timestamps are deserialized from a header by splitting on every second comma,

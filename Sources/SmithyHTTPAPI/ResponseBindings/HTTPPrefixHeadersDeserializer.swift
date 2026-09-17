@@ -53,10 +53,9 @@ public final class HTTPPrefixHeadersDeserializer: ShapeDeserializer {
 
     public func readMap<V>(_ schema: Schema, _ consumer: ReadValueConsumer<V>) throws -> [String: V] {
         guard let prefix = schema.getTrait(HTTPPrefixHeadersTrait.self)?.prefix else { return [:] }
-        let lowercasedPrefix = prefix.lowercased()
         defer { self.value = nil }
         var map = [String: V]()
-        for header in headers.headers where header.name.lowercased().hasPrefix(lowercasedPrefix) {
+        for header in headers.headers where header.name.hasCaseInsensitivePrefix(prefix) {
             // The key is the remainder of the header name after the prefix, in the case it was
             // received; the case of a header name is not guaranteed to be preserved in transit.
             let key = String(header.name.dropFirst(prefix.count))

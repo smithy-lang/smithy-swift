@@ -7,13 +7,14 @@
 
 import Foundation
 @_spi(SchemaBasedSerde)
-import class Smithy.HTTPLabelTrait
-@_spi(SchemaBasedSerde)
 import class Smithy.Schema
 @_spi(SchemaBasedSerde)
 import class Smithy.TimestampFormatTrait
+import struct Smithy.URIQueryItem
 @_spi(SchemaBasedSerde)
 import SmithySerialization
+@_spi(SchemaBasedSerde)
+import struct SmithySerialization.Operation
 @_spi(SmithyTimestamps)
 import struct SmithyTimestamps.TimestampFormatter
 
@@ -22,10 +23,23 @@ import struct SmithyTimestamps.TimestampFormatter
 /// This serializer is a no-op for all types except string, boolean, timestamp, and numbers.
 @_spi(SchemaBasedSerde)
 public final class HTTPLabelSerializer: ShapeSerializer {
-    private var transformed: String
 
-    public init(uri: String) {
-        self.transformed = uri
+    /// The operation's resolved bindings, which hold the URI template and the segment each member
+    /// is bound to.
+    private let operationExtension: HTTPOperationExtension
+
+    /// The URI's segments, with those already serialized replaced by their member's value.
+    var segments: [Substring.SubSequence]
+
+    var uriQueryItems: [URIQueryItem] { operationExtension.uriQueryItems }
+
+    public init(operationExtension: HTTPOperationExtension) {
+        self.operationExtension = operationExtension
+        self.segments = operationExtension.segments
+    }
+
+    public convenience init<Input, Output>(operation: Operation<Input, Output>) throws {
+        self.init(operationExtension: try operation.schema.getOrCreateExtension(HTTPOperationExtension.self))
     }
 
     public func writeStruct<S: SerializableStruct>(_ schema: Schema, _ value: S) throws {
@@ -49,62 +63,43 @@ public final class HTTPLabelSerializer: ShapeSerializer {
     }
 
     public func writeBoolean(_ schema: Schema, _ value: Bool) throws {
-        guard let label = checkForTraitAndGetLabel(schema: schema) else { return }
-        matchNonGreedy(label: label, value: "\(value)")
+        writeSegment(schema: schema, value: value ? "true" : "false")
     }
 
     public func writeByte(_ schema: Schema, _ value: Int8) throws {
-        guard let label = checkForTraitAndGetLabel(schema: schema) else { return }
-        matchNonGreedy(label: label, value: "\(value)")
+        writeSegment(schema: schema, value: "\(value)")
     }
 
     public func writeShort(_ schema: Schema, _ value: Int16) throws {
-        guard let label = checkForTraitAndGetLabel(schema: schema) else { return }
-        matchNonGreedy(label: label, value: "\(value)")
+        writeSegment(schema: schema, value: "\(value)")
     }
 
     public func writeInteger(_ schema: Schema, _ value: Int32) throws {
-        guard let label = checkForTraitAndGetLabel(schema: schema) else { return }
-        matchNonGreedy(label: label, value: "\(value)")
+        writeSegment(schema: schema, value: "\(value)")
     }
 
     public func writeLong(_ schema: Schema, _ value: Int64) throws {
-        guard let label = checkForTraitAndGetLabel(schema: schema) else { return }
-        matchNonGreedy(label: label, value: "\(value)")
+        writeSegment(schema: schema, value: "\(value)")
     }
 
     public func writeFloat(_ schema: Schema, _ value: Float) throws {
-        guard let label = checkForTraitAndGetLabel(schema: schema) else { return }
-        matchNonGreedy(label: label, value: encoded(value))
+        writeSegment(schema: schema, value: encoded(value))
     }
 
     public func writeDouble(_ schema: Schema, _ value: Double) throws {
-        guard let label = checkForTraitAndGetLabel(schema: schema) else { return }
-        matchNonGreedy(label: label, value: encoded(value))
+        writeSegment(schema: schema, value: encoded(value))
     }
 
     public func writeBigInteger(_ schema: Schema, _ value: Int64) throws {
-        guard let label = checkForTraitAndGetLabel(schema: schema) else { return }
-        matchNonGreedy(label: label, value: "\(value)")
+        writeSegment(schema: schema, value: "\(value)")
     }
 
     public func writeBigDecimal(_ schema: Schema, _ value: Double) throws {
-        guard let label = checkForTraitAndGetLabel(schema: schema) else { return }
-        matchNonGreedy(label: label, value: encoded(value))
+        writeSegment(schema: schema, value: encoded(value))
     }
 
     public func writeString(_ schema: Schema, _ value: String) throws {
-        guard let label = checkForTraitAndGetLabel(schema: schema) else { return }
-
-        if !matchNonGreedy(label: label, value: value) {
-            matchGreedy(label: label, value: value)
-        }
-    }
-
-    private func checkForTraitAndGetLabel(schema: Schema) -> String? {
-        // Return nil unless this schema has the httpLabel trait & is a member
-        guard schema.hasTrait(HTTPLabelTrait.self), let label = schema.id.member else { return nil }
-        return label
+        writeSegment(schema: schema, value: value)
     }
 
     /// Renders a floating-point value as a string, using the Smithy-defined tokens for
@@ -118,38 +113,14 @@ public final class HTTPLabelSerializer: ShapeSerializer {
         }
     }
 
-    @discardableResult
-    private func matchNonGreedy(label: String, value: String) -> Bool {
-        let nongreedyTemplate = "{\(label)}"
-        // Try matching the nongreedy, then greedy template, and substitute
-        if let nongreedyTemplateRange = transformed.range(of: nongreedyTemplate) {
-            // URL-encode the value, also encoding '/' characters, and put in in the URI
-            let pathComponent = URLEncodingUtils.urlPercentEncodedForQuery(value)
-            transformed.replaceSubrange(nongreedyTemplateRange, with: pathComponent)
-            return true
-        } else {
-            return false
-        }
-    }
-
-    private func matchGreedy(label: String, value: String) {
-        let greedyTemplate = "{\(label)+}"
-        if let greedyTemplateRange = transformed.range(of: greedyTemplate) {
-            // URL-encode the value, preserving '/' characters, and put in in the URI
-            let pathComponent = URLEncodingUtils.urlPercentEncodedForPath(value)
-            transformed.replaceSubrange(greedyTemplateRange, with: pathComponent)
-        }
-    }
-
     public func writeBlob(_ schema: Schema, _ value: Data) throws {
         // no operation
     }
 
     public func writeTimestamp(_ schema: Schema, _ value: Date) throws {
-        guard let label = checkForTraitAndGetLabel(schema: schema) else { return }
         let timestampFormat = schema.getTrait(TimestampFormatTrait.self)?.format ?? .dateTime
         let timestamp = TimestampFormatter(format: timestampFormat).string(from: value)
-        matchNonGreedy(label: label, value: "\(timestamp)")
+        writeSegment(schema: schema, value: timestamp)
     }
 
     public func writeNull(_ schema: Schema) throws {
@@ -158,10 +129,23 @@ public final class HTTPLabelSerializer: ShapeSerializer {
 
     /// Returns a UTF-8 representation of the URI.
     public var data: Data? {
-        Data(transformed.utf8)
+        Data(uri.utf8)
     }
 
     public var mediaType: String? { nil }
 
-    public var uri: String { transformed }
+    public var uri: String { segments.joined(separator: "/") }
+
+    private func writeSegment(schema: Schema, value: String) {
+        // A member not bound to a segment has no index in the table, and a schema that is not a member
+        // of the input has an index of -1.
+        let memberIndex = schema.index
+        guard memberIndex >= 0, memberIndex < operationExtension.labelSegmentIndex.count,
+              let segmentIndex = operationExtension.labelSegmentIndex[memberIndex]
+        else { return }
+        // A greedy label may span segments, so the slashes in its value are left unescaped.
+        self.segments[segmentIndex] = operationExtension.labelIsGreedy[memberIndex]
+            ? URLEncodingUtils.urlPercentEncodedForPath(value)[...]
+            : URLEncodingUtils.urlPercentEncodedForQuery(value)[...]
+    }
 }
