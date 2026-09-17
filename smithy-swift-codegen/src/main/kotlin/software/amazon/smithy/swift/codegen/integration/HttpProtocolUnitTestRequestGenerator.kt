@@ -123,7 +123,8 @@ open class HttpProtocolUnitTestRequestGenerator protected constructor(
                 val host: String? = test.host.orElse(null)
                 val url = "https://${host ?: "example.com"}"
                 writer.write(
-                    "endpointResolver: StaticEndpointResolver(endpoint: try \$N(urlString: \$S)),",
+                    "endpointResolver: \$L.StaticEndpointResolver(endpoint: try \$N(urlString: \$S)),",
+                    ctx.settings.moduleName,
                     SmithyHTTPAPITypes.Endpoint,
                     url,
                 )
