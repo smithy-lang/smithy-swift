@@ -23,10 +23,10 @@ let libXML2TargetOrNil: Target? = nil
 let package = Package(
     name: "smithy-swift",
     platforms: [
-        .macOS(.v12),
-        .iOS(.v13),
-        .tvOS(.v13),
-        .watchOS(.v6),
+        .macOS(.v11),
+        .iOS(.v15),
+        .tvOS(.v15),
+        .watchOS(.v8),
     ],
     products: [
         .library(name: "Smithy", targets: ["Smithy"]),
