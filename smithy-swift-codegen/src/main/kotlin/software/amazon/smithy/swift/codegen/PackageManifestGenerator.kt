@@ -23,7 +23,10 @@ class PackageManifestGenerator(
                 writer.write("name: \$S,", ctx.settings.moduleName)
 
                 writer.openBlock("platforms: [", "],") {
-                    writer.write(".macOS(.v12), .iOS(.v13), .tvOS(.v13), .watchOS(.v6)")
+                    writer.write(".macOS(.v11),")
+                    writer.write(".iOS(.v15),")
+                    writer.write(".tvOS(.v15),")
+                    writer.write(".watchOS(.v8),")
                 }
 
                 writer.openBlock("products: [", "],") {
