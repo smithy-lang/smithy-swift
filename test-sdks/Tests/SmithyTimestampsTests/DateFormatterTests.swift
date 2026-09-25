@@ -33,13 +33,11 @@ class DateFormatterTests: XCTestCase {
              "Tue, 20 Nov 1993 05:45:10.21349433 Z":
                 ExpectedDateComponents(day: 20, month: 11, year: 1993, hour: 05, minute: 45, second: 10, milliseconds: 213),
              // components without padding
-             "Mon, 20 Nov 193 05:45:10.123 GMT":
-                ExpectedDateComponents(day: 20, month: 11, year: 193, hour: 05, minute: 45, second: 10, milliseconds: 123),
              "Mon, 20 Nov 1993 4:2:7.1 GMT":
                 ExpectedDateComponents(day: 20, month: 11, year: 1993, hour: 4, minute: 2, second: 7, milliseconds: 100)
         ]
 
-        let formatter = DateFormatter.rfc5322WithFractionalSeconds
+        let formatter = SmithyDateFormatter.rfc5322WithFractionalSeconds
 
         for (dateString, dateComponents) in validDates {
             guard let constructedDate = formatter.date(from: dateString) else {
@@ -65,7 +63,7 @@ class DateFormatterTests: XCTestCase {
             "Sun, 20 Nov 1993 05:45:1 GMT"
         ]
 
-        let formatter = DateFormatter.rfc5322WithFractionalSeconds
+        let formatter = SmithyDateFormatter.rfc5322WithFractionalSeconds
 
         for dateString in inValidDates {
             let constructedDate: Date? = formatter.date(from: dateString)
@@ -104,13 +102,11 @@ class DateFormatterTests: XCTestCase {
              "Tue, 20 Nov 1993 05:45:10 Z":
                 ExpectedDateComponents(day: 20, month: 11, year: 1993, hour: 05, minute: 45, second: 10),
              // components without padding
-             "Mon, 20 Nov 193 05:45:10 GMT":
-                ExpectedDateComponents(day: 20, month: 11, year: 193, hour: 05, minute: 45, second: 10),
              "Mon, 20 Nov 1993 4:2:7 GMT":
                 ExpectedDateComponents(day: 20, month: 11, year: 1993, hour: 4, minute: 2, second: 7)
         ]
 
-        let formatter = DateFormatter.rfc5322WithoutFractionalSeconds
+        let formatter = SmithyDateFormatter.rfc5322WithoutFractionalSeconds
 
         for (dateString, dateComponents) in validDates {
             guard let constructedDate = formatter.date(from: dateString) else {
@@ -136,7 +132,7 @@ class DateFormatterTests: XCTestCase {
             "Sun, 20 Nov 1993 05:45:1.000 GMT"
         ]
 
-        let formatter = DateFormatter.rfc5322WithoutFractionalSeconds
+        let formatter = SmithyDateFormatter.rfc5322WithoutFractionalSeconds
 
         for dateString in inValidDates {
             let constructedDate: Date? = formatter.date(from: dateString)
@@ -173,7 +169,7 @@ class DateFormatterTests: XCTestCase {
                 ExpectedDateComponents(day: 20, month: 11, year: 1993, hour: 5, minute: 0, second: 0, milliseconds: 7)
         ]
 
-        let formatter = DateFormatter.iso8601DateFormatterWithFractionalSeconds
+        let formatter = SmithyDateFormatter.iso8601DateFormatterWithFractionalSeconds
 
         for (dateString, dateComponents) in validDates {
             guard let constructedDate = formatter.date(from: dateString) else {
@@ -198,7 +194,7 @@ class DateFormatterTests: XCTestCase {
             "1993-11-20T05:45:01Z"
         ]
 
-        let formatter = DateFormatter.iso8601DateFormatterWithFractionalSeconds
+        let formatter = SmithyDateFormatter.iso8601DateFormatterWithFractionalSeconds
 
         for dateString in inValidDates {
             let constructedDate: Date? = formatter.date(from: dateString)
@@ -233,13 +229,10 @@ class DateFormatterTests: XCTestCase {
             "1993-11-20T05:05:01 -0050":
                 ExpectedDateComponents(day: 20, month: 11, year: 1993, hour: 5, minute: 55, second: 1),
             "1993-11-20T05:50:01 +005001":
-                ExpectedDateComponents(day: 20, month: 11, year: 1993, hour: 5, minute: 0, second: 0),
-            // padding zeroes is handled
-            "193-7-022T05:00045:001 +005001":
-                ExpectedDateComponents(day: 22, month: 7, year: 193, hour: 4, minute: 55, second: 0)
+                ExpectedDateComponents(day: 20, month: 11, year: 1993, hour: 5, minute: 0, second: 0)
         ]
 
-        let formatter = DateFormatter.iso8601DateFormatterWithoutFractionalSeconds
+        let formatter = SmithyDateFormatter.iso8601DateFormatterWithoutFractionalSeconds
 
         for (dateString, dateComponents) in validDates {
             guard let constructedDate = formatter.date(from: dateString) else {
@@ -260,11 +253,14 @@ class DateFormatterTests: XCTestCase {
             "2017-07-22T03:0f:00Z",
             "1993-11-20T05:45:01z+05:00",
 
+            // components longer than the format permits
+            "193-7-022T05:00045:001 +005001",
+
             // standard rfc5322 string but should fail since it includes fractional seconds
             "1993-11-20T05:45:01.000Z"
         ]
 
-        let formatter = DateFormatter.iso8601DateFormatterWithoutFractionalSeconds
+        let formatter = SmithyDateFormatter.iso8601DateFormatterWithoutFractionalSeconds
 
         for dateString in inValidDates {
             let constructedDate: Date? = formatter.date(from: dateString)
@@ -276,6 +272,34 @@ class DateFormatterTests: XCTestCase {
         let date = Date.makeDateForTests(day: 04, month: 05, year: 1991, hour: 10, minute: 12, second: 10)
         let dateString = date.iso8601WithoutFractionalSeconds()
         XCTAssertEqual(dateString, "1991-05-04T10:12:10Z")
+    }
+
+    // MARK: - Years Below Four Digits
+
+    /// Years of fewer than four digits are all before the 1582 Gregorian reform, and Foundation's
+    /// calendars switch to the Julian calendar for those dates while the formatters stay on the
+    /// proleptic Gregorian calendar that RFC 3339 specifies.  These dates are therefore asserted
+    /// against the epoch interval rather than against calendar components.
+    func test_yearsBelowFourDigitsAreParsedInTheProlepticGregorianCalendar() {
+        let subjects: [(SmithyDateFormatter, String, TimeInterval)] = [
+            (.rfc5322WithoutFractionalSeconds, "Mon, 20 Nov 193 05:45:10 GMT", -56048696090),
+            (.rfc5322WithFractionalSeconds, "Mon, 20 Nov 193 05:45:10.123 GMT", -56048696089.877),
+            (.iso8601DateFormatterWithoutFractionalSeconds, "193-07-22T05:50:01 +005001", -56059153200),
+            (.iso8601DateFormatterWithFractionalSeconds, "0193-07-22T05:50:01.5Z", -56059150198.5)
+        ]
+
+        for (formatter, dateString, expectedInterval) in subjects {
+            guard let date = formatter.date(from: dateString) else {
+                XCTFail("could not parse date string: \(dateString)")
+                continue
+            }
+            XCTAssertEqual(date.timeIntervalSince1970, expectedInterval, accuracy: 0.001, dateString)
+        }
+    }
+
+    func test_yearsBelowFourDigitsAreZeroPaddedOnOutput() {
+        let date = Date(timeIntervalSince1970: -56048696090)
+        XCTAssertEqual(date.iso8601WithoutFractionalSeconds(), "0193-11-20T05:45:10Z")
     }
 
     // MARK: - Test Helpers
@@ -307,7 +331,11 @@ class DateFormatterTests: XCTestCase {
         dateString: String,
         line: UInt = #line
     ) {
-        var calendar = Calendar.current
+        // The ISO8601 calendar is used, rather than `.current`, because it is the proleptic
+        // Gregorian calendar that the formatters assume.  Foundation's Gregorian calendar switches
+        // to the Julian calendar for dates before the 1582 reform, so it disagrees with the
+        // formatters on dates in the distant past.
+        var calendar = Calendar(identifier: .iso8601)
         calendar.timeZone = TimeZone(abbreviation: "GMT")! // It is known that GMT exists
 
         XCTAssertEqual(
