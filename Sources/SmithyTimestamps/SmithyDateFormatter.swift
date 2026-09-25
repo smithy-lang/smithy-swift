@@ -17,10 +17,13 @@ import struct Foundation.Date
 
 /// Converts between `Date` and the fixed-format date representations used by Smithy protocols.
 ///
-/// Conversion is performed with the C library's `strftime` and `strptime`.  Those functions read
-/// weekday and month names from the process's `LC_TIME` locale, so the `%a` and `%b` specifiers are
-/// not used; names are rendered and matched against the tables on this type instead, keeping
-/// conversion independent of the host locale.
+/// Formatting is performed with the C library's `strftime`.  It reads weekday and month names from
+/// the process's `LC_TIME` locale, so the `%a` and `%b` specifiers are not used; names are rendered
+/// from the tables on this type instead, keeping output independent of the host locale.
+///
+/// Parsing is performed by the scanning routines on this type rather than by `strptime`, which
+/// Swift does not expose on every supported platform, and whose whitespace and range handling
+/// varies between C libraries.
 struct SmithyDateFormatter: Sendable {
 
     /// The overall shape of the date representation.
@@ -209,7 +212,7 @@ struct SmithyDateFormatter: Sendable {
     func date(from string: String) -> Date? {
         string.withCString { start -> Date? in
             var cursor = start
-            var components = tm()
+            let year: Int, month: Int, day: Int
 
             switch layout {
             case .rfc5322:
@@ -218,15 +221,28 @@ struct SmithyDateFormatter: Sendable {
                 // ignored it as well.
                 guard Self.scanName(&cursor, in: Self.weekdayNames) != nil else { return nil }
                 guard Self.scan(&cursor, ascii: ","), Self.scan(&cursor, ascii: " ") else { return nil }
-                guard Self.scan(&cursor, format: "%d", into: &components) else { return nil }
+                guard let scannedDay = Self.scanNumber(&cursor, digits: 2, in: 1...31) else { return nil }
                 guard Self.scan(&cursor, ascii: " ") else { return nil }
-                guard let month = Self.scanName(&cursor, in: Self.monthNames) else { return nil }
-                components.tm_mon = Int32(month)
+                guard let monthIndex = Self.scanName(&cursor, in: Self.monthNames) else { return nil }
                 guard Self.scan(&cursor, ascii: " ") else { return nil }
-                guard Self.scan(&cursor, format: "%Y %H:%M:%S", into: &components) else { return nil }
+                guard let scannedYear = Self.scanNumber(&cursor, digits: 4, in: 0...9999) else { return nil }
+                guard Self.scan(&cursor, ascii: " ") else { return nil }
+                (year, month, day) = (scannedYear, monthIndex + 1, scannedDay)
             case .iso8601:
-                guard Self.scan(&cursor, format: "%Y-%m-%dT%H:%M:%S", into: &components) else { return nil }
+                guard let scannedYear = Self.scanNumber(&cursor, digits: 4, in: 0...9999) else { return nil }
+                guard Self.scan(&cursor, ascii: "-") else { return nil }
+                guard let scannedMonth = Self.scanNumber(&cursor, digits: 2, in: 1...12) else { return nil }
+                guard Self.scan(&cursor, ascii: "-") else { return nil }
+                guard let scannedDay = Self.scanNumber(&cursor, digits: 2, in: 1...31) else { return nil }
+                guard Self.scan(&cursor, ascii: "T") else { return nil }
+                (year, month, day) = (scannedYear, scannedMonth, scannedDay)
             }
+
+            guard let hour = Self.scanNumber(&cursor, digits: 2, in: 0...23) else { return nil }
+            guard Self.scan(&cursor, ascii: ":") else { return nil }
+            guard let minute = Self.scanNumber(&cursor, digits: 2, in: 0...59) else { return nil }
+            guard Self.scan(&cursor, ascii: ":") else { return nil }
+            guard let second = Self.scanNumber(&cursor, digits: 2, in: 0...59) else { return nil }
 
             var fraction = 0.0
             if includesFractionalSeconds {
@@ -238,26 +254,30 @@ struct SmithyDateFormatter: Sendable {
             // Reject any trailing content; a partial match is not a date.
             guard cursor.pointee == 0 else { return nil }
 
-            return Date(
-                timeIntervalSince1970: Self.secondsSinceEpoch(components) - Double(offset) + fraction
+            let seconds = Self.secondsSinceEpoch(
+                year: year, month: month, day: day, hour: hour, minute: minute, second: second
             )
+            return Date(timeIntervalSince1970: seconds - Double(offset) + fraction)
         }
     }
 
-    /// Returns the number of seconds between the epoch and the UTC time described by `components`.
+    /// Returns the number of seconds between the epoch and the given UTC date and time.
     ///
     /// `timegm` is not used for this because it fails for years before 1900, and signals failure by
     /// returning `-1`, which is also a valid time.
-    private static func secondsSinceEpoch(_ components: tm) -> Double {
-        let days = daysFromCivil(
-            year: Int64(components.tm_year) + 1900,
-            month: Int64(components.tm_mon) + 1,
-            day: Int64(components.tm_mday)
-        )
+    private static func secondsSinceEpoch(
+        year: Int,
+        month: Int,
+        day: Int,
+        hour: Int,
+        minute: Int,
+        second: Int
+    ) -> Double {
+        let days = daysFromCivil(year: Int64(year), month: Int64(month), day: Int64(day))
         return Double(days) * 86400
-            + Double(components.tm_hour) * 3600
-            + Double(components.tm_min) * 60
-            + Double(components.tm_sec)
+            + Double(hour) * 3600
+            + Double(minute) * 60
+            + Double(second)
     }
 
     /// Returns the number of days between 1970-01-01 and the given proleptic Gregorian date.
@@ -292,21 +312,24 @@ struct SmithyDateFormatter: Sendable {
         return (yearOfEra + era * 400 + (month <= 2 ? 1 : 0), month, day)
     }
 
-    /// Parses the components matched by `format` out of the cursor, advancing it past them.
+    /// Advances the cursor past one date or time component of up to `digits` digits.
     ///
-    /// This is not named `strptime` so that the C function of that name stays reachable without
-    /// module qualification; Glibc declares `strptime` behind a feature-test macro and so does not
-    /// expose it to module-qualified lookup.
+    /// The cursor is left unmoved unless the component both parses and falls within `range`, so
+    /// that a value out of range is rejected rather than leaving the cursor mid-component.
     ///
-    /// - Returns: Whether the cursor matched the format.
-    private static func scan(
+    /// - Returns: The component's value, or `nil` if the cursor is not at a digit or the value
+    ///   falls outside `range`.
+    private static func scanNumber(
         _ cursor: inout UnsafePointer<CChar>,
-        format: String,
-        into components: inout tm
-    ) -> Bool {
-        guard let next = strptime(cursor, format, &components) else { return false }
-        cursor = UnsafePointer(next)
-        return true
+        digits: Int,
+        in range: ClosedRange<Int>
+    ) -> Int? {
+        var candidate = cursor
+        guard let value = scanDigits(&candidate, maximum: digits), range.contains(value) else {
+            return nil
+        }
+        cursor = candidate
+        return value
     }
 
     /// Advances the cursor past `character` if it is the next character.
