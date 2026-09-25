@@ -4,13 +4,16 @@
  */
 
 #if canImport(Darwin)
+// swiftlint:disable:next unused_import
 import Darwin
 #elseif canImport(Glibc)
 import Glibc
 #elseif canImport(Musl)
 import Musl
 #else
-#error("Cannot use an operating system we do not support")
+// The wording matches the diagnostic in ClientRuntime's PlatformOperatingSystem, which the lint
+// workflow filters out of the compiler log it feeds to SwiftLint's analyzer.
+#error("Cannot use a an operating system we do not support")
 #endif
 
 import struct Foundation.Date
