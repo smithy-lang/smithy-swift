@@ -9,6 +9,8 @@ import Darwin
 import Glibc
 #elseif canImport(Musl)
 import Musl
+#else
+#error("Cannot use an operating system we do not support")
 #endif
 
 import struct Foundation.Date
@@ -104,9 +106,25 @@ struct SmithyDateFormatter: Sendable {
             wholeSeconds += 1
         }
 
-        var clock = time_t(wholeSeconds)
+        // Decompose in Int64: time_t is 32 bits on some platforms (watchOS arm64_32), but the
+        // guard above only bounds the interval to the tm_year range.
+        let total = Int64(wholeSeconds)
+        var days = total / 86400
+        var secondsOfDay = total % 86400
+        if secondsOfDay < 0 {
+            secondsOfDay += 86400
+            days -= 1
+        }
+
+        let (year, month, day) = Self.civilFromDays(days)
         var components = tm()
-        guard gmtime_r(&clock, &components) != nil else { return "" }
+        components.tm_year = Int32(year - 1900)
+        components.tm_mon = Int32(month - 1)
+        components.tm_mday = Int32(day)
+        components.tm_hour = Int32(secondsOfDay / 3600)
+        components.tm_min = Int32((secondsOfDay % 3600) / 60)
+        components.tm_sec = Int32(secondsOfDay % 60)
+        components.tm_wday = Int32(((days % 7) + 11) % 7)  // day 0, 1970-01-01, was a Thursday
 
         let format: String
         switch layout {
@@ -200,14 +218,14 @@ struct SmithyDateFormatter: Sendable {
                 // ignored it as well.
                 guard Self.scanName(&cursor, in: Self.weekdayNames) != nil else { return nil }
                 guard Self.scan(&cursor, ascii: ","), Self.scan(&cursor, ascii: " ") else { return nil }
-                guard Self.strptime(&cursor, "%d", &components) else { return nil }
+                guard Self.scan(&cursor, format: "%d", into: &components) else { return nil }
                 guard Self.scan(&cursor, ascii: " ") else { return nil }
                 guard let month = Self.scanName(&cursor, in: Self.monthNames) else { return nil }
                 components.tm_mon = Int32(month)
                 guard Self.scan(&cursor, ascii: " ") else { return nil }
-                guard Self.strptime(&cursor, "%Y %H:%M:%S", &components) else { return nil }
+                guard Self.scan(&cursor, format: "%Y %H:%M:%S", into: &components) else { return nil }
             case .iso8601:
-                guard Self.strptime(&cursor, "%Y-%m-%dT%H:%M:%S", &components) else { return nil }
+                guard Self.scan(&cursor, format: "%Y-%m-%dT%H:%M:%S", into: &components) else { return nil }
             }
 
             var fraction = 0.0
@@ -232,9 +250,9 @@ struct SmithyDateFormatter: Sendable {
     /// returning `-1`, which is also a valid time.
     private static func secondsSinceEpoch(_ components: tm) -> Double {
         let days = daysFromCivil(
-            year: Int(components.tm_year) + 1900,
-            month: Int(components.tm_mon) + 1,
-            day: Int(components.tm_mday)
+            year: Int64(components.tm_year) + 1900,
+            month: Int64(components.tm_mon) + 1,
+            day: Int64(components.tm_mday)
         )
         return Double(days) * 86400
             + Double(components.tm_hour) * 3600
@@ -246,7 +264,7 @@ struct SmithyDateFormatter: Sendable {
     ///
     /// Adapted from the `days_from_civil` algorithm at
     /// https://howardhinnant.github.io/date_algorithms.html
-    private static func daysFromCivil(year: Int, month: Int, day: Int) -> Int {
+    private static func daysFromCivil(year: Int64, month: Int64, day: Int64) -> Int64 {
         // Shift the year so that it begins in March, placing the leap day at the end of the year.
         let shiftedYear = year - (month <= 2 ? 1 : 0)
         let era = (shiftedYear >= 0 ? shiftedYear : shiftedYear - 399) / 400
@@ -257,21 +275,36 @@ struct SmithyDateFormatter: Sendable {
         return era * 146097 + dayOfEra - 719468
     }
 
+    /// Returns the proleptic Gregorian date that falls `days` days after 1970-01-01.
+    ///
+    /// Adapted from the `civil_from_days` algorithm at
+    /// https://howardhinnant.github.io/date_algorithms.html
+    private static func civilFromDays(_ days: Int64) -> (year: Int64, month: Int64, day: Int64) {
+        // 719468 is the number of days from 0000-03-01 to 1970-01-01.
+        let z = days + 719468
+        let era = (z >= 0 ? z : z - 146096) / 146097
+        let dayOfEra = z - era * 146097                                                    // [0, 146096]
+        let yearOfEra = (dayOfEra - dayOfEra / 1460 + dayOfEra / 36524 - dayOfEra / 146096) / 365 // [0, 399]
+        let dayOfYear = dayOfEra - (365 * yearOfEra + yearOfEra / 4 - yearOfEra / 100)     // [0, 365]
+        let monthFromMarch = (5 * dayOfYear + 2) / 153                                     // [0, 11]
+        let day = dayOfYear - (153 * monthFromMarch + 2) / 5 + 1                           // [1, 31]
+        let month = monthFromMarch < 10 ? monthFromMarch + 3 : monthFromMarch - 9          // [1, 12]
+        return (yearOfEra + era * 400 + (month <= 2 ? 1 : 0), month, day)
+    }
+
     /// Parses the components matched by `format` out of the cursor, advancing it past them.
     ///
+    /// This is not named `strptime` so that the C function of that name stays reachable without
+    /// module qualification; Glibc declares `strptime` behind a feature-test macro and so does not
+    /// expose it to module-qualified lookup.
+    ///
     /// - Returns: Whether the cursor matched the format.
-    private static func strptime(
+    private static func scan(
         _ cursor: inout UnsafePointer<CChar>,
-        _ format: String,
-        _ components: inout tm
+        format: String,
+        into components: inout tm
     ) -> Bool {
-        #if canImport(Darwin)
-        guard let next = Darwin.strptime(cursor, format, &components) else { return false }
-        #elseif canImport(Glibc)
-        guard let next = Glibc.strptime(cursor, format, &components) else { return false }
-        #elseif canImport(Musl)
-        guard let next = Musl.strptime(cursor, format, &components) else { return false }
-        #endif
+        guard let next = strptime(cursor, format, &components) else { return false }
         cursor = UnsafePointer(next)
         return true
     }
