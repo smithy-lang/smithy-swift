@@ -44,7 +44,8 @@ final class DefaultRetryStrategyTests: XCTestCase {
             backoffStrategy: backoffStrategy, maxRetriesBase: 2, useNewRetries2026: true
         )
         subject = DefaultRetryStrategy(options: options)
-        mockSleeper = { @Sendable in await self.delay.setActual($0) }
+        let delay = self.delay
+        mockSleeper = { @Sendable in await delay.setActual($0) }
         subject.sleeper = mockSleeper
     }
 

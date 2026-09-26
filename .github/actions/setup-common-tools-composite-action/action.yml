@@ -1,18 +1,8 @@
 name: 'Setup Common Tools'
-description: 'A composite action that sets up & caches Gradle, caches Swift, and sets up Java.'
+description: 'A composite action that sets up & caches Gradle, and sets up Java.'
 runs:
   using: 'composite'
   steps:
-    - name: Cache Swift
-      uses: actions/cache@v5
-      with:
-        path: |
-          ~/Library/Caches/org.swift.swiftpm
-          ~/.cache/org.swift.swiftpm
-        key: 1-${{ runner.os }}-${{ matrix.xcode }}-spm-${{ hashFiles('Package.swift') }}
-        restore-keys: |
-          1-${{ runner.os }}-${{ matrix.xcode }}-spm-${{ hashFiles('Package.swift') }}
-          1-${{ runner.os }}-${{ matrix.xcode }}-spm-
     - name: Setup Java
       uses: actions/setup-java@v5
       with:
