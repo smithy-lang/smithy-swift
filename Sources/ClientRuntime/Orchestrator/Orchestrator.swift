@@ -234,9 +234,9 @@ public struct Orchestrator<
                 // START - smithy.client.call.serialization_duration
                 var startTimespec = timespec()
                 var endTimespec = timespec()
-                clock_gettime(CLOCK_MONOTONIC_RAW, &startTimespec)
+                clock_gettime(telemetryClock, &startTimespec)
                 try serialize(finalizedInput, builder, context.getAttributes())
-                clock_gettime(CLOCK_MONOTONIC_RAW, &endTimespec)
+                clock_gettime(telemetryClock, &endTimespec)
                 telemetry.serializationDuration.record(
                     value: timeInterval(startTimespec: startTimespec, endTimespec: endTimespec),
                     attributes: telemetry.metricsAttributes,
@@ -466,9 +466,9 @@ public struct Orchestrator<
                 // START - smithy.client.call.deserialization_duration
                 var startTimespec = timespec()
                 var endTimespec = timespec()
-                clock_gettime(CLOCK_MONOTONIC_RAW, &startTimespec)
+                clock_gettime(telemetryClock, &startTimespec)
                 let output = try await deserialize(context.getResponse(), context.getAttributes())
-                clock_gettime(CLOCK_MONOTONIC_RAW, &endTimespec)
+                clock_gettime(telemetryClock, &endTimespec)
                 telemetry.deserializationDuration.record(
                     value: timeInterval(startTimespec: startTimespec, endTimespec: endTimespec),
                     attributes: telemetry.metricsAttributes,
