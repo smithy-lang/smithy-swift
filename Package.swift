@@ -69,6 +69,23 @@ let package = Package(
             .package(url: "https://github.com/apple/swift-argument-parser.git", from: "1.1.0"),
             .package(url: "https://github.com/apple/swift-log.git", from: "1.0.0"),
             .package(url: "https://github.com/swift-server/async-http-client.git", from: "1.22.0"),
+            // Pinned below 1.6.0 to keep AsyncHTTPClient compiling.
+            //
+            // async-http-client depends on both swift-distributed-tracing and
+            // swift-service-context, and imports both modules. In 1.6.0,
+            // swift-distributed-tracing renamed ServiceContext to
+            // InstrumentationContext and left behind
+            // `public typealias ServiceContext = InstrumentationContext`. That
+            // alias collides with the real ServiceContextModule.ServiceContext,
+            // so `ServiceContext.current` in
+            // AsyncHTTPClient/AsyncAwait/HTTPClientRequest+Prepared.swift
+            // becomes ambiguous and AsyncHTTPClient fails to build.
+            //
+            // async-http-client declares `from: "1.3.0"`, so 1.6.0 was picked up
+            // automatically the day it was tagged. Remove this pin once
+            // async-http-client drops its redundant swift-service-context
+            // dependency or qualifies the reference.
+            .package(url: "https://github.com/apple/swift-distributed-tracing.git", "1.3.0" ..< "1.6.0"),
         ]
 
         let isDocCEnabled = ProcessInfo.processInfo.environment["AWS_SWIFT_SDK_ENABLE_DOCC"] != nil
