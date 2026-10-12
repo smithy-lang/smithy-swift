@@ -24,6 +24,12 @@ import enum SmithyRetriesAPI.RetryError
 import struct SmithyRetriesAPI.RetryErrorInfo
 import protocol SmithyRetriesAPI.RetryStrategy
 
+#if os(FreeBSD)
+private let telemetryClock: clockid_t = CLOCK_MONOTONIC
+#else
+private let telemetryClock: clockid_t = CLOCK_MONOTONIC_RAW
+#endif
+
 /// Orchestrates operation execution
 ///
 /// Execution performs the following steps in order:
