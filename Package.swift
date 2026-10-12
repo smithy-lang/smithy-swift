@@ -69,6 +69,35 @@ let package = Package(
             .package(url: "https://github.com/apple/swift-argument-parser.git", from: "1.1.0"),
             .package(url: "https://github.com/apple/swift-log.git", from: "1.0.0"),
             .package(url: "https://github.com/swift-server/async-http-client.git", from: "1.22.0"),
+            // Pinned below 1.6.0 to keep AsyncHTTPClient compiling.
+            //
+            // SDT-0002 moves ServiceContext out of swift-service-context and into
+            // swift-distributed-tracing. It is a two-package change and only one
+            // half is released: swift-distributed-tracing 1.6.0 defines its own
+            // context type (plus a deprecated `typealias ServiceContext`) and
+            // drops its swift-service-context dependency, while the companion
+            // swift-service-context commit that re-aliases ServiceContext back to
+            // the tracing type is merged on main but unreleased (latest tag is
+            // still 1.3.0).
+            //
+            // async-http-client depends on both packages and imports both modules,
+            // so a build that resolves tracing 1.6.0 with service-context 1.3.0
+            // sees two unrelated types named ServiceContext, and
+            // `ServiceContext.current` in
+            // AsyncHTTPClient/AsyncAwait/HTTPClientRequest+Prepared.swift becomes
+            // ambiguous. SDT-0002 predicts exactly this and says both packages
+            // must be upgraded together -- which no released pair allows today.
+            //
+            // async-http-client declares `from: "1.3.0"`, so 1.6.0 was picked up
+            // automatically the day it was tagged. Remove this pin once
+            // swift-service-context ships a release with its half of SDT-0002.
+            //
+            // Note this constraint only binds in the package that declares it: no
+            // target uses swift-distributed-tracing, so SwiftPM prunes the
+            // dependency whenever smithy-swift is resolved as a dependency rather
+            // than as the root package. test-sdks/Package.swift therefore repeats
+            // it, and consumers that pull AsyncHTTPClient need their own copy.
+            .package(url: "https://github.com/apple/swift-distributed-tracing.git", "1.3.0" ..< "1.6.0"),
         ]
 
         let isDocCEnabled = ProcessInfo.processInfo.environment["AWS_SWIFT_SDK_ENABLE_DOCC"] != nil
