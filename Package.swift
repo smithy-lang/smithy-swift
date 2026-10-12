@@ -5,7 +5,7 @@ import PackageDescription
 
 // Define libxml2 only on Linux, since it causes warnings
 // about "pkgconfig not found" on Mac
-#if os(Linux)
+#if os(Linux) || os(FreeBSD)
 let libXML2DependencyOrNil: Target.Dependency? = "libxml2"
 let libXML2TargetOrNil: Target? = Target.systemLibrary(
     name: "libxml2",
