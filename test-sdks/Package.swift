@@ -18,17 +18,6 @@ let package = Package(
         // ClientRuntime tests use swift-log.  Keep this spec same as in smithy-swift
         .package(url: "https://github.com/apple/swift-log.git", from: "1.0.0"),
 
-        // Keep this spec same as in smithy-swift.  See the comment there for why
-        // swift-distributed-tracing is pinned below 1.6.0.
-        //
-        // This has to be repeated here, and cannot be inherited from smithy-swift:
-        // no target uses swift-distributed-tracing, so SwiftPM prunes the
-        // dependency ("dependency 'swift-distributed-tracing' is not used by any
-        // target") whenever smithy-swift is resolved as a dependency rather than
-        // as the root package.  The constraint only binds in the package that
-        // declares it.
-        .package(url: "https://github.com/apple/swift-distributed-tracing.git", "1.3.0" ..< "1.6.0"),
-
         // Generated test SDKs.  Models are in build/model.  Use them where Smithy generates them.
         // Run bash script ./scripts/codegen.sh from smithy-swift root to generate or regenerate these files
         testSDKPackage("AWSJSON"),
