@@ -20,6 +20,7 @@ import class Smithy.Context
 import protocol Smithy.RequestMessage
 import protocol Smithy.ResponseMessage
 import SmithyHTTPAPI
+import struct SmithyHTTPAuthAPI.SelectedAuthScheme
 import enum SmithyRetriesAPI.RetryError
 import struct SmithyRetriesAPI.RetryErrorInfo
 import protocol SmithyRetriesAPI.RetryStrategy
@@ -385,6 +386,7 @@ public struct Orchestrator<
                     context: telemetryContext)
                 span.end()
             }
+            var attemptAuthScheme: SelectedAuthScheme?
             do {
                 try await interceptors.readBeforeAttempt(context: context)
 
@@ -394,6 +396,7 @@ public struct Orchestrator<
                 if selectedAuthScheme == nil {
                     throw ClientError.authError("auth scheme could not be selected")
                 }
+                attemptAuthScheme = selectedAuthScheme
                 var authSchemeAttributes = telemetry.metricsAttributes
                 authSchemeAttributes.set(
                     key: AttributeKey<String>(name: "auth.scheme_id"),
@@ -474,6 +477,13 @@ public struct Orchestrator<
                 try await interceptors.readAfterDeserialization(context: context)
             } catch let error {
                 context.setResult(result: .failure(error))
+                if let attemptAuthScheme {
+                    await selectAuthScheme.invalidate(
+                        selected: attemptAuthScheme,
+                        error: error,
+                        attributes: context.getAttributes()
+                    )
+                }
             }
 
             // If modifyBeforeAttemptCompletion fails, we still want to let readAfterAttempt run

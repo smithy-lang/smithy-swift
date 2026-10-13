@@ -6,6 +6,8 @@ data class DefaultProvider(
     val block: (SwiftWriter) -> String,
     val isThrowable: Boolean,
     val isAsync: Boolean,
+    // wrapsParameter renders the block without `param ??`, for a block that takes the parameter itself.
+    val wrapsParameter: Boolean = false,
 ) {
     /**
      * Returns a default value for client configuration
@@ -29,7 +31,7 @@ data class DefaultProvider(
         paramNilCheck: String? = null,
     ): String {
         var res = block(writer)
-        if (paramNilCheck != null) {
+        if (paramNilCheck != null && !wrapsParameter) {
             res = "$paramNilCheck ?? $res"
         }
         if (isAsync) {

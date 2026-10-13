@@ -13,6 +13,8 @@ import class SmithyHTTPAPI.HTTPRequestBuilder
 @_spi(SmithyHTTPAuth) import struct SmithyHTTPAuth.DefaultIdentityResolverConfiguration
 import protocol SmithyHTTPAuthAPI.AuthScheme
 import struct SmithyHTTPAuthAPI.SelectedAuthScheme
+import protocol SmithyIdentityAPI.Identity
+import protocol SmithyIdentityAPI.IdentityResolver
 
 public struct AuthSchemeMiddleware<OperationStackOutput> {
     public let id: String = "AuthSchemeMiddleware"
@@ -108,5 +110,27 @@ extension AuthSchemeMiddleware: SelectAuthScheme {
         attributes.setSelectedAuthScheme(selectedAuthScheme)
 
         return selectedAuthScheme
+    }
+
+    public func invalidate(selected: SelectedAuthScheme, error: any Error, attributes: Context) async {
+        guard let identity = selected.identity,
+              let identityResolvers = attributes.getIdentityResolvers(),
+              let authScheme = attributes.getAuthSchemes()?.get(
+                  key: AttributeKey<AuthScheme>(name: selected.schemeID)
+              ),
+              let identityResolver = try? authScheme.identityResolver(
+                  config: DefaultIdentityResolverConfiguration(configuredIdResolvers: identityResolvers)
+              )
+        else { return }
+        await invalidate(identityResolver, identity: identity, error: error)
+    }
+
+    private func invalidate<R: IdentityResolver>(
+        _ resolver: R,
+        identity: any Identity,
+        error: any Error
+    ) async {
+        guard let identity = identity as? R.IdentityT else { return }
+        await resolver.invalidate(identity, error: error)
     }
 }

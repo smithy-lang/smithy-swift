@@ -15,6 +15,14 @@ public protocol SelectAuthScheme {
     /// - Parameter attributes: The attributes available.
     /// - Returns: The auth scheme to use, if available.
     func select(attributes: Context) async throws -> SelectedAuthScheme?
+
+    /// invalidate tells the identity resolver for `selected` that an attempt signed with its identity failed.
+    func invalidate(selected: SelectedAuthScheme, error: any Error, attributes: Context) async
+}
+
+public extension SelectAuthScheme {
+
+    func invalidate(selected: SelectedAuthScheme, error: any Error, attributes: Context) async {}
 }
 
 /// Concrete SelectAuthScheme backed by a closure.
