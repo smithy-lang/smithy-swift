@@ -204,7 +204,7 @@ jobs:
           - 6.4-noble
           - 6.4-amazonlinux2023
     container:
-      image: swift:${{ matrix.swift }}
+      image: public.ecr.aws/docker/library/swift:${{ matrix.swift }}
     steps:
       - name: Checkout smithy-swift
         uses: actions/checkout@v6
@@ -250,7 +250,7 @@ jobs:
           - 6.4-noble
           - 6.4-amazonlinux2023
     container:
-      image: swift:${{ matrix.swift }}
+      image: public.ecr.aws/docker/library/swift:${{ matrix.swift }}
     steps:
       - name: Install openssl
         run: |
