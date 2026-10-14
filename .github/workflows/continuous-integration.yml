@@ -189,8 +189,38 @@ jobs:
       - name: Success
         run: echo "apple-downstream passed"
 
+  # Obtains credentials for pulling Linux container images from ECR Public.
+  # Anonymous pulls are subject to a per-IP data limit that shared GitHub runner IPs
+  # can exhaust.  OIDC tokens are unavailable to PRs from forks, so those skip login
+  # and outputs are empty, which causes the container jobs to fall back to anonymous pulls.
+  ecr-public-login:
+    if: github.repository == 'smithy-lang/smithy-swift' || github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+    outputs:
+      docker_username: ${{ steps.login-ecr-public.outputs.docker_username_public_ecr_aws }}
+      docker_password: ${{ steps.login-ecr-public.outputs.docker_password_public_ecr_aws }}
+    steps:
+      - name: Configure AWS credentials
+        if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository
+        uses: aws-actions/configure-aws-credentials@v6
+        with:
+          role-to-assume: arn:aws:iam::339712710095:role/ECRPublicPull
+          role-session-name: smithy-swift-ci-ecr-public-pull
+          aws-region: us-east-1
+      - name: Login to Amazon ECR Public
+        id: login-ecr-public
+        if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository
+        uses: aws-actions/amazon-ecr-login@v2
+        with:
+          registry-type: public
+          # Credentials must be unmasked so they can be passed to the container jobs.
+          mask-password: 'false'
+
   linux-ci:
     if: github.repository == 'smithy-lang/smithy-swift' || github.event_name == 'pull_request'
+    needs: ecr-public-login
     runs-on: ${{ matrix.runner }}
     strategy:
       fail-fast: false
@@ -205,6 +235,9 @@ jobs:
           - 6.4-amazonlinux2023
     container:
       image: public.ecr.aws/docker/library/swift:${{ matrix.swift }}
+      credentials:
+        username: ${{ needs.ecr-public-login.outputs.docker_username }}
+        password: ${{ needs.ecr-public-login.outputs.docker_password }}
     steps:
       - name: Checkout smithy-swift
         uses: actions/checkout@v6
@@ -237,6 +270,7 @@ jobs:
 
   linux-downstream:
     if: github.repository == 'smithy-lang/smithy-swift' || github.event_name == 'pull_request'
+    needs: ecr-public-login
     runs-on: ${{ matrix.runner }}
     strategy:
       fail-fast: false
@@ -251,6 +285,9 @@ jobs:
           - 6.4-amazonlinux2023
     container:
       image: public.ecr.aws/docker/library/swift:${{ matrix.swift }}
+      credentials:
+        username: ${{ needs.ecr-public-login.outputs.docker_username }}
+        password: ${{ needs.ecr-public-login.outputs.docker_password }}
     steps:
       - name: Install openssl
         run: |
