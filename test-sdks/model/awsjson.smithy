@@ -102,6 +102,8 @@ structure SerdeOperationOutput {
     epochSecondsTimestamp: Timestamp
 
     requiredTimestamps: RequiredTimestampsStructure
+
+    requiredEnums: RequiredEnumsStructure
 }
 
 // Timestamp format is placed on these target shapes, not on the members that
@@ -124,6 +126,22 @@ structure RequiredTimestampsStructure {
 
     @required
     epochSeconds: EpochSecondsTimestamp
+}
+
+enum RequiredEnum {
+    A = "a"
+}
+
+intEnum RequiredIntEnum {
+    ONE = 1
+}
+
+structure RequiredEnumsStructure {
+    @required
+    enum: RequiredEnum
+
+    @required
+    intEnum: RequiredIntEnum
 }
 
 structure SerdeOperationStructure {
