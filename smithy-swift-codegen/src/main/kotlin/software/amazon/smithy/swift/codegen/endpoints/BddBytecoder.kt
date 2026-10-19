@@ -14,14 +14,12 @@ import java.nio.file.Files
  */
 object BddBytecoder {
     /**
-     * @param pythonExecutable python interpreter to run (e.g. "python3")
      * @param bytecoderPath path to bdd-bytecoder.py
      * @param traitJson the endpointBdd trait serialized as JSON
      * @param serviceName used only to label temp files and error messages
      * @return the compiled bytecode
      */
     fun compile(
-        pythonExecutable: String,
         bytecoderPath: String,
         traitJson: String,
         serviceName: String,
@@ -32,7 +30,7 @@ object BddBytecoder {
         try {
             Files.writeString(input, traitJson)
             val process =
-                ProcessBuilder(pythonExecutable, bytecoderPath, input.toString(), output.toString())
+                ProcessBuilder("python3", bytecoderPath, input.toString(), output.toString())
                     .redirectErrorStream(true)
                     .start()
             val consoleOutput = process.inputStream.bufferedReader().readText()

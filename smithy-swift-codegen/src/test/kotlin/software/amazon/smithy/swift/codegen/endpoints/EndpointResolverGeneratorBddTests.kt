@@ -39,16 +39,46 @@ class EndpointResolverGeneratorBddTests {
         service Example { version: "1.0.0" }
         """.asSmithyModel()
 
+    private val ruleSetJson =
+        """
+        {
+          "version": "1.0",
+          "parameters": {
+            "Region": { "type": "string", "required": true, "documentation": "The AWS region" },
+            "Endpoint": { "type": "string", "required": false, "documentation": "Override the endpoint URL" }
+          },
+          "rules": [
+            { "type": "endpoint", "conditions": [], "endpoint": { "url": "https://example.com" } }
+          ]
+        }
+        """
+
+    private val bothTraitsModel =
+        """
+        namespace com.test
+        use smithy.rules#clientContextParams
+        use smithy.rules#endpointBdd
+        use smithy.rules#endpointRuleSet
+
+        @clientContextParams(
+            Region: { type: "string", documentation: "The region" }
+            Endpoint: { type: "string", documentation: "The endpoint" }
+        )
+        @endpointRuleSet($ruleSetJson)
+        @endpointBdd($bddTraitJson)
+        service Example { version: "1.0.0" }
+        """.asSmithyModel()
+
     @Test
-    fun `flag off generates ruleSet resolver`() {
-        val contents = render(model, useBddEndpoints = false)
-        contents.shouldContain("try self.init(partitions: ClientRuntime.partitionJSON, ruleSet: Self.ruleSet)")
-        contents.shouldNotContain("bytecode")
+    fun `model with both traits generates bytecode resolver`() {
+        val contents = render(bothTraitsModel, bddBytecoderPath = bytecoderPath)
+        contents.shouldContain("bytecode: Foundation.Data(base64Encoded: Self.bytecode)!)")
+        contents.shouldNotContain("ruleSet")
     }
 
     @Test
-    fun `flag on generates bytecode resolver`() {
-        val contents = render(model, useBddEndpoints = true, bddBytecoderPath = bytecoderPath)
+    fun `BDD-only model generates bytecode resolver`() {
+        val contents = render(model, bddBytecoderPath = bytecoderPath)
         contents.shouldContain("bytecode: Foundation.Data(base64Encoded: Self.bytecode)!)")
         contents.shouldNotContain("ruleSet")
 
@@ -63,23 +93,34 @@ class EndpointResolverGeneratorBddTests {
     }
 
     @Test
-    fun `flag on without BDD trait falls back to ruleSet resolver`() {
-        val noBddModel = "namespace com.test\nservice Example { version: \"1.0.0\" }".asSmithyModel()
-        val contents = render(noBddModel, useBddEndpoints = true, bddBytecoderPath = bytecoderPath)
-        contents.shouldContain("ruleSet: Self.ruleSet")
+    fun `EndpointParams is generated from the BDD trait for a BDD-only model`() {
+        val context = model.newTestContext(settings = SwiftSettings.from(model, getSettingsNode()))
+        EndpointParamsGenerator(context.generationCtx).render()
+        context.generationCtx.delegator.flushWriters()
+        val contents = context.manifest.expectFileString("example/Sources/example/Endpoints.swift")
+        contents.shouldContain("public let region: Swift.String")
+        contents.shouldContain("public let endpoint: Swift.String?")
+        contents.shouldContain("try context.add(name: \"Region\", value: self.region)")
     }
 
     @Test
-    fun `flag on without bytecoder path throws`() {
-        assertThrows<CodegenException> { render(model, useBddEndpoints = true) }
+    fun `model without BDD trait generates ruleSet resolver without a bytecoder path`() {
+        val noBddModel = "namespace com.test\nservice Example { version: \"1.0.0\" }".asSmithyModel()
+        val contents = render(noBddModel)
+        contents.shouldContain("ruleSet: Self.ruleSet")
+        contents.shouldNotContain("bytecode")
+    }
+
+    @Test
+    fun `BDD trait without bytecoder path throws`() {
+        assertThrows<CodegenException> { render(model) }
     }
 
     private fun render(
         model: Model,
-        useBddEndpoints: Boolean,
         bddBytecoderPath: String? = null,
     ): String {
-        var settingsNode = getSettingsNode().withMember("useBddEndpoints", useBddEndpoints)
+        var settingsNode = getSettingsNode()
         bddBytecoderPath?.let { settingsNode = settingsNode.withMember("bddBytecoderPath", Node.from(it)) }
         val context = model.newTestContext(settings = SwiftSettings.from(model, settingsNode))
         EndpointResolverGenerator(ClientRuntimeTypes.Core.PartitionDefinition).render(context.generationCtx)

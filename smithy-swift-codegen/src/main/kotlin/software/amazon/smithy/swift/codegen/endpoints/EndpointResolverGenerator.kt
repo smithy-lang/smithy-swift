@@ -43,16 +43,14 @@ class EndpointResolverGenerator(
     }
 
     /**
-     * Compiles the endpointBdd trait to bytecode when BDD endpoints are enabled, otherwise returns null.
+     * Compiles the endpointBdd trait to bytecode when the service has one, otherwise returns null.
      */
     private fun bddBytecode(ctx: ProtocolGenerator.GenerationContext): ByteArray? {
-        if (!ctx.settings.useBddEndpoints) return null
         val trait = ctx.service.getTrait<EndpointBddTrait>() ?: return null
         val bytecoderPath =
             ctx.settings.bddBytecoderPath
-                ?: throw CodegenException("useBddEndpoints requires the bddBytecoderPath setting")
+                ?: throw CodegenException("The endpointBdd trait requires the bddBytecoderPath setting")
         return BddBytecoder.compile(
-            ctx.settings.pythonExecutable,
             bytecoderPath,
             Node.printJson(trait.toNode()),
             ctx.settings.sdkId,
