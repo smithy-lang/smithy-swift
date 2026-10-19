@@ -25,6 +25,10 @@ import software.amazon.smithy.model.traits.IdempotencyTokenTrait
 import software.amazon.smithy.model.traits.RequiredTrait
 import software.amazon.smithy.model.traits.StreamingTrait
 import software.amazon.smithy.model.traits.Trait
+import software.amazon.smithy.rulesengine.language.EndpointRuleSet
+import software.amazon.smithy.rulesengine.language.syntax.parameters.Parameters
+import software.amazon.smithy.rulesengine.traits.EndpointBddTrait
+import software.amazon.smithy.rulesengine.traits.EndpointRuleSetTrait
 import software.amazon.smithy.swift.codegen.utils.toLowerCamelCase
 import software.amazon.smithy.swift.codegen.utils.toUpperCamelCase
 import software.amazon.smithy.utils.StringUtils
@@ -216,3 +220,16 @@ fun UnionShape.eventStreamErrors(model: Model): Collection<MemberShape> {
         target.isError
     }
 }
+
+/**
+ * The service's endpoint parameters, from the endpointBdd trait if present, otherwise from the
+ * endpointRuleSet trait. Both traits carry the same parameters.
+ */
+fun ServiceShape.endpointParameters(): Parameters? =
+    getTrait<EndpointBddTrait>()?.parameters
+        ?: getTrait<EndpointRuleSetTrait>()?.ruleSet?.let { EndpointRuleSet.fromNode(it).parameters }
+
+/**
+ * True if the service has endpoint rules in either format (endpointRuleSet or endpointBdd).
+ */
+fun ServiceShape.hasEndpointRules(): Boolean = hasTrait<EndpointRuleSetTrait>() || hasTrait<EndpointBddTrait>()

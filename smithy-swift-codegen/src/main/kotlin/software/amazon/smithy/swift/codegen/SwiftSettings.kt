@@ -59,6 +59,7 @@ class SwiftSettings(
     val modelPath: String?,
     val localDevelopment: Boolean,
     val forceSchemaBased: Boolean,
+    val bddBytecoderPath: String? = null,
 ) {
     companion object {
         const val SERVICE = "service"
@@ -80,6 +81,7 @@ class SwiftSettings(
         const val MODEL_PATH = "modelPath"
         const val LOCAL_DEVELOPMENT = "localDevelopment"
         const val FORCE_SCHEMA_BASED = "forceSchemaBased"
+        const val BDD_BYTECODER_PATH = "bddBytecoderPath"
 
         private val LOGGER: Logger = Logger.getLogger(SwiftSettings::class.java.name)
 
@@ -114,6 +116,7 @@ class SwiftSettings(
                     MODEL_PATH,
                     LOCAL_DEVELOPMENT,
                     FORCE_SCHEMA_BASED,
+                    BDD_BYTECODER_PATH,
                 ),
             )
 
@@ -144,6 +147,7 @@ class SwiftSettings(
             val modelPath = config.getStringMember(MODEL_PATH).getOrNull()?.toString()
             val localDevelopment = config.getBooleanMemberOrDefault(LOCAL_DEVELOPMENT)
             val forceSchemaBased = config.getBooleanMemberOrDefault(FORCE_SCHEMA_BASED)
+            val bddBytecoderPath = config.getStringMember(BDD_BYTECODER_PATH).getOrNull()?.value
 
             return SwiftSettings(
                 serviceId,
@@ -163,6 +167,7 @@ class SwiftSettings(
                 modelPath,
                 localDevelopment,
                 forceSchemaBased,
+                bddBytecoderPath,
             )
         }
 
