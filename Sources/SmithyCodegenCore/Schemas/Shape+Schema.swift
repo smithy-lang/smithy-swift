@@ -37,6 +37,8 @@ private extension ShapeID {
                 case "Long": "longSchema"
                 case "Short": "shortSchema"
                 case "Byte": "byteSchema"
+                case "BigInteger": "bigIntegerSchema"
+                case "BigDecimal": "bigDecimalSchema"
                 case "PrimitiveInteger": "primitiveIntegerSchema"
                 case "PrimitiveBoolean": "primitiveBooleanSchema"
                 case "PrimitiveFloat": "primitiveFloatSchema"

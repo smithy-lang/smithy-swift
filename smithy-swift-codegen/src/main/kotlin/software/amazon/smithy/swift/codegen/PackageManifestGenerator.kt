@@ -82,7 +82,11 @@ class PackageManifestGenerator(
         writer: SwiftWriter,
         dependency: SymbolDependency,
     ) {
-        if (ctx.settings.localDevelopment) {
+        if (dependency.packageName != "smithy-swift") {
+            // Packages other than smithy-swift (e.g. aws-crt-swift) are never pinned to a local path
+            val url = dependency.expectProperty("url", String::class.java)
+            writer.write(".package(url: \$S, from: \$S),", url, dependency.version)
+        } else if (ctx.settings.localDevelopment) {
             // Use local smithy-swift for local development
             writer.write(".package(path: \$S),", "../../../../../../../../smithy-swift")
         } else {

@@ -5,6 +5,8 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
+import class AwsCommonRuntimeKit.BigDecimal
+import class AwsCommonRuntimeKit.BigInteger
 import struct Foundation.Data
 import struct Foundation.Date
 import enum Smithy.ByteStream
@@ -26,8 +28,8 @@ public protocol ShapeSerializer {
     func writeLong(_ schema: Schema, _ value: Int64) throws
     func writeFloat(_ schema: Schema, _ value: Float) throws
     func writeDouble(_ schema: Schema, _ value: Double) throws
-    func writeBigInteger(_ schema: Schema, _ value: Int64) throws
-    func writeBigDecimal(_ schema: Schema, _ value: Double) throws
+    func writeBigInteger(_ schema: Schema, _ value: BigInteger) throws
+    func writeBigDecimal(_ schema: Schema, _ value: BigDecimal) throws
     func writeString(_ schema: Schema, _ value: String) throws
     func writeBlob(_ schema: Schema, _ value: Data) throws
     func writeTimestamp(_ schema: Schema, _ value: Date) throws
@@ -126,9 +128,9 @@ public extension ShapeSerializer {
         case .double:
             try writeDouble(schema, value.asDouble())
         case .bigDecimal:
-            try writeBigDecimal(schema, value.asBigDecimal())
+            try writeBigDecimal(schema, BigDecimal("\(value.asBigDecimal())"))
         case .bigInteger:
-            try writeBigInteger(schema, value.asBigInteger())
+            try writeBigInteger(schema, BigInteger("\(value.asBigInteger())"))
         case .list, .set:
             let listMemberSchema = schema.member
             try writeList(schema, value.asList()) { element, serializer in

@@ -5,6 +5,8 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
+import class AwsCommonRuntimeKit.BigDecimal
+import class AwsCommonRuntimeKit.BigInteger
 import struct Foundation.Data
 import struct Foundation.Date
 import enum Smithy.ByteStream
@@ -29,8 +31,8 @@ public protocol ShapeDeserializer {
     func readLong(_ schema: Schema) throws -> Int64
     func readFloat(_ schema: Schema) throws -> Float
     func readDouble(_ schema: Schema) throws -> Double
-    func readBigInteger(_ schema: Schema) throws -> Int64
-    func readBigDecimal(_ schema: Schema) throws -> Double
+    func readBigInteger(_ schema: Schema) throws -> BigInteger
+    func readBigDecimal(_ schema: Schema) throws -> BigDecimal
     func readString(_ schema: Schema) throws -> String
     func readDocument(_ schema: Schema) throws -> any SmithyDocument
     func readTimestamp(_ schema: Schema) throws -> Date

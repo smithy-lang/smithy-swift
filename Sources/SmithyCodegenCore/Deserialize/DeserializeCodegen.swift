@@ -19,6 +19,10 @@ package struct DeserializeCodegen {
     package func generate(ctx: GenerationContext) throws -> String {
         let writer = SwiftWriter()
         writer.write("import Foundation")
+        // Types that are not part of the SDK's own runtime modules must be imported by the file that uses them.
+        if try ctx.service.descendants.contains(where: { $0.type == .bigInteger || $0.type == .bigDecimal }) {
+            writer.write("import AwsCommonRuntimeKit")
+        }
         writer.write("@_spi(SchemaBasedSerde)")
         writer.write("import Smithy")
         writer.write("@_spi(SchemaBasedSerde)")

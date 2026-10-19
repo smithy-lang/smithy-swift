@@ -49,6 +49,7 @@ import software.amazon.smithy.model.traits.InputTrait
 import software.amazon.smithy.model.traits.SparseTrait
 import software.amazon.smithy.model.traits.StreamingTrait
 import software.amazon.smithy.swift.codegen.customtraits.NestedTrait
+import software.amazon.smithy.swift.codegen.integration.serde.SerdeUtils
 import software.amazon.smithy.swift.codegen.lang.swiftReservedWords
 import software.amazon.smithy.swift.codegen.model.SymbolProperty
 import software.amazon.smithy.swift.codegen.model.boxed
@@ -87,6 +88,11 @@ class SwiftSymbolProvider(
     private val logger = Logger.getLogger(SwiftSymbolProvider::class.java.name)
     private val escaper: Escaper
     private val nullableIndex: NullableIndex
+
+    // BigInteger & BigDecimal shapes are only given arbitrary-precision types by schema-based serde.
+    // For other services they remain Int & Double.
+    private val useArbitraryPrecision: Boolean =
+        service?.let { SerdeUtils.useSchemaBased(swiftSettings, it) } ?: swiftSettings.forceSchemaBased
 
     // model depth; some shapes use `toSymbol()` internally as they convert (e.g.) member shapes to symbols, this tracks
     // how deep in the model we have recursed
@@ -134,9 +140,32 @@ class SwiftSymbolProvider(
 
     override fun shortShape(shape: ShortShape): Symbol = numberShape(shape, "Int16")
 
-    override fun bigIntegerShape(shape: BigIntegerShape): Symbol = numberShape(shape, "Int")
+    override fun bigIntegerShape(shape: BigIntegerShape): Symbol =
+        if (useArbitraryPrecision) arbitraryPrecisionShape(shape, "BigInteger") else numberShape(shape, "Int")
 
-    override fun bigDecimalShape(shape: BigDecimalShape): Symbol = numberShape(shape, "Double")
+    override fun bigDecimalShape(shape: BigDecimalShape): Symbol =
+        if (useArbitraryPrecision) arbitraryPrecisionShape(shape, "BigDecimal") else numberShape(shape, "Double")
+
+    private fun arbitraryPrecisionShape(
+        shape: Shape,
+        typeName: String,
+    ): Symbol =
+        arbitraryPrecisionSymbolBuilder(shape, typeName)
+            .let { handleDefaultValue(shape, it) }
+            .build()
+
+    // Unlike `createSymbolBuilder`, does not resolve a default value.
+    private fun arbitraryPrecisionSymbolBuilder(
+        shape: Shape,
+        typeName: String,
+    ): Symbol.Builder =
+        Symbol
+            .builder()
+            .putProperty("shape", shape)
+            .putProperty("decl", SwiftDeclaration.CLASS.keyword)
+            .name(typeName)
+            .namespace(SwiftDependency.CRT.target, ".")
+            .addDependency(SwiftDependency.CRT)
 
     override fun stringShape(shape: StringShape): Symbol {
         val enumTrait = shape.getTrait(EnumTrait::class.java)
@@ -380,6 +409,13 @@ class SwiftSymbolProvider(
             is FloatShape, is DoubleShape -> {
                 val decimal = ".0".takeIf { !defaultValueLiteral.contains(".") } ?: ""
                 builder.defaultValue(defaultValueLiteral + decimal)
+            }
+            is BigIntegerShape, is BigDecimalShape -> {
+                if (!useArbitraryPrecision) return builder.defaultValue(defaultValueLiteral)
+                val typeName = if (targetShape is BigIntegerShape) "BigInteger" else "BigDecimal"
+                val plainLiteral = java.math.BigDecimal(defaultValueLiteral).toPlainString()
+                val crtSymbol = arbitraryPrecisionSymbolBuilder(targetShape, typeName).build()
+                builder.defaultValueClosure { writer -> writer.format("try! \$N(\$S)", crtSymbol, plainLiteral) }
             }
             // For: boolean, byte, short, integer, long, bigInteger, bigDecimal,
             //      just take the literal string value from the trait.

@@ -66,6 +66,18 @@ class SwiftDependency(
         val SMITHY_AWSJSON = smithySwiftDependency("SmithyAWSJSON")
         val SMITHY_RPCV2CBOR = smithySwiftDependency("SmithyRPCv2CBOR")
 
+        // The CRT package is not part of smithy-swift, but generated code may refer to its types directly.
+        // The version is the minimum CRT release that generated code may be built against.
+        val CRT =
+            SwiftDependency(
+                "AwsCommonRuntimeKit",
+                null,
+                "0.64.0",
+                "https://github.com/awslabs/aws-crt-swift",
+                "../../../aws-crt-swift",
+                "aws-crt-swift",
+            )
+
         fun smithySwiftDependency(name: String): SwiftDependency =
             SwiftDependency(
                 name,

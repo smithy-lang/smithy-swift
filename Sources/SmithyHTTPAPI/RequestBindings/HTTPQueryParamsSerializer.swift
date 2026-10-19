@@ -5,6 +5,8 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
+import class AwsCommonRuntimeKit.BigDecimal
+import class AwsCommonRuntimeKit.BigInteger
 import Foundation
 @_spi(SchemaBasedSerde)
 import class Smithy.HTTPQueryParamsTrait
@@ -88,12 +90,12 @@ public final class HTTPQueryParamsSerializer: ShapeSerializer {
         addToQueryString(value: encoded(value))
     }
 
-    public func writeBigInteger(_ schema: Schema, _ value: Int64) throws {
-        addToQueryString(value: "\(value)")
+    public func writeBigInteger(_ schema: Schema, _ value: BigInteger) throws {
+        addToQueryString(value: try value.toString())
     }
 
-    public func writeBigDecimal(_ schema: Schema, _ value: Double) throws {
-        addToQueryString(value: encoded(value))
+    public func writeBigDecimal(_ schema: Schema, _ value: BigDecimal) throws {
+        addToQueryString(value: try value.toString())
     }
 
     public func writeString(_ schema: Schema, _ value: String) throws {
