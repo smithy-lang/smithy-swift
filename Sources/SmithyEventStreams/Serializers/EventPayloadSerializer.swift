@@ -5,6 +5,8 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
+import class AwsCommonRuntimeKit.BigDecimal
+import class AwsCommonRuntimeKit.BigInteger
 import struct Foundation.Data
 import struct Foundation.Date
 @_spi(SchemaBasedSerde)
@@ -104,11 +106,11 @@ final class EventPayloadSerializer: ShapeSerializer {
         try skipOrThrow(schema)
     }
 
-    func writeBigInteger(_ schema: Schema, _ value: Int64) throws {
+    func writeBigInteger(_ schema: Schema, _ value: BigInteger) throws {
         try skipOrThrow(schema)
     }
 
-    func writeBigDecimal(_ schema: Schema, _ value: Double) throws {
+    func writeBigDecimal(_ schema: Schema, _ value: BigDecimal) throws {
         try skipOrThrow(schema)
     }
 

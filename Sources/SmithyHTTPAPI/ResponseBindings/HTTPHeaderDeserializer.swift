@@ -5,6 +5,8 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
+import class AwsCommonRuntimeKit.BigDecimal
+import class AwsCommonRuntimeKit.BigInteger
 import Foundation
 @_spi(SchemaBasedSerde)
 import class Smithy.HTTPHeaderTrait
@@ -136,12 +138,16 @@ public final class HTTPHeaderDeserializer: ShapeDeserializer {
         try floatingPoint(schema)
     }
 
-    public func readBigInteger(_ schema: Schema) throws -> Int64 {
-        try integer(schema)
+    public func readBigInteger(_ schema: Schema) throws -> BigInteger {
+        let string = try string()
+        guard let bigInteger = try? BigInteger(string) else { throw Self.notA("BigInteger", string, schema) }
+        return bigInteger
     }
 
-    public func readBigDecimal(_ schema: Schema) throws -> Double {
-        try floatingPoint(schema)
+    public func readBigDecimal(_ schema: Schema) throws -> BigDecimal {
+        let string = try string()
+        guard let bigDecimal = try? BigDecimal(string) else { throw Self.notA("BigDecimal", string, schema) }
+        return bigDecimal
     }
 
     public func readString(_ schema: Schema) throws -> String {

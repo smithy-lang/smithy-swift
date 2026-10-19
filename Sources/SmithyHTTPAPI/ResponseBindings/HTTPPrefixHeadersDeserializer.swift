@@ -5,6 +5,8 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
+import class AwsCommonRuntimeKit.BigDecimal
+import class AwsCommonRuntimeKit.BigInteger
 import struct Foundation.Data
 import struct Foundation.Date
 @_spi(SchemaBasedSerde)
@@ -109,11 +111,11 @@ public final class HTTPPrefixHeadersDeserializer: ShapeDeserializer {
         throw notBound("A double")
     }
 
-    public func readBigInteger(_ schema: Schema) throws -> Int64 {
+    public func readBigInteger(_ schema: Schema) throws -> BigInteger {
         throw notBound("A big integer")
     }
 
-    public func readBigDecimal(_ schema: Schema) throws -> Double {
+    public func readBigDecimal(_ schema: Schema) throws -> BigDecimal {
         throw notBound("A big decimal")
     }
 

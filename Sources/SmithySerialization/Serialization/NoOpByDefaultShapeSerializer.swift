@@ -5,6 +5,8 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
+import class AwsCommonRuntimeKit.BigDecimal
+import class AwsCommonRuntimeKit.BigInteger
 import struct Foundation.Data
 import struct Foundation.Date
 import enum Smithy.ByteStream
@@ -70,11 +72,11 @@ public extension NoOpByDefaultShapeSerializer {
         // no operation
     }
 
-    func writeBigInteger(_ schema: Schema, _ value: Int64) throws {
+    func writeBigInteger(_ schema: Schema, _ value: BigInteger) throws {
         // no operation
     }
 
-    func writeBigDecimal(_ schema: Schema, _ value: Double) throws {
+    func writeBigDecimal(_ schema: Schema, _ value: BigDecimal) throws {
         // no operation
     }
 

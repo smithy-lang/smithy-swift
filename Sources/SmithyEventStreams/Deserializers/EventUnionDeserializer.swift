@@ -5,6 +5,8 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
+import class AwsCommonRuntimeKit.BigDecimal
+import class AwsCommonRuntimeKit.BigInteger
 import struct Foundation.Data
 import struct Foundation.Date
 import enum Smithy.ClientError
@@ -113,11 +115,11 @@ struct EventUnionDeserializer: ShapeDeserializer {
         throw notImplemented
     }
 
-    func readBigInteger(_ schema: Schema) throws -> Int64 {
+    func readBigInteger(_ schema: Schema) throws -> BigInteger {
         throw notImplemented
     }
 
-    func readBigDecimal(_ schema: Schema) throws -> Double {
+    func readBigDecimal(_ schema: Schema) throws -> BigDecimal {
         throw notImplemented
     }
 
