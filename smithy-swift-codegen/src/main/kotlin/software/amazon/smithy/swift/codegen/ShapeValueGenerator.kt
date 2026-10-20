@@ -361,9 +361,19 @@ class ShapeValueGenerator(
                     )
                 }
 
+                ShapeType.BIG_INTEGER, ShapeType.BIG_DECIMAL -> {
+                    val symbol = generator.symbolProvider.toSymbol(currShape)
+                    if (symbol.namespace == SwiftDependency.CRT.target) {
+                        // Arbitrary-precision types are constructed from the exact text of the number
+                        val plainLiteral = java.math.BigDecimal(node.value.toString()).toPlainString()
+                        writer.writeInline("try! \$N(\$S)", symbol, plainLiteral)
+                    } else {
+                        writer.writeInline("\$L", node.value)
+                    }
+                }
+
                 ShapeType.BYTE, ShapeType.SHORT, ShapeType.INTEGER,
                 ShapeType.LONG, ShapeType.DOUBLE, ShapeType.FLOAT,
-                ShapeType.BIG_INTEGER, ShapeType.BIG_DECIMAL,
                 -> writer.writeInline("\$L", node.value)
 
                 else -> throw CodegenException("unexpected shape type $currShape for numberNode")

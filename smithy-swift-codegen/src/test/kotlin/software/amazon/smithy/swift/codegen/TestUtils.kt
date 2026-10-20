@@ -429,6 +429,7 @@ fun getSettingsNode(
     moduleName: String = "example",
     moduleVersion: String = "1.0.0",
     sdkId: String = "Example",
+    forceSchemaBased: Boolean = false,
 ): ObjectNode =
     Node
         .objectNodeBuilder()
@@ -440,6 +441,7 @@ fun getSettingsNode(
         .withMember("author", Node.from("Amazon Web Services"))
         .withMember("gitRepo", Node.from("https://github.com/aws-amplify/amplify-codegen.git"))
         .withMember("swiftVersion", Node.from("5.5.0"))
+        .withMember("forceSchemaBased", Node.from(forceSchemaBased))
         .build()
 
 fun Model.defaultSettings(
@@ -447,10 +449,11 @@ fun Model.defaultSettings(
     moduleName: String = "example",
     moduleVersion: String = "1.0.0",
     sdkId: String = "Example",
+    forceSchemaBased: Boolean = false,
 ): SwiftSettings =
     SwiftSettings.from(
         this,
-        getSettingsNode(serviceShapeId, moduleName, moduleVersion, sdkId),
+        getSettingsNode(serviceShapeId, moduleName, moduleVersion, sdkId, forceSchemaBased),
     )
 
 fun getModelFileContents(

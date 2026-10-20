@@ -5,10 +5,13 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
+import class AwsCommonRuntimeKit.BigDecimal
+import class AwsCommonRuntimeKit.BigInteger
 import struct Foundation.Data
 import struct Foundation.Date
 import class Foundation.JSONSerialization
 import class Foundation.NSNumber
+import class Foundation.NSString
 @_spi(SchemaBasedSerde)
 @_spi(SmithyDocumentImpl) import Smithy
 @_spi(SchemaBasedSerde)
@@ -184,15 +187,30 @@ public final class Deserializer: ShapeDeserializer {
         }
     }
 
-    public func readBigInteger(_ schema: Schema) throws -> Int64 {
+    // JSON-based protocols write bigInteger & bigDecimal as JSON numbers.  JSONSerialization, which parses them,
+    // may have already rounded a number that doesn't fit its fixed-width types; that loss is accepted in these
+    // protocols, so the number is read from whatever JSONSerialization retained.
+
+    public func readBigInteger(_ schema: Schema) throws -> BigInteger {
         try nullCheck()
         guard case .number(let number) = value else { throw SerializerError("Expected number") }
-        guard let bigInt = Int64(exactly: number.int64Value) else { throw SerializerError("Number is not Int64") }
-        return bigInt
+        let text = number.stringValue
+        if let bigInteger = try? BigInteger(text) { return bigInteger }
+
+        // A whole number held as a floating-point value is written in exponent form, e.g. "1e+20".
+        let double = number.doubleValue
+        guard double.isFinite, double == double.rounded() else {
+            throw SerializerError("Number \(text) is not an integer")
+        }
+        return try BigInteger(NSString(format: "%.0f", double) as String)
     }
 
-    public func readBigDecimal(_ schema: Schema) throws -> Double {
-        try readDouble(schema)
+    public func readBigDecimal(_ schema: Schema) throws -> BigDecimal {
+        try nullCheck()
+        guard case .number(let number) = value else { throw SerializerError("Expected number") }
+        let text = number.stringValue
+        guard let bigDecimal = try? BigDecimal(text) else { throw SerializerError("Number \(text) is not a decimal") }
+        return bigDecimal
     }
 
     public func readString(_ schema: Schema) throws -> String {

@@ -5,6 +5,8 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
+import class AwsCommonRuntimeKit.BigDecimal
+import class AwsCommonRuntimeKit.BigInteger
 import class AwsCommonRuntimeKit.CBOREncoder
 import struct Foundation.Data
 import struct Foundation.Date
@@ -88,14 +90,14 @@ public final class Serializer: ShapeSerializer {
         encoder.encode(.double(value))
     }
 
-    public func writeBigInteger(_ schema: Schema, _ value: Int64) throws {
+    public func writeBigInteger(_ schema: Schema, _ value: BigInteger) throws {
         writeMember(schema: schema)
-        encoder.encode(.int(value))
+        encoder.encode(.bigInteger(value))
     }
 
-    public func writeBigDecimal(_ schema: Schema, _ value: Double) throws {
+    public func writeBigDecimal(_ schema: Schema, _ value: BigDecimal) throws {
         writeMember(schema: schema)
-        encoder.encode(.double(value))
+        encoder.encode(.bigDecimal(value))
     }
 
     public func writeString(_ schema: Schema, _ value: String) throws {

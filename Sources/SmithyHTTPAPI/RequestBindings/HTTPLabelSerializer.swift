@@ -5,6 +5,8 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
+import class AwsCommonRuntimeKit.BigDecimal
+import class AwsCommonRuntimeKit.BigInteger
 import Foundation
 @_spi(SchemaBasedSerde)
 import class Smithy.HTTPLabelTrait
@@ -83,14 +85,14 @@ public final class HTTPLabelSerializer: ShapeSerializer {
         matchNonGreedy(label: label, value: encoded(value))
     }
 
-    public func writeBigInteger(_ schema: Schema, _ value: Int64) throws {
+    public func writeBigInteger(_ schema: Schema, _ value: BigInteger) throws {
         guard let label = checkForTraitAndGetLabel(schema: schema) else { return }
-        matchNonGreedy(label: label, value: "\(value)")
+        matchNonGreedy(label: label, value: try value.toString())
     }
 
-    public func writeBigDecimal(_ schema: Schema, _ value: Double) throws {
+    public func writeBigDecimal(_ schema: Schema, _ value: BigDecimal) throws {
         guard let label = checkForTraitAndGetLabel(schema: schema) else { return }
-        matchNonGreedy(label: label, value: encoded(value))
+        matchNonGreedy(label: label, value: try value.toString())
     }
 
     public func writeString(_ schema: Schema, _ value: String) throws {

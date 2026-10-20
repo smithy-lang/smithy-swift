@@ -60,9 +60,11 @@ struct NullableIndex {
             return false
         }
 
-        // Only number & Boolean types are allowed to be non-optional
+        // Only Boolean & fixed-width number types are allowed to be non-optional.
+        // This matches Smithy's `NullableIndex`, which does not treat a zero default on
+        // a bigInteger or bigDecimal as a Smithy 1.0 zero value.
         let allowedTypes =
-            [ShapeType.boolean, .bigDecimal, .bigInteger, .byte, .double, .float, .intEnum, .integer, .long, .short]
+            [ShapeType.boolean, .byte, .double, .float, .intEnum, .integer, .long, .short]
         guard allowedTypes.contains(target.type) else { return false }
 
         // Check if there is a default trait with a zero/false value.  If so, member is non-optional.

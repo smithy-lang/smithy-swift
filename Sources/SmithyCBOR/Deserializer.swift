@@ -5,6 +5,8 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
+import class AwsCommonRuntimeKit.BigDecimal
+import class AwsCommonRuntimeKit.BigInteger
 import class AwsCommonRuntimeKit.CBORDecoder
 import struct Foundation.Data
 import struct Foundation.Date
@@ -166,12 +168,49 @@ public class Deserializer: ShapeDeserializer {
         }
     }
 
-    public func readBigInteger(_ schema: Schema) throws -> Int64 {
-        try readLong(schema)
+    public func readBigInteger(_ schema: Schema) throws -> BigInteger {
+        guard decoder.hasNext() else {
+            throw CBORDecoderError("member \(schema.id) ended unexpectedly")
+        }
+        try nullCheck()
+        // Accepts an int, a uint, or a bignum (tag 2 or 3).  The decoder is left unmoved on failure.
+        do {
+            return try decoder.popNextBigInteger()
+        } catch {
+            throw CBORDecoderError("member \(schema.id) expected an integer or bignum: \(error)")
+        }
     }
 
-    public func readBigDecimal(_ schema: Schema) throws -> Double {
-        try readDouble(schema)
+    public func readBigDecimal(_ schema: Schema) throws -> BigDecimal {
+        guard decoder.hasNext() else {
+            throw CBORDecoderError("member \(schema.id) ended unexpectedly")
+        }
+        try nullCheck()
+        // A decimal fraction (tag 4) is the expected encoding.  The decoder is left unmoved on failure,
+        // so fall back to accepting any other CBOR number.
+        if let decimal = try? decoder.popNextBigDecimal() {
+            return decimal
+        }
+        let next = try decoder.popNext()
+        do {
+            switch next {
+            case .bigDecimal(let value):
+                return value
+            case .bigInteger(let value):
+                return try BigDecimal(value.toString())
+            case .int(let value):
+                return try BigDecimal("\(value)")
+            case .uint(let value):
+                return try BigDecimal("\(value)")
+            case .double(let value):
+                return try BigDecimal("\(value)")
+            default:
+                break
+            }
+        } catch {
+            throw CBORDecoderError("member \(schema.id) could not be read as a decimal: \(error)")
+        }
+        throw CBORDecoderError("member \(schema.id) expected a decimal fraction or number but got \(next) instead")
     }
 
     public func readString(_ schema: Schema) throws -> String {
@@ -297,7 +336,8 @@ public class Deserializer: ShapeDeserializer {
                 try skipValue() // skip value
             }
             _ = try decoder.popNext()
-        case .array, .bool, .bytes, .date, .double, .int, .map, .null, .tag, .text, .uint, .undefined:
+        case .array, .bigDecimal, .bigInteger, .bool, .bytes, .date, .double, .int, .map, .null, .tag, .text, .uint,
+             .undefined:
             break
         case .indef_break, .indef_bytes_start, .indef_text_start:
             throw CBORDecoderError("unexpected \(next)")
