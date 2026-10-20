@@ -5,13 +5,15 @@
 package software.amazon.smithy.swift.codegen
 
 import software.amazon.smithy.codegen.core.SymbolDependency
-import software.amazon.smithy.swift.codegen.integration.ProtocolGenerator
-import kotlin.jvm.optionals.getOrNull
+import software.amazon.smithy.swift.codegen.core.GenerationContext
+import software.amazon.smithy.swift.codegen.utils.SDKFileUtils
 
-class PackageManifestGenerator(val ctx: ProtocolGenerator.GenerationContext) {
-
+class PackageManifestGenerator(
+    val ctx: GenerationContext,
+) {
     fun writePackageManifest(dependencies: List<SymbolDependency>) {
-        ctx.delegator.useFileWriter("Package.swift.txt") { writer ->
+        val filename = SDKFileUtils(ctx.settings).rootDirFilePath("Package")
+        ctx.writerDelegator().useFileWriter(filename) { writer ->
             writer.write("// swift-tools-version: \$L", ctx.settings.swiftVersion)
             writer.write("")
             writer.write("import PackageDescription")
@@ -21,33 +23,33 @@ class PackageManifestGenerator(val ctx: ProtocolGenerator.GenerationContext) {
                 writer.write("name: \$S,", ctx.settings.moduleName)
 
                 writer.openBlock("platforms: [", "],") {
-                    writer.write(".macOS(.v10_15), .iOS(.v13)")
+                    writer.write(".macOS(.v11),")
+                    writer.write(".iOS(.v15),")
+                    writer.write(".tvOS(.v15),")
+                    writer.write(".watchOS(.v8),")
                 }
 
                 writer.openBlock("products: [", "],") {
                     writer.write(".library(name: \$S, targets: [\$S])", ctx.settings.moduleName, ctx.settings.moduleName)
                 }
 
-                val externalDependencies = dependencies
-                    .filter { it.expectProperty("target", String::class.java) != "SmithyTestUtil" } // SmithyTestUtil links to test target only
-                    .filter {
-                        it.getProperty("url", String::class.java).getOrNull() != null ||
-                            it.getProperty("scope", String::class.java).getOrNull() != null
-                    }
-                val dependenciesByURL = externalDependencies
-                    .distinctBy {
-                        it.getProperty("url", String::class.java).getOrNull()
-                            ?: "${it.getProperty("scope", String::class.java).get()}.${it.packageName}"
-                    }
-                    .sorted()
+                val externalDependencies =
+                    dependencies.filter { it.getProperty("url", String::class.java).isPresent }
+
+                val dependenciesByURL =
+                    externalDependencies
+                        .distinctBy { it.expectProperty("url", String::class.java) }
+                        .sortedBy { it.targetName }
 
                 writer.openBlock("dependencies: [", "],") {
                     dependenciesByURL.forEach { writePackageDependency(writer, it) }
                 }
 
-                val dependenciesByTarget = externalDependencies
-                    .distinctBy { it.expectProperty("target", String::class.java) + it.packageName }
-                    .sorted()
+                val dependenciesByTarget =
+                    externalDependencies
+                        .filter { it.targetName != "SmithyTestUtil" }
+                        .distinctBy { it.targetName + it.packageName }
+                        .sortedBy { it.targetName }
 
                 writer.openBlock("targets: [", "]") {
                     writer.openBlock(".target(", "),") {
@@ -55,15 +57,20 @@ class PackageManifestGenerator(val ctx: ProtocolGenerator.GenerationContext) {
                         writer.openBlock("dependencies: [", "],") {
                             dependenciesByTarget.forEach { writeTargetDependency(writer, it) }
                         }
-                        writer.openBlock("resources: [", "]") {
-                            writer.write(".process(\"Resources\")")
+                        writer.openBlock("plugins: [", "]") {
+                            writer.openBlock(".plugin(", "),") {
+                                writer.write("name: \$S,", "SmithyCodeGeneratorPlugin")
+                                writer.write("package: \$S", "smithy-swift")
+                            }
                         }
                     }
-                    writer.openBlock(".testTarget(", ")") {
-                        writer.write("name: \$S,", ctx.settings.testModuleName)
-                        writer.openBlock("dependencies: [", "]") {
-                            writer.write("\$S,", ctx.settings.moduleName)
-                            SwiftDependency.SMITHY_TEST_UTIL.dependencies.forEach { writeTargetDependency(writer, it) }
+                    if (externalDependencies.any { it.targetName == "SmithyTestUtil" }) {
+                        writer.openBlock(".testTarget(", ")") {
+                            writer.write("name: \$S,", ctx.settings.testModuleName)
+                            writer.openBlock("dependencies: [", "]") {
+                                writer.write("\$S,", ctx.settings.moduleName)
+                                SwiftDependency.SMITHY_TEST_UTIL.dependencies.forEach { writeTargetDependency(writer, it) }
+                            }
                         }
                     }
                 }
@@ -71,27 +78,30 @@ class PackageManifestGenerator(val ctx: ProtocolGenerator.GenerationContext) {
         }
     }
 
-    private fun writePackageDependency(writer: SwiftWriter, dependency: SymbolDependency) {
-        writer.openBlock(".package(", "),") {
-            val scope = dependency.getProperty("scope", String::class.java).getOrNull()
-            scope?.let {
-                writer.write("id: \$S,", "$it.${dependency.packageName}")
-            }
-            val url = dependency.getProperty("url", String::class.java).getOrNull()
-            url?.let {
-                writer.write("url: \$S,", it)
-            }
-            writer.write("exact: \$S", dependency.version)
+    private fun writePackageDependency(
+        writer: SwiftWriter,
+        dependency: SymbolDependency,
+    ) {
+        if (ctx.settings.localDevelopment) {
+            // Use local smithy-swift for local development
+            writer.write(".package(path: \$S),", "../../../../../../../../smithy-swift")
+        } else {
+            // For other generated clients, use stable, published smithy-swift
+            val url = dependency.expectProperty("url", String::class.java)
+            writer.write(".package(url: \$S, exact: \$S),", url, dependency.version)
         }
     }
 
-    private fun writeTargetDependency(writer: SwiftWriter, dependency: SymbolDependency) {
+    private fun writeTargetDependency(
+        writer: SwiftWriter,
+        dependency: SymbolDependency,
+    ) {
         writer.openBlock(".product(", "),") {
-            val target = dependency.expectProperty("target", String::class.java)
-            writer.write("name: \$S,", target)
-            val scope = dependency.getProperty("scope", String::class.java).getOrNull()
-            val packageName = scope?.let { "$it.${dependency.packageName}" } ?: dependency.packageName
-            writer.write("package: \$S", packageName)
+            writer.write("name: \$S,", dependency.targetName)
+            writer.write("package: \$S", dependency.packageName)
         }
     }
 }
+
+val SymbolDependency.targetName: String
+    get() = expectProperty("target", String::class.java)

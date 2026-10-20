@@ -33,14 +33,14 @@ object SymbolProperty {
 /**
  * Test if a symbol is boxed or not
  */
-fun Symbol.isBoxed(): Boolean {
-    return getProperty(SymbolProperty.BOXED_KEY).map {
-        when (it) {
-            is Boolean -> it
-            else -> false
-        }
-    }.orElse(false)
-}
+fun Symbol.isBoxed(): Boolean =
+    getProperty(SymbolProperty.BOXED_KEY)
+        .map {
+            when (it) {
+                is Boolean -> it
+                else -> false
+            }
+        }.orElse(false)
 
 /**
  * Gets the default value for the symbol if present, else null
@@ -73,7 +73,9 @@ fun Symbol.defaultValueFromClosure(writer: SwiftWriter): String? {
     return if (default.isPresent) {
         val closure = default.get() as Function1<SwiftWriter, String>
         closure(writer)
-    } else null
+    } else {
+        null
+    }
 }
 
 /**
@@ -95,9 +97,10 @@ fun Symbol.Builder.defaultValue(value: String): Symbol.Builder = apply { putProp
  * Example: Default value for a symbol called X could be "Data()", which means when the symbol X is printed by SwiftWriter,
  *      we need to import Foundation.Data.
  */
-fun Symbol.Builder.defaultValueClosure(closure: (SwiftWriter) -> String): Symbol.Builder = apply {
-    putProperty(SymbolProperty.DEFAULT_VALUE_CLOSURE_KEY, closure)
-}
+fun Symbol.Builder.defaultValueClosure(closure: (SwiftWriter) -> String): Symbol.Builder =
+    apply {
+        putProperty(SymbolProperty.DEFAULT_VALUE_CLOSURE_KEY, closure)
+    }
 
 fun SymbolProvider.toMemberNames(shape: MemberShape): Pair<String, String> {
     val escapedName = toMemberName(shape)

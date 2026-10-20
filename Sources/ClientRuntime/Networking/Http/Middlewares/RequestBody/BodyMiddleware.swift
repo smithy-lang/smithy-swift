@@ -5,9 +5,9 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
+import struct Foundation.Data
 import Smithy
 import SmithyHTTPAPI
-import struct Foundation.Data
 @_spi(SmithyReadWrite) import protocol SmithyReadWrite.SmithyWriter
 @_spi(SmithyReadWrite) import typealias SmithyReadWrite.WritingClosure
 

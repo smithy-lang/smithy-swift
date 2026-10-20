@@ -35,7 +35,7 @@ class StructureGeneratorTests {
         val model = createModelWithStructureWithoutErrorTrait()
         val swiftSettings = model.defaultSettings()
         val provider: SymbolProvider = SwiftCodegenPlugin.createSymbolProvider(model, swiftSettings)
-        val writer = SwiftWriter("MockPackage")
+        val writer = SwiftWriter("MockPackage", moduleName = swiftSettings.moduleName)
         val struct = model.getShape(ShapeId.from("smithy.example#MyStruct")).get() as StructureShape
         val generator = StructureGenerator(model, provider, writer, struct, swiftSettings)
         generator.render()
@@ -55,8 +55,7 @@ public struct MyStruct: Swift.Sendable {
         bar: Swift.Int = 0,
         baz: Swift.Int? = nil,
         foo: Swift.String? = nil
-    )
-    {
+    ) {
         self.bar = bar
         self.baz = baz
         self.foo = foo
@@ -73,8 +72,10 @@ public struct MyStruct: Swift.Sendable {
         val context = buildMockPluginContext(model, manifest, "smithy.example#Example")
         SwiftCodegenPlugin().execute(context)
 
-        val primitiveTypesInput = manifest
-            .getFileString("Sources/example/models/PrimitiveTypesInput.swift").get()
+        val primitiveTypesInput =
+            manifest
+                .getFileString("example/Sources/example/models/PrimitiveTypesInput.swift")
+                .get()
         Assertions.assertNotNull(primitiveTypesInput)
         val expected = """
 public struct PrimitiveTypesInput: Swift.Sendable {
@@ -110,8 +111,7 @@ public struct PrimitiveTypesInput: Swift.Sendable {
         primitiveShortVal: Swift.Int16 = 0,
         shortVal: Swift.Int16? = nil,
         str: Swift.String? = nil
-    )
-    {
+    ) {
         self.booleanVal = booleanVal
         self.byteVal = byteVal
         self.doubleVal = doubleVal
@@ -134,12 +134,52 @@ public struct PrimitiveTypesInput: Swift.Sendable {
     }
 
     @Test
+    fun `it renders member-level default null as nil overriding target default`() {
+        val model = javaClass.classLoader.getResource("default-null-override-test.smithy").asSmithy()
+        val manifest = MockManifest()
+        val context = buildMockPluginContext(model, manifest, "smithy.example#Example")
+        SwiftCodegenPlugin().execute(context)
+
+        val input =
+            manifest
+                .getFileString("example/Sources/example/models/DefaultNullOverrideInput.swift")
+                .get()
+        Assertions.assertNotNull(input)
+        // A member with `@default: null` drops the default it would inherit from its target
+        // shape, so it generates `= nil`; a member that restates the target default keeps `= false`.
+        input.shouldContain(
+            """
+    public init(
+        keepsDefault: Swift.Bool? = false,
+        overriddenToNull: Swift.Bool? = nil
+    ) {
+""",
+        )
+
+        val output =
+            manifest
+                .getFileString("example/Sources/example/models/DefaultNullOverrideOutput.swift")
+                .get()
+        Assertions.assertNotNull(output)
+        // The null *node* (`= null`) means no default -> `= nil`, but the string "null"
+        // (`= "null"`) is a real default and must be preserved, not mistaken for the null node.
+        output.shouldContain(
+            """
+    public init(
+        overriddenToNull: Swift.Bool? = nil,
+        stringDefaultingToNull: Swift.String? = "null"
+    ) {
+""",
+        )
+    }
+
+    @Test
     fun `it renders recursive nested shapes`() {
         val structs = createStructureContainingNestedRecursiveShape()
         val model = javaClass.classLoader.getResource("recursive-shape-test.smithy").asSmithy()
         val swiftSettings = model.defaultSettings()
         val provider = SwiftCodegenPlugin.createSymbolProvider(model, swiftSettings)
-        val writer = SwiftWriter("MockPackage")
+        val writer = SwiftWriter("MockPackage", moduleName = swiftSettings.moduleName)
 
         for (struct in structs) {
             val generator = StructureGenerator(model, provider, writer, struct, swiftSettings)
@@ -154,8 +194,7 @@ public struct RecursiveShapesInputOutputNested1: Swift.Sendable {
     public init(
         foo: Swift.String? = nil,
         nested: RecursiveShapesInputOutputNested2? = nil
-    )
-    {
+    ) {
         self.foo = foo
         self.nested = nested
     }
@@ -168,8 +207,7 @@ public struct RecursiveShapesInputOutputNested2: Swift.Sendable {
     public init(
         bar: Swift.String? = nil,
         recursiveMember: RecursiveShapesInputOutputNested1? = nil
-    )
-    {
+    ) {
         self.bar = bar
         self.recursiveMember = recursiveMember
     }
@@ -181,8 +219,7 @@ public struct RecursiveShapesInputOutput: Swift.Sendable {
 
     public init(
         nested: RecursiveShapesInputOutputNested1? = nil
-    )
-    {
+    ) {
         self.nested = nested
     }
 }
@@ -196,7 +233,7 @@ public struct RecursiveShapesInputOutput: Swift.Sendable {
         val model = javaClass.classLoader.getResource("recursive-shape-test.smithy").asSmithy()
         val swiftSettings = model.defaultSettings()
         val provider = SwiftCodegenPlugin.createSymbolProvider(model, swiftSettings)
-        val writer = SwiftWriter("MockPackage")
+        val writer = SwiftWriter("MockPackage", moduleName = swiftSettings.moduleName)
 
         for (struct in structs) {
             val generator = StructureGenerator(model, provider, writer, struct, swiftSettings)
@@ -211,8 +248,7 @@ public struct RecursiveShapesInputOutputNestedList1: Swift.Sendable {
     public init(
         foo: Swift.String? = nil,
         recursiveList: [RecursiveShapesInputOutputNested2]? = nil
-    )
-    {
+    ) {
         self.foo = foo
         self.recursiveList = recursiveList
     }
@@ -225,8 +261,7 @@ public struct RecursiveShapesInputOutputNested2: Swift.Sendable {
     public init(
         bar: Swift.String? = nil,
         recursiveMember: RecursiveShapesInputOutputNested1? = nil
-    )
-    {
+    ) {
         self.bar = bar
         self.recursiveMember = recursiveMember
     }
@@ -238,8 +273,7 @@ public struct RecursiveShapesInputOutputLists: Swift.Sendable {
 
     public init(
         nested: RecursiveShapesInputOutputNested1? = nil
-    )
-    {
+    ) {
         self.nested = nested
     }
 }
@@ -249,12 +283,11 @@ public struct RecursiveShapesInputOutputLists: Swift.Sendable {
 
     @Test
     fun `it renders error structures`() {
-
         val struct: StructureShape = createStructureWithOptionalErrorMessage()
         val model: Model = createModelWithStructureShape(struct)
         val swiftSettings = model.defaultSettings()
         val provider: SymbolProvider = SwiftCodegenPlugin.createSymbolProvider(model, swiftSettings)
-        val writer = SwiftWriter("MockPackage")
+        val writer = SwiftWriter("MockPackage", moduleName = swiftSettings.moduleName)
         val generator = StructureGenerator(model, provider, writer, struct, swiftSettings)
         generator.renderErrors()
 
@@ -262,9 +295,9 @@ public struct RecursiveShapesInputOutputLists: Swift.Sendable {
 
         contents.shouldContain(swiftSettings.copyrightNotice)
         val expectedGeneratedStructure = """
-public struct MyError: ClientRuntime.ModeledError, ClientRuntime.ServiceError, ClientRuntime.HTTPError, Swift.Error {
+public struct MyError: ClientRuntime.ModeledError, ClientRuntime.ServiceError, ClientRuntime.HTTPError, Swift.Error, Swift.Sendable {
 
-    public struct Properties {
+    public struct Properties: Swift.Sendable {
         /// This is documentation about the member.
         public internal(set) var baz: Swift.Int? = nil
         public internal(set) var message: Swift.String? = nil
@@ -275,15 +308,14 @@ public struct MyError: ClientRuntime.ModeledError, ClientRuntime.ServiceError, C
     public static var fault: ClientRuntime.ErrorFault { .client }
     public static var isRetryable: Swift.Bool { true }
     public static var isThrottling: Swift.Bool { false }
-    public internal(set) var httpResponse = SmithyHTTPAPI.HTTPResponse()
-    public internal(set) var message: Swift.String?
-    public internal(set) var requestID: Swift.String?
+    public var httpResponse = SmithyHTTPAPI.HTTPResponse()
+    public var message: Swift.String?
+    public var requestID: Swift.String?
 
     public init(
         baz: Swift.Int? = nil,
         message: Swift.String? = nil
-    )
-    {
+    ) {
         self.properties.baz = baz
         self.properties.message = message
     }
@@ -293,14 +325,13 @@ public struct MyError: ClientRuntime.ModeledError, ClientRuntime.ServiceError, C
     }
 
     private fun createModelWithStructureShape(struct: StructureShape): Model {
-
         val assembler = Model.assembler().addShape(struct)
         struct.allMembers.values.forEach(
             Consumer { shape: MemberShape? ->
                 assembler.addShape(
-                    shape
+                    shape,
                 )
-            }
+            },
         )
 
         return assembler.assemble().unwrap()
@@ -312,7 +343,7 @@ public struct MyError: ClientRuntime.ModeledError, ClientRuntime.ServiceError, C
         val manifest = MockManifest()
         val context = buildMockPluginContext(model, manifest, "smithy.example#Example")
         SwiftCodegenPlugin().execute(context)
-        val contents = getModelFileContents("Sources/example", "JsonListsInput.swift", manifest)
+        val contents = getModelFileContents("example/Sources/example", "JsonListsInput.swift", manifest)
         contents.shouldSyntacticSanityCheck()
 
         val expectedContents = """
@@ -333,8 +364,7 @@ public struct JsonListsInput: Swift.Sendable {
         stringList: [Swift.String]? = nil,
         stringSet: Swift.Set<Swift.String>? = nil,
         timestampList: [Foundation.Date]? = nil
-    )
-    {
+    ) {
         self.booleanList = booleanList
         self.integerList = integerList
         self.nestedStringList = nestedStringList
@@ -359,8 +389,10 @@ public struct JsonListsInput: Swift.Sendable {
         val context = buildMockPluginContext(model, manifest, "smithy.example#Example")
         SwiftCodegenPlugin().execute(context)
 
-        val jsonMapsInput = manifest
-            .getFileString("Sources/example/models/JsonMapsInput.swift").get()
+        val jsonMapsInput =
+            manifest
+                .getFileString("example/Sources/example/models/JsonMapsInput.swift")
+                .get()
         Assertions.assertNotNull(jsonMapsInput)
         val expectedJsonMapsInput = """
 public struct JsonMapsInput: Swift.Sendable {
@@ -382,8 +414,7 @@ public struct JsonMapsInput: Swift.Sendable {
         sparseNumberMap: [Swift.String: Swift.Int?]? = nil,
         sparseStringMap: [Swift.String: Swift.String?]? = nil,
         sparseStructMap: [Swift.String: ExampleClientTypes.GreetingStruct?]? = nil
-    )
-    {
+    ) {
         self.denseBooleanMap = denseBooleanMap
         self.denseNumberMap = denseNumberMap
         self.denseStringMap = denseStringMap
@@ -397,8 +428,10 @@ public struct JsonMapsInput: Swift.Sendable {
 """
         jsonMapsInput.shouldContain(expectedJsonMapsInput)
 
-        val jsonMapsOutput = manifest
-            .getFileString("Sources/example/models/JsonMapsOutput.swift").get()
+        val jsonMapsOutput =
+            manifest
+                .getFileString("example/Sources/example/models/JsonMapsOutput.swift")
+                .get()
         Assertions.assertNotNull(jsonMapsOutput)
         val expectedJsonMapsOutput = """
 public struct JsonMapsOutput: Swift.Sendable {
@@ -420,8 +453,7 @@ public struct JsonMapsOutput: Swift.Sendable {
         sparseNumberMap: [Swift.String: Swift.Int?]? = nil,
         sparseStringMap: [Swift.String: Swift.String?]? = nil,
         sparseStructMap: [Swift.String: ExampleClientTypes.GreetingStruct?]? = nil
-    )
-    {
+    ) {
         self.denseBooleanMap = denseBooleanMap
         self.denseNumberMap = denseNumberMap
         self.denseStringMap = denseStringMap
@@ -443,8 +475,10 @@ public struct JsonMapsOutput: Swift.Sendable {
         val context = buildMockPluginContext(model, manifest, "smithy.example#Example")
         SwiftCodegenPlugin().execute(context)
 
-        var structWithDeprecatedTrait = manifest
-            .getFileString("Sources/example/models/StructWithDeprecatedTrait.swift").get()
+        var structWithDeprecatedTrait =
+            manifest
+                .getFileString("example/Sources/example/models/StructWithDeprecatedTrait.swift")
+                .get()
         Assertions.assertNotNull(structWithDeprecatedTrait)
         var structContainsDeprecatedTrait = """
 extension ExampleClientTypes {
@@ -454,8 +488,10 @@ extension ExampleClientTypes {
 """
         structWithDeprecatedTrait.shouldContain(structContainsDeprecatedTrait)
 
-        structWithDeprecatedTrait = manifest
-            .getFileString("Sources/example/models/StructSincePropertySet.swift").get()
+        structWithDeprecatedTrait =
+            manifest
+                .getFileString("example/Sources/example/models/StructSincePropertySet.swift")
+                .get()
         Assertions.assertNotNull(structWithDeprecatedTrait)
         structContainsDeprecatedTrait = """
 extension ExampleClientTypes {
@@ -473,8 +509,10 @@ extension ExampleClientTypes {
         val context = buildMockPluginContext(model, manifest, "smithy.example#Example")
         SwiftCodegenPlugin().execute(context)
 
-        val structWithDeprecatedTraitMember = manifest
-            .getFileString("Sources/example/models/OperationWithDeprecatedTraitInput.swift").get()
+        val structWithDeprecatedTraitMember =
+            manifest
+                .getFileString("example/Sources/example/models/OperationWithDeprecatedTraitInput.swift")
+                .get()
         Assertions.assertNotNull(structWithDeprecatedTraitMember)
         val structContainsDeprecatedMember = """
 @available(*, deprecated, message: "This shape is no longer used. API deprecated since 1.3")
@@ -499,8 +537,10 @@ public struct OperationWithDeprecatedTraitInput: Swift.Sendable {
         val context = buildMockPluginContext(model, manifest, "smithy.example#Example")
         SwiftCodegenPlugin().execute(context)
 
-        val structWithDeprecatedTraitMember = manifest
-            .getFileString("Sources/example/models/Foo.swift").get()
+        val structWithDeprecatedTraitMember =
+            manifest
+                .getFileString("example/Sources/example/models/Foo.swift")
+                .get()
         Assertions.assertNotNull(structWithDeprecatedTraitMember)
         val structContainsDeprecatedMember = """
 extension ExampleClientTypes {

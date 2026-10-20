@@ -8,6 +8,7 @@
 import ClientRuntime
 import Smithy
 import SmithyHTTPAPI
+import SmithyTelemetryAPI
 
 public struct TestOrchestrator {
     /// - Returns: An OrchestratorBuilder set up with defaults for selectAuthScheme and telemetry.

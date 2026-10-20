@@ -6,9 +6,10 @@
 //
 
 import struct SmithyHTTPAPI.Endpoint
+import enum SmithyHTTPAPI.EndpointPropertyValue
 import struct SmithyHTTPAPI.Headers
 
-public struct DefaultEndpointResolver<Params: EndpointsRequestContextProviding> {
+public struct DefaultEndpointResolver<Params: EndpointsRequestContextProviding>: Sendable {
 
     private let engine: ClientRuntime.EndpointsRuleEngine
 
@@ -32,6 +33,6 @@ public struct DefaultEndpointResolver<Params: EndpointsRequestContextProviding> 
 
         let headers = crtResolvedEndpoint.getHeaders() ?? [:]
         let properties = crtResolvedEndpoint.getProperties() ?? [:]
-        return try Endpoint(urlString: url, headers: Headers(headers), properties: properties)
+        return try Endpoint(urlString: url, headers: Headers(headers), endpointProperties: properties)
     }
 }

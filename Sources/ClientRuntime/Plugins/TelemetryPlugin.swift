@@ -5,6 +5,8 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
+import SmithyTelemetryAPI
+
 public class TelemetryPlugin: Plugin {
     private let telemetryProvider: TelemetryProvider
 
@@ -26,10 +28,12 @@ public class TelemetryPlugin: Plugin {
         )
     }
 
-    public func configureClient(clientConfiguration: ClientConfiguration) {
-        if var config = clientConfiguration as? DefaultClientConfiguration {
-            config.telemetryProvider = self.telemetryProvider
-        }
+    public func configureClient<Config: ClientConfiguration>(clientConfiguration: inout Config) async throws {
+        guard var config = clientConfiguration as? any DefaultClientConfiguration else { return }
+        config.telemetryProvider = self.telemetryProvider
+
+        guard let modifiedConfig = config as? Config else { return }
+        clientConfiguration = modifiedConfig
     }
 }
 

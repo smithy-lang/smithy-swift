@@ -12,14 +12,24 @@ import software.amazon.smithy.swift.codegen.utils.toUpperCamelCase
 /**
  * Represents a config field on a client config struct.
  */
-data class ConfigField(val memberName: String?, val type: Symbol, val propFormatter: String = "\$N", private val documentation: String? = null, val paramFormatter: String = "\$D")
+data class ConfigField(
+    val memberName: String?,
+    val type: Symbol,
+    val propFormatter: String = "\$N",
+    private val documentation: String? = null,
+    val paramFormatter: String = "\$D",
+)
 
 /**
  * ServiceConfig abstract class that allows configuration customizations to be configured for the protocol client generator
  */
-abstract class ServiceConfig(val writer: SwiftWriter, val clientName: String, val serviceName: String) {
-
+abstract class ServiceConfig(
+    val writer: SwiftWriter,
+    val clientName: String,
+    val serviceName: String,
+) {
     open val typeName: String = "${clientName.toUpperCamelCase()}.${clientName.toUpperCamelCase()}Configuration"
+    open val sendableTypeName: String = "${clientName.toUpperCamelCase()}.${clientName.toUpperCamelCase()}Config"
 
     open fun serviceSpecificConfigProperties(): List<ConfigField> = listOf()
 }

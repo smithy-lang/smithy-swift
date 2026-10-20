@@ -20,16 +20,15 @@ import software.amazon.smithy.swift.codegen.buildMockPluginContext
 class SwiftDelegatorTests {
     @Test
     fun `it renders files into namespace`() {
-
         val model = javaClass.classLoader.getResource("simple-service-with-operation.smithy").asSmithy()
         val manifest = MockManifest()
         val context = buildMockPluginContext(model, manifest, "smithy.example#Example")
 
         SwiftCodegenPlugin().execute(context)
 
-        assertTrue(manifest.hasFile("Sources/example/models/GetFooInput.swift"))
-        assertTrue(manifest.hasFile("Sources/example/models/GetFooOutput.swift"))
-        assertTrue(manifest.hasFile("Sources/example/models/GetFooError.swift"))
+        assertTrue(manifest.hasFile("example/Sources/example/models/GetFooInput.swift"))
+        assertTrue(manifest.hasFile("example/Sources/example/models/GetFooOutput.swift"))
+        assertTrue(manifest.hasFile("example/Sources/example/models/GetFooError.swift"))
     }
 
     @Test
@@ -47,7 +46,7 @@ class SwiftDelegatorTests {
         delegator.flushWriters()
         assertEquals(
             settings.copyrightNotice + "\n\nHello!\n",
-            manifest.getFileString("Sources/example/models/GetFooInput.swift").get()
+            manifest.getFileString("example/Sources/example/models/GetFooInput.swift").get(),
         )
     }
 
@@ -66,7 +65,7 @@ class SwiftDelegatorTests {
         delegator.flushWriters()
         assertEquals(
             settings.copyrightNotice + "\n\nHello!\n\nGoodbye!\n",
-            manifest.getFileString("Sources/example/models/GetFooInput.swift").get()
+            manifest.getFileString("example/Sources/example/models/GetFooInput.swift").get(),
         )
     }
 }

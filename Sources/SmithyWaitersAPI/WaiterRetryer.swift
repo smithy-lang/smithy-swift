@@ -5,13 +5,11 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
-import Foundation
-
 /// A type which tries the waited operation after a delay, then returns or throws the result.
 /// Called by the `Waiter` to make the initial request, then called again for an additional request when retry
 /// is needed.
 /// A custom closure may be injected at initialization to allow `WaiterRetryer` to be used as a mock.
-struct WaiterRetryer<Input, Output> {
+struct WaiterRetryer<Input, Output: Sendable> {
     typealias WaitThenRequest =
         (WaiterScheduler, Input, WaiterConfiguration<Input, Output>, (Input) async throws -> Output)
             async throws -> WaiterOutcome<Output>?

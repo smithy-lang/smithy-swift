@@ -22,73 +22,81 @@ import software.amazon.smithy.swift.codegen.swiftmodules.SmithyTimestampsTypes
 
 class ReadingClosureUtils(
     val ctx: ProtocolGenerator.GenerationContext,
-    val writer: SwiftWriter
+    val writer: SwiftWriter,
 ) {
     private val nodeInfoUtils = NodeInfoUtils(ctx, writer, ctx.service.responseWireProtocol)
 
-    fun readingClosure(member: MemberShape, isSparse: Boolean = false): String {
+    fun readingClosure(
+        member: MemberShape,
+        isSparse: Boolean = false,
+    ): String {
         val target = ctx.model.expectShape(member.target)
         val memberTimestampFormatTrait = member.getTrait<TimestampFormatTrait>()
         return makeReadingClosure(target, memberTimestampFormatTrait, isSparse)
     }
 
-    private fun makeReadingClosure(shape: Shape, memberTimestampFormatTrait: TimestampFormatTrait? = null, isSparse: Boolean): String {
-        val base = when {
-            shape is MapShape -> {
-                val valueReadingClosure = readingClosure(shape.value)
-                val keyNodeInfo = nodeInfoUtils.nodeInfo(shape.key)
-                val valueNodeInfo = nodeInfoUtils.nodeInfo(shape.value)
-                val isFlattened = shape.hasTrait<XmlFlattenedTrait>()
-                writer.format(
-                    "\$N(valueReadingClosure: \$L, keyNodeInfo: \$L, valueNodeInfo: \$L, isFlattened: \$L)",
-                    SmithyReadWriteTypes.mapReadingClosure,
-                    valueReadingClosure,
-                    keyNodeInfo,
-                    valueNodeInfo,
-                    isFlattened
-                )
+    private fun makeReadingClosure(
+        shape: Shape,
+        memberTimestampFormatTrait: TimestampFormatTrait? = null,
+        isSparse: Boolean,
+    ): String {
+        val base =
+            when {
+                shape is MapShape -> {
+                    val valueReadingClosure = readingClosure(shape.value)
+                    val keyNodeInfo = nodeInfoUtils.nodeInfo(shape.key)
+                    val valueNodeInfo = nodeInfoUtils.nodeInfo(shape.value)
+                    val isFlattened = shape.hasTrait<XmlFlattenedTrait>()
+                    writer.format(
+                        "\$N(valueReadingClosure: \$L, keyNodeInfo: \$L, valueNodeInfo: \$L, isFlattened: \$L)",
+                        SmithyReadWriteTypes.mapReadingClosure,
+                        valueReadingClosure,
+                        keyNodeInfo,
+                        valueNodeInfo,
+                        isFlattened,
+                    )
+                }
+                shape is ListShape -> {
+                    val memberReadingClosure = readingClosure(shape.member)
+                    val memberNodeInfo = nodeInfoUtils.nodeInfo(shape.member)
+                    val isFlattened = shape.hasTrait<XmlFlattenedTrait>()
+                    writer.format(
+                        "\$N(memberReadingClosure: \$L, memberNodeInfo: \$L, isFlattened: \$L)",
+                        SmithyReadWriteTypes.listReadingClosure,
+                        memberReadingClosure,
+                        memberNodeInfo,
+                        isFlattened,
+                    )
+                }
+                shape is TimestampShape -> {
+                    writer.format(
+                        "\$N(format: \$N\$L)",
+                        SmithyReadWriteTypes.timestampReadingClosure,
+                        SmithyTimestampsTypes.TimestampFormat,
+                        TimestampUtils.timestampFormat(ctx, memberTimestampFormatTrait, shape),
+                    )
+                }
+                shape is EnumShape || shape is IntEnumShape || shape.hasTrait<EnumTrait>() -> {
+                    writer.format(
+                        "\$N<\$N>().read(from:)",
+                        SmithyReadWriteTypes.ReadingClosureBox,
+                        ctx.symbolProvider.toSymbol(shape),
+                    )
+                }
+                shape is MemberShape -> {
+                    readingClosure(shape, isSparse)
+                }
+                shape is StructureShape || shape is UnionShape -> {
+                    writer.format("\$N.read(from:)", ctx.symbolProvider.toSymbol(shape))
+                }
+                else -> {
+                    writer.format(
+                        "\$N.read\$L(from:)",
+                        SmithyReadWriteTypes.ReadingClosures,
+                        ctx.symbolProvider.toSymbol(shape).name,
+                    )
+                }
             }
-            shape is ListShape -> {
-                val memberReadingClosure = readingClosure(shape.member)
-                val memberNodeInfo = nodeInfoUtils.nodeInfo(shape.member)
-                val isFlattened = shape.hasTrait<XmlFlattenedTrait>()
-                writer.format(
-                    "\$N(memberReadingClosure: \$L, memberNodeInfo: \$L, isFlattened: \$L)",
-                    SmithyReadWriteTypes.listReadingClosure,
-                    memberReadingClosure,
-                    memberNodeInfo,
-                    isFlattened
-                )
-            }
-            shape is TimestampShape -> {
-                writer.format(
-                    "\$N(format: \$N\$L)",
-                    SmithyReadWriteTypes.timestampReadingClosure,
-                    SmithyTimestampsTypes.TimestampFormat,
-                    TimestampUtils.timestampFormat(ctx, memberTimestampFormatTrait, shape),
-                )
-            }
-            shape is EnumShape || shape is IntEnumShape || shape.hasTrait<EnumTrait>() -> {
-                writer.format(
-                    "\$N<\$N>().read(from:)",
-                    SmithyReadWriteTypes.ReadingClosureBox,
-                    ctx.symbolProvider.toSymbol(shape),
-                )
-            }
-            shape is MemberShape -> {
-                readingClosure(shape, isSparse)
-            }
-            shape is StructureShape || shape is UnionShape -> {
-                writer.format("\$N.read(from:)", ctx.symbolProvider.toSymbol(shape))
-            }
-            else -> {
-                writer.format(
-                    "\$N.read\$L(from:)",
-                    SmithyReadWriteTypes.ReadingClosures,
-                    ctx.symbolProvider.toSymbol(shape).name,
-                )
-            }
-        }
         if (isSparse) {
             return writer.format("\$N(readingClosure: \$L)", SmithyReadWriteTypes.optionalFormOf, base)
         } else {

@@ -5,11 +5,12 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
-import protocol SmithyIdentityAPI.IdentityResolver
-import protocol SmithyHTTPAuthAPI.IdentityResolverConfiguration
-import struct Smithy.Attributes
 import struct Smithy.AttributeKey
+import struct Smithy.Attributes
+import protocol SmithyHTTPAuthAPI.IdentityResolverConfiguration
+import protocol SmithyIdentityAPI.IdentityResolver
 
+@_spi(SmithyHTTPAuth)
 public struct DefaultIdentityResolverConfiguration: IdentityResolverConfiguration {
     let identityResolvers: Attributes
 

@@ -5,19 +5,20 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
-@_spi(SmithyReadWrite) import protocol SmithyReadWrite.SmithyReader
-import protocol Smithy.SmithyDocument
-import struct Smithy.Document
-import typealias SmithyReadWrite.ReadingClosure
-import enum SmithyReadWrite.ReaderError
-@_spi(SmithyTimestamps) import enum SmithyTimestamps.TimestampFormat
-@_spi(SmithyTimestamps) import struct SmithyTimestamps.TimestampFormatter
+import func CoreFoundation.CFBooleanGetTypeID
+import func CoreFoundation.CFGetTypeID
 import struct Foundation.Data
 import struct Foundation.Date
+import class Foundation.NSDecimalNumber
 import class Foundation.NSNull
 import class Foundation.NSNumber
-import func CoreFoundation.CFGetTypeID
-import func CoreFoundation.CFBooleanGetTypeID
+import struct Smithy.Document
+import protocol Smithy.SmithyDocument
+import enum SmithyReadWrite.ReaderError
+import typealias SmithyReadWrite.ReadingClosure
+@_spi(SmithyReadWrite) import protocol SmithyReadWrite.SmithyReader
+@_spi(SmithyTimestamps) import enum SmithyTimestamps.TimestampFormat
+@_spi(SmithyTimestamps) import struct SmithyTimestamps.TimestampFormatter
 
 @_spi(SmithyReadWrite)
 public final class Reader: SmithyReader {
@@ -126,7 +127,12 @@ public extension Reader {
 
     func readIfPresent() throws -> Double? {
         switch jsonNode {
-        case .number(let number): return number.doubleValue
+        case .number(let number):
+            if let decimalNumber = number as? NSDecimalNumber {
+                return Double("\(decimalNumber.decimalValue)")
+            } else {
+                return number.doubleValue
+            }
         case .string(let string):
             switch string {
             case "NaN": return .nan

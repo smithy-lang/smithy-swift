@@ -14,92 +14,79 @@ class SwiftDependency(
     private val location: String,
     private val localPath: String,
     override var packageName: String,
-    private val distributionMethod: DistributionMethod,
 ) : Dependency {
-
-    enum class DistributionMethod {
-        SPR, GIT
-    }
-
     companion object {
-        val NONE = SwiftDependency(
-            "",
-            "",
-            "",
-            "",
-            "",
-            "",
-            DistributionMethod.GIT,
-        )
-        val SWIFT = SwiftDependency(
-            "Swift",
-            "",
-            "",
-            "",
-            "",
-            "",
-            DistributionMethod.GIT,
-        )
-        val XCTest = SwiftDependency(
-            "XCTest",
-            null,
-            "",
-            "",
-            "",
-            "",
-            DistributionMethod.GIT,
-        )
-        val CLIENT_RUNTIME = smithySwiftTargetNamed("ClientRuntime")
-        val SMITHY = smithySwiftTargetNamed("Smithy")
-        val SMITHY_IDENTITY = smithySwiftTargetNamed("SmithyIdentity")
-        val SMITHY_RETRIES_API = smithySwiftTargetNamed("SmithyRetriesAPI")
-        val SMITHY_RETRIES = smithySwiftTargetNamed("SmithyRetries")
-        val SMITHY_HTTP_API = smithySwiftTargetNamed("SmithyHTTPAPI")
-        val SMITHY_HTTP_AUTH_API = smithySwiftTargetNamed("SmithyHTTPAuthAPI")
-        val SMITHY_HTTP_AUTH = smithySwiftTargetNamed("SmithyHTTPAuth")
-        val SMITHY_STREAMS = smithySwiftTargetNamed("SmithyStreams")
-        val SMITHY_EVENT_STREAMS_API = smithySwiftTargetNamed("SmithyEventStreamsAPI")
-        val SMITHY_EVENT_STREAMS = smithySwiftTargetNamed("SmithyEventStreams")
-        val SMITHY_TEST_UTIL = smithySwiftTargetNamed("SmithyTestUtil")
-        val SMITHY_READ_WRITE = smithySwiftTargetNamed("SmithyReadWrite")
-        val SMITHY_TIMESTAMPS = smithySwiftTargetNamed("SmithyTimestamps")
-        val SMITHY_XML = smithySwiftTargetNamed("SmithyXML")
-        val SMITHY_JSON = smithySwiftTargetNamed("SmithyJSON")
-        val SMITHY_FORM_URL = smithySwiftTargetNamed("SmithyFormURL")
-        val SMITHY_WAITERS_API = smithySwiftTargetNamed("SmithyWaitersAPI")
+        val NONE =
+            SwiftDependency(
+                "",
+                "",
+                "",
+                "",
+                "",
+                "",
+            )
+        val SWIFT =
+            SwiftDependency(
+                "Swift",
+                "",
+                "",
+                "",
+                "",
+                "",
+            )
+        val XCTest =
+            SwiftDependency(
+                "XCTest",
+                null,
+                "",
+                "",
+                "",
+                "",
+            )
+        val CLIENT_RUNTIME = smithySwiftDependency("ClientRuntime")
+        val SMITHY = smithySwiftDependency("Smithy")
+        val SMITHY_SERIALIZATION = smithySwiftDependency("SmithySerialization")
+        val SMITHY_IDENTITY = smithySwiftDependency("SmithyIdentity")
+        val SMITHY_RETRIES_API = smithySwiftDependency("SmithyRetriesAPI")
+        val SMITHY_RETRIES = smithySwiftDependency("SmithyRetries")
+        val SMITHY_HTTP_API = smithySwiftDependency("SmithyHTTPAPI")
+        val SMITHY_HTTP_AUTH_API = smithySwiftDependency("SmithyHTTPAuthAPI")
+        val SMITHY_HTTP_AUTH = smithySwiftDependency("SmithyHTTPAuth")
+        val SMITHY_STREAMS = smithySwiftDependency("SmithyStreams")
+        val SMITHY_EVENT_STREAMS_API = smithySwiftDependency("SmithyEventStreamsAPI")
+        val SMITHY_EVENT_STREAMS = smithySwiftDependency("SmithyEventStreams")
+        val SMITHY_TEST_UTIL = smithySwiftDependency("SmithyTestUtil")
+        val SMITHY_READ_WRITE = smithySwiftDependency("SmithyReadWrite")
+        val SMITHY_TIMESTAMPS = smithySwiftDependency("SmithyTimestamps")
+        val SMITHY_XML = smithySwiftDependency("SmithyXML")
+        val SMITHY_JSON = smithySwiftDependency("SmithyJSON")
+        val SMITHY_FORM_URL = smithySwiftDependency("SmithyFormURL")
+        val SMITHY_WAITERS_API = smithySwiftDependency("SmithyWaitersAPI")
+        val SMITHY_RESTJSON1 = smithySwiftDependency("SmithyRestJSON1")
+        val SMITHY_AWSJSON = smithySwiftDependency("SmithyAWSJSON")
+        val SMITHY_RPCV2CBOR = smithySwiftDependency("SmithyRPCv2CBOR")
 
-        private fun smithySwiftTargetNamed(name: String): SwiftDependency {
-            return SwiftDependency(
+        fun smithySwiftDependency(name: String): SwiftDependency =
+            SwiftDependency(
                 name,
                 "main",
-                "0.54.0",
-                "https://github.com/awslabs/smithy-swift",
+                "0.0.1",
+                "https://github.com/smithy-lang/smithy-swift",
                 "../../../smithy-swift",
                 "smithy-swift",
-                DistributionMethod.GIT,
             )
-        }
     }
 
-    override fun getDependencies(): List<SymbolDependency> {
-        return listOf(toSymbolDependency())
-    }
+    override fun getDependencies(): List<SymbolDependency> = listOf(toSymbolDependency())
 
-    private fun toSymbolDependency(): SymbolDependency {
-        val builder = SymbolDependency.builder()
+    private fun toSymbolDependency(): SymbolDependency =
+        SymbolDependency
+            .builder()
             .putProperty("target", target)
             .putProperty("branch", branch)
             .putProperty("localPath", localPath)
+            .putProperty("url", location)
             .packageName(packageName)
             .version(version)
-        when (distributionMethod) {
-            DistributionMethod.GIT -> {
-                builder.putProperty("url", location)
-            }
-            DistributionMethod.SPR -> {
-                builder.putProperty("scope", location)
-            }
-        }
-        return builder.build()
-    }
+            .build()
 }

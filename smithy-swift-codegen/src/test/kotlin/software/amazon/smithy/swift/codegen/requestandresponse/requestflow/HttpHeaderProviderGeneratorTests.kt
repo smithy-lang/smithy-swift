@@ -18,6 +18,7 @@ import software.amazon.smithy.swift.codegen.shouldSyntacticSanityCheck
 class HttpHeaderProviderGeneratorTests {
     private var model = javaClass.classLoader.getResource("http-binding-protocol-generator-test.smithy").asSmithy()
     var newTestContext: TestContext
+
     init {
         newTestContext = newTestContext()
         newTestContext.generator.generateSerializers(newTestContext.generationCtx)
@@ -29,7 +30,7 @@ class HttpHeaderProviderGeneratorTests {
 
     @Test
     fun `it creates smoke test request builder`() {
-        val contents = getModelFileContents("Sources/example", "SmokeTestInput+HeaderProvider.swift", newTestContext.manifest)
+        val contents = getModelFileContents("example/Sources/example", "SmokeTestInput+HeaderProvider.swift", newTestContext.manifest)
         contents.shouldSyntacticSanityCheck()
         val expectedContents = """
 extension SmokeTestInput {
@@ -51,7 +52,7 @@ extension SmokeTestInput {
 
     @Test
     fun `it builds headers with enums as raw values`() {
-        val contents = getModelFileContents("Sources/example", "EnumInputInput+HeaderProvider.swift", newTestContext.manifest)
+        val contents = getModelFileContents("example/Sources/example", "EnumInputInput+HeaderProvider.swift", newTestContext.manifest)
         contents.shouldSyntacticSanityCheck()
         val expectedContents = """
 extension EnumInputInput {
@@ -70,11 +71,12 @@ extension EnumInputInput {
 
     @Test
     fun `it builds header with idempotency token value`() {
-        val contents = getModelFileContents(
-            "Sources/example",
-            "IdempotencyTokenWithoutHttpPayloadTraitOnTokenInput+HeaderProvider.swift",
-            newTestContext.manifest
-        )
+        val contents =
+            getModelFileContents(
+                "example/Sources/example",
+                "IdempotencyTokenWithoutHttpPayloadTraitOnTokenInput+HeaderProvider.swift",
+                newTestContext.manifest,
+            )
         contents.shouldSyntacticSanityCheck()
         val expectedContents = """
 extension IdempotencyTokenWithoutHttpPayloadTraitOnTokenInput {
@@ -94,7 +96,7 @@ extension IdempotencyTokenWithoutHttpPayloadTraitOnTokenInput {
     @Test
     fun `it creates http headers for timestamps with format`() {
         val contents =
-            getModelFileContents("Sources/example", "TimestampInputInput+HeaderProvider.swift", newTestContext.manifest)
+            getModelFileContents("example/Sources/example", "TimestampInputInput+HeaderProvider.swift", newTestContext.manifest)
         contents.shouldSyntacticSanityCheck()
         val expectedContents = """
 extension TimestampInputInput {
@@ -106,6 +108,45 @@ extension TimestampInputInput {
         }
         if let headerHttpDate = value.headerHttpDate {
             items.add(SmithyHTTPAPI.Header(name: "X-Date", value: Swift.String(SmithyTimestamps.TimestampFormatter(format: .httpDate).string(from: headerHttpDate))))
+        }
+        return items
+    }
+}
+"""
+        contents.shouldContainOnlyOnce(expectedContents)
+    }
+
+    @Test
+    fun `it encodes float and double headers with encodeNumber`() {
+        // Floats & doubles must be rendered by URLEncodingUtils.encodeNumber so that the non-finite
+        // values are rendered as the Smithy-defined tokens NaN, Infinity, and -Infinity.  Swift's own
+        // string interpolation would render them as nan, inf, and -inf, which are invalid on the wire.
+        val context = TestContext.initContextFrom("http-float-bindings.smithy", "com.test#Example")
+        context.generator.generateSerializers(context.generationCtx)
+        context.generationCtx.delegator.flushWriters()
+        val contents = getModelFileContents("example/Sources/example", "FloatBindingsInput+HeaderProvider.swift", context.manifest)
+        contents.shouldSyntacticSanityCheck()
+        val expectedContents = """
+extension FloatBindingsInput {
+
+    static func headerProvider(_ value: FloatBindingsInput) -> SmithyHTTPAPI.Headers {
+        var items = SmithyHTTPAPI.Headers()
+        if let headerDouble = value.headerDouble {
+            items.add(SmithyHTTPAPI.Header(name: "X-Double", value: SmithyHTTPAPI.URLEncodingUtils.encodeNumber(headerDouble)))
+        }
+        if let headerFloat = value.headerFloat {
+            items.add(SmithyHTTPAPI.Header(name: "X-Float", value: SmithyHTTPAPI.URLEncodingUtils.encodeNumber(headerFloat)))
+        }
+        if let headerFloatList = value.headerFloatList {
+            if headerFloatList.isEmpty {
+                items.add(name: "X-FloatList", value: "")
+            }
+            headerFloatList.forEach { headerValue in
+                items.add(SmithyHTTPAPI.Header(name: "X-FloatList", value: ClientRuntime.quoteHeaderValue(SmithyHTTPAPI.URLEncodingUtils.encodeNumber(headerValue))))
+            }
+        }
+        if let headerString = value.headerString {
+            items.add(SmithyHTTPAPI.Header(name: "X-String", value: Swift.String(headerString)))
         }
         return items
     }

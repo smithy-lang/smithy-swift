@@ -28,38 +28,31 @@ public struct RetryStrategyOptions: Sendable {
     }
 
     /// The mode to be used for rate-limiting requests.
-    ///
-    /// In `standard` mode, requests are only delayed according to the backoff strategy in use.  In `adaptive` mode, requests are
-    /// delayed when the server indicates that requests are being throttled.
     public let rateLimitingMode: RateLimitingMode
 
     /// Sets the initial available capacity for this retry strategy's quotas.
-    ///
-    /// Used only during testing, production uses the default values.
     public let availableCapacity: Int
 
     /// Sets the maximum capacity for this retry strategy's quotas.
-    ///
-    /// Used only during testing, production uses the default values.
     public let maxCapacity: Int
 
-    /// Creates a new set of retry strategy options
-    /// - Parameters:
-    ///   - backoffStrategy: Determines the delay time before retrying. For default behavior, use `ExponentialBackoffStrategy()`.
-    ///   - maxRetriesBase: The number of times to retry the initial request.  Defaults to 2.
-    ///   - availableCapacity: The number of available tokens in a retry quota.  Defaults to 500.
-    ///   - maxCapacity: The max number of tokens in a retry quota.  Defaults to 500.
+    /// Set from the `AWS_NEW_RETRIES_2026` env var.
+    /// See `AWSRetryFeatures.isNewRetries2026Enabled` for what it enables.
+    public let useNewRetries2026: Bool
+
     public init(
         backoffStrategy: RetryBackoffStrategy,
         maxRetriesBase: Int = 2,
         availableCapacity: Int = 500,
         maxCapacity: Int = 500,
-        rateLimitingMode: RateLimitingMode = .standard
+        rateLimitingMode: RateLimitingMode = .standard,
+        useNewRetries2026: Bool = false
     ) {
         self.backoffStrategy = backoffStrategy
         self.maxRetriesBase = maxRetriesBase
         self.availableCapacity = availableCapacity
         self.maxCapacity = maxCapacity
         self.rateLimitingMode = rateLimitingMode
+        self.useNewRetries2026 = useNewRetries2026
     }
 }

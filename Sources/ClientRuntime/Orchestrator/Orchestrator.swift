@@ -5,15 +5,24 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
-import class Smithy.Context
-import enum Smithy.ClientError
-import protocol Smithy.RequestMessage
-import protocol Smithy.ResponseMessage
+#if canImport(Darwin)
+// swiftlint:disable:next unused_import
+import Darwin
+#elseif canImport(Glibc)
+import Glibc
+#endif
+import struct Foundation.Date
+import struct Foundation.TimeInterval
 import struct Smithy.AttributeKey
 import struct Smithy.Attributes
+import enum Smithy.ClientError
+import class Smithy.Context
+import protocol Smithy.RequestMessage
+import protocol Smithy.ResponseMessage
 import SmithyHTTPAPI
-import protocol SmithyRetriesAPI.RetryStrategy
+import enum SmithyRetriesAPI.RetryError
 import struct SmithyRetriesAPI.RetryErrorInfo
+import protocol SmithyRetriesAPI.RetryStrategy
 
 /// Orchestrates operation execution
 ///
@@ -75,6 +84,8 @@ public struct Orchestrator<
     private let deserialize: (ResponseType, Context) async throws -> OutputType
     private let retryStrategy: (any RetryStrategy)?
     private let retryErrorInfoProvider: (Error) -> RetryErrorInfo?
+    private let longPollingBackoffProvider: ((Context, RetryErrorInfo, Int) async -> TimeInterval?)?
+    private let clockSkewProvider: ClockSkewProvider<RequestType, ResponseType>
     private let telemetry: OrchestratorTelemetry
     private let selectAuthScheme: SelectAuthScheme
     private let applyEndpoint: any ApplyEndpoint<RequestType>
@@ -88,11 +99,18 @@ public struct Orchestrator<
         self.deserialize = builder.deserialize!
         self.retryStrategy = builder.retryStrategy
         self.telemetry = builder.telemetry!
+        self.longPollingBackoffProvider = builder.longPollingBackoffProvider
 
         if let retryErrorInfoProvider = builder.retryErrorInfoProvider {
             self.retryErrorInfoProvider = retryErrorInfoProvider
         } else {
             self.retryErrorInfoProvider = { _ in nil }
+        }
+
+        if let clockSkewProvider = builder.clockSkewProvider {
+            self.clockSkewProvider = clockSkewProvider
+        } else {
+            self.clockSkewProvider = { (_, _, _, _) in nil }
         }
 
         if let selectAuthScheme = builder.selectAuthScheme {
@@ -153,9 +171,12 @@ public struct Orchestrator<
         try await interceptors.modifyBeforeSigning(context: context)
         try await interceptors.readBeforeSigning(context: context)
 
+        // The endpoint resolver may have refined selectedAuthScheme
+        // (signingName, signingRegion). Prefer the refined version.
+        let signingScheme = context.getAttributes().selectedAuthScheme ?? selectedAuthScheme
         let signed = try await applySigner.apply(
             request: context.getRequest(),
-            selectedAuthScheme: selectedAuthScheme,
+            selectedAuthScheme: signingScheme,
             attributes: context.getAttributes()
         )
         context.updateRequest(updated: signed)
@@ -163,7 +184,6 @@ public struct Orchestrator<
         try await interceptors.readAfterSigning(context: context)
         try await interceptors.modifyBeforeTransmit(context: context)
         try await interceptors.readBeforeTransmit(context: context)
-
         return context.getRequest()
     }
 
@@ -174,8 +194,8 @@ public struct Orchestrator<
     public func execute(input: InputType) async throws -> OutputType {
         let telemetryContext = telemetry.contextManager.current()
         let tracer = telemetry.tracerProvider.getTracer(
-            scope: telemetry.tracerScope,
-            attributes: telemetry.tracerAttributes)
+            scope: telemetry.tracerScope
+        )
 
         // DURATION - smithy.client.call.duration
         do {
@@ -206,10 +226,13 @@ public struct Orchestrator<
                 let builder = RequestType.RequestBuilderType()
 
                 // START - smithy.client.call.serialization_duration
-                let serializeStart = Date().timeIntervalSinceReferenceDate
+                var startTimespec = timespec()
+                var endTimespec = timespec()
+                clock_gettime(CLOCK_MONOTONIC_RAW, &startTimespec)
                 try serialize(finalizedInput, builder, context.getAttributes())
+                clock_gettime(CLOCK_MONOTONIC_RAW, &endTimespec)
                 telemetry.serializationDuration.record(
-                    value: Date().timeIntervalSinceReferenceDate - serializeStart,
+                    value: timeInterval(startTimespec: startTimespec, endTimespec: endTimespec),
                     attributes: telemetry.metricsAttributes,
                     context: telemetryContext)
                 // END - smithy.client.call.serialization_duration
@@ -261,14 +284,49 @@ public struct Orchestrator<
         do {
             _ = try context.getOutput()
             await strategy.recordSuccess(token: token)
-        } catch let error {
-            // If we can't get errorInfo, we definitely can't retry
-            guard let errorInfo = retryErrorInfoProvider(error) else { return }
+        } catch {
+            let clockSkewStore = ClockSkewStore.shared
+            var clockSkewErrorInfo: RetryErrorInfo?
+
+            // Clock skew can't be calculated when there is no request/response, so safe-unwrap them
+            if let request = context.getRequest(), let response = context.getResponse() {
+                // Assign clock skew to local var to prevent capturing self in block below
+                let clockSkewProvider = self.clockSkewProvider
+                // Check for clock skew, and if found, store in the shared map of hosts to clock skews
+                let clockSkewDidChange = await clockSkewStore.setClockSkew(host: request.host) { @Sendable previous in
+                    clockSkewProvider(request, response, error, previous)
+                }
+                // Retry only if the new clock skew is different than previous.
+                // If clock skew was unchanged on this errored request, then clock skew is likely not the
+                // cause of the error
+                if clockSkewDidChange {
+                    clockSkewErrorInfo = .clockSkewErrorInfo
+                }
+            }
+
+            // If clock skew was found or has substantially changed, then retry on that
+            // Else get errorInfo on the error
+            guard let errorInfo = clockSkewErrorInfo ?? retryErrorInfoProvider(error) else { return }
+
+            // If the body is a nonseekable stream, we also can't retry
+            do {
+                guard try readyBodyForRetry(request: copiedRequest) else { return }
+            } catch {
+                return
+            }
 
             // When refreshing fails it throws, indicating we're done retrying
             do {
                 try await strategy.refreshRetryTokenForRetry(tokenToRenew: token, errorInfo: errorInfo)
             } catch {
+                // Long-polling operations back off when the token bucket is empty, but not when
+                // max attempts is reached — at that point the operation is done and shouldn't sleep.
+                let isMaxAttempts = (error as? RetryError) == .maxAttemptsReached
+                if !isMaxAttempts,
+                   let provider = longPollingBackoffProvider,
+                   let delay = await provider(context.getAttributes(), errorInfo, attemptCount) {
+                    try? await Task.sleep(nanoseconds: UInt64(delay * 1_000_000_000.0))
+                }
                 return
             }
 
@@ -277,19 +335,40 @@ public struct Orchestrator<
         }
     }
 
+    /// Readies the body for retry, and indicates whether the request body may be safely used in a retry.
+    /// - Parameter request: The request to be retried.
+    /// - Returns: `true` if the body of the request is safe to retry, `false` otherwise.  In general, a request body is retriable if it is not a stream, or
+    ///   if the stream is seekable and successfully seeks to the start position / offset zero.
+    private func readyBodyForRetry(request: RequestType) throws -> Bool {
+        switch request.body {
+        case .stream(let stream):
+            guard stream.isSeekable else { return false }
+            do {
+                try stream.seek(toOffset: 0)
+                return true
+            } catch {
+                return false
+            }
+        case .data, .noStream:
+            return true
+        }
+    }
+
+    // swiftlint:disable:next function_body_length
     private func attempt(context: InterceptorContextType, attemptCount: Int) async {
         // If anything in here fails, the attempt short-circuits and we go to modifyBeforeAttemptCompletion,
         // with the thrown error in context.result
         let telemetryContext = telemetry.contextManager.current()
         let tracer = telemetry.tracerProvider.getTracer(
-            scope: telemetry.tracerScope,
-            attributes: telemetry.tracerAttributes)
+            scope: telemetry.tracerScope
+        )
 
         // TICK - smithy.client.call.attempts
         telemetry.rpcAttempts.add(
             value: 1,
             attributes: telemetry.metricsAttributes,
-            context: telemetryContext)
+            context: telemetryContext
+        )
 
         // DURATION - smithy.client.call.attempt_duration
         do {
@@ -322,7 +401,8 @@ public struct Orchestrator<
                 telemetry.resolveIdentityDuration.record(
                     value: Date().timeIntervalSinceReferenceDate - identityStart,
                     attributes: authSchemeAttributes,
-                    context: telemetryContext)
+                    context: telemetryContext
+                )
                 // END - smithy.client.call.auth.resolve_identity_duration
 
                 // START - smithy.client.call.resolve_endpoint_duration
@@ -335,7 +415,8 @@ public struct Orchestrator<
                 telemetry.resolveEndpointDuration.record(
                     value: Date().timeIntervalSinceReferenceDate - endpointStart,
                     attributes: telemetry.metricsAttributes,
-                    context: telemetryContext)
+                    context: telemetryContext
+                )
                 // END - smithy.client.call.resolve_endpoint_duration
 
                 context.updateRequest(updated: withEndpoint)
@@ -343,17 +424,21 @@ public struct Orchestrator<
                 try await interceptors.modifyBeforeSigning(context: context)
                 try await interceptors.readBeforeSigning(context: context)
 
+                // The endpoint resolver may have refined selectedAuthScheme
+                // (signingName, signingRegion). Prefer the refined version.
+                let signingScheme = context.getAttributes().selectedAuthScheme ?? selectedAuthScheme
                 // START - smithy.client.call.auth.signing_duration
                 let signingStart = Date().timeIntervalSinceReferenceDate
                 let signed = try await applySigner.apply(
                     request: context.getRequest(),
-                    selectedAuthScheme: selectedAuthScheme,
+                    selectedAuthScheme: signingScheme,
                     attributes: context.getAttributes()
                 )
                 telemetry.signingDuration.record(
                     value: Date().timeIntervalSinceReferenceDate - signingStart,
                     attributes: authSchemeAttributes,
-                    context: telemetryContext)
+                    context: telemetryContext
+                )
                 // END - smithy.client.call.auth.signing_duration
 
                 context.updateRequest(updated: signed)
@@ -373,12 +458,16 @@ public struct Orchestrator<
                 try await interceptors.readBeforeDeserialization(context: context)
 
                 // START - smithy.client.call.deserialization_duration
-                let deserializeStart = Date().timeIntervalSinceReferenceDate
+                var startTimespec = timespec()
+                var endTimespec = timespec()
+                clock_gettime(CLOCK_MONOTONIC_RAW, &startTimespec)
                 let output = try await deserialize(context.getResponse(), context.getAttributes())
+                clock_gettime(CLOCK_MONOTONIC_RAW, &endTimespec)
                 telemetry.deserializationDuration.record(
-                    value: Date().timeIntervalSinceReferenceDate - deserializeStart,
+                    value: timeInterval(startTimespec: startTimespec, endTimespec: endTimespec),
                     attributes: telemetry.metricsAttributes,
-                    context: telemetryContext)
+                    context: telemetryContext
+                )
                 // END - smithy.client.call.deserialization_duration
                 context.updateOutput(updated: output)
 
@@ -425,5 +514,19 @@ public struct Orchestrator<
                 context: telemetry.contextManager.current())
             throw error
         }
+    }
+
+    private func timeInterval(startTimespec: timespec, endTimespec: timespec) -> TimeInterval {
+        let nsec = 1_000_000_000 * (endTimespec.tv_sec - startTimespec.tv_sec) +
+            endTimespec.tv_nsec - startTimespec.tv_nsec
+        return TimeInterval(nsec) * 1.0E-9
+    }
+}
+
+private extension RetryErrorInfo {
+
+    /// `RetryErrorInfo` value used to signal that a retry should be performed due to clock skew.
+    static var clockSkewErrorInfo: RetryErrorInfo {
+        RetryErrorInfo(errorType: .clientError, retryAfterHint: nil, isTimeout: false)
     }
 }

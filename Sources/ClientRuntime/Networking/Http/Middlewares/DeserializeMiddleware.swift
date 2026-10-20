@@ -5,8 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
-import SmithyHTTPAPI
-@_spi(SmithyReadWrite) import SmithyReadWrite
+import struct Foundation.Date
 import class Foundation.DateFormatter
 import struct Foundation.Locale
 import struct Foundation.TimeInterval
@@ -14,6 +13,8 @@ import struct Foundation.TimeZone
 import struct Foundation.UUID
 import class Smithy.Context
 import protocol Smithy.ResponseMessageDeserializer
+import SmithyHTTPAPI
+@_spi(SmithyReadWrite) import SmithyReadWrite
 
 @_spi(SmithyReadWrite)
 public struct DeserializeMiddleware<OperationStackOutput> {
@@ -55,13 +56,20 @@ extension DeserializeMiddleware: ResponseMessageDeserializer {
             // and then the service error eg. [AccountNotFoundException](https://github.com/awslabs/aws-sdk-swift/blob/d1d18eefb7457ed27d416b372573a1f815004eb1/Sources/Services/AWSCloudTrail/models/Models.swift#L62)
             let bodyData = try await copiedResponse.body.readData()
             copiedResponse.body = .data(bodyData)
-            throw try await wireResponseErrorClosure(copiedResponse)
+            do {
+                throw try await wireResponseErrorClosure(copiedResponse)
+            } catch is BaseErrorDecodeError {
+                // Surface the response so retry classification can still see the HTTP status code.
+                throw UnknownHTTPServiceError(
+                    httpResponse: copiedResponse, message: nil, typeName: nil
+                )
+            }
         }
     }
 }
 
 // Calculates & returns estimated skew.
-func getEstimatedSkew(now: Date, responseDateString: String) -> TimeInterval {
+public func getEstimatedSkew(now: Date, responseDateString: String) -> TimeInterval {
     let dateFormatter = DateFormatter()
     dateFormatter.dateFormat = "EEE, dd MMM yyyy HH:mm:ss z"
     dateFormatter.locale = Locale(identifier: "en_US_POSIX")

@@ -5,19 +5,19 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
-import enum AwsCommonRuntimeKit.SigningAlgorithmType
+import enum AwsCommonRuntimeKit.SignatureType
 import enum AwsCommonRuntimeKit.SignedBodyHeaderType
 import enum AwsCommonRuntimeKit.SignedBodyValue
-import enum AwsCommonRuntimeKit.SignatureType
+import enum AwsCommonRuntimeKit.SigningAlgorithmType
 import struct AwsCommonRuntimeKit.SigningConfig
 
-import enum SmithyHTTPAuthAPI.SigningAlgorithm
+import enum SmithyHTTPAuthAPI.AWSSignatureType
 import enum SmithyHTTPAuthAPI.AWSSignedBodyHeader
 import enum SmithyHTTPAuthAPI.AWSSignedBodyValue
-import enum SmithyHTTPAuthAPI.AWSSignatureType
+import enum SmithyHTTPAuthAPI.SigningAlgorithm
 
 import struct Foundation.Locale
-import class SmithyIdentity.CRTAWSCredentialIdentity
+@_spi(SmithyIdentity) import class SmithyIdentity.CRTAWSCredentialIdentity
 
 extension SigningAlgorithm {
     /// Convert self to CRT SigningAlgorithmType
@@ -26,6 +26,7 @@ extension SigningAlgorithm {
         switch self {
         case .sigv4: return .signingV4
         case .sigv4a: return .signingV4Asymmetric
+        case .sigv4s3express: return .signingV4S3Express
         }
     }
 }

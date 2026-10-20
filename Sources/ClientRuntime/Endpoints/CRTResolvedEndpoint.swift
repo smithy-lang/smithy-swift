@@ -34,7 +34,7 @@ public class CRTResolvedEndpoint {
         }
     }
 
-    public func getProperties() -> [String: AnyHashable]? {
+    public func getProperties() -> [String: EndpointProperty]? {
         switch crtResolvedEndpoint {
         case let .endpoint(_, _, properties):
             return properties

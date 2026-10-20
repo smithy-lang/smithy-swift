@@ -1,0 +1,213 @@
+//
+// Copyright Amazon.com Inc. or its affiliates.
+// All Rights Reserved.
+//
+// SPDX-License-Identifier: Apache-2.0
+//
+
+@_spi(SchemaBasedSerde)
+import class Smithy.ErrorTrait
+@_spi(SchemaBasedSerde)
+import class Smithy.SparseTrait
+@_spi(SchemaBasedSerde)
+import class Smithy.StreamingTrait
+
+package struct DeserializeCodegen {
+
+    package init() {}
+
+    package func generate(ctx: GenerationContext) throws -> String {
+        let writer = SwiftWriter()
+        writer.write("import Foundation")
+        writer.write("@_spi(SchemaBasedSerde)")
+        writer.write("import Smithy")
+        writer.write("@_spi(SchemaBasedSerde)")
+        writer.write("import SmithySerialization")
+        writer.write("")
+
+        // Get structs & unions that are part of an operation output.
+        // These will all get a DeserializableShape conformance rendered.
+        let outputStructsAndUnions = try ctx.service
+            .outputDescendants
+            .filter { $0.type == .structure || $0.type == .union }
+            .smithySorted()
+
+        // Render a DeserializableStruct conformance for every struct & union.
+        for shape in outputStructsAndUnions {
+            let swiftType = try ctx.symbolProvider.swiftType(shape: shape)
+            let varName = shape.type == .structure ? "structure" : "union"
+            writer.write("@_spi(SchemaBasedSerde)")
+            try writer.openBlock("extension \(swiftType): SmithySerialization.DeserializableStruct {", "}") { writer in
+                writer.write("")
+                let deserializerType = "any SmithySerialization.ShapeDeserializer"
+                try writer.openBlock(
+                    "public static func deserialize(_ deserializer: \(deserializerType)) throws -> Self {", "}"
+                ) { writer in
+                    let initializer = shape.type == .structure ? "()" : ".sdkUnknown(\"\")"
+                    writer.write("var \(varName) = Self\(initializer)")
+                    let schemaVarName = try shape.schemaVarName
+                    writer.write("try deserializer.readStruct(\(schemaVarName), &\(varName))")
+                    writer.write("return \(varName)")
+                }
+                writer.write("")
+                try writer.openBlock(
+                    "public mutating func deserializeMember(_ memberSchema: Smithy.Schema, " +
+                    "_ deserializer: any SmithySerialization.ShapeDeserializer) throws {", "}"
+                ) { writer in
+                    try writer.openBlock("switch memberSchema.index {", "}") { writer in
+                        writer.dedent()
+                        for (index, member) in try members(of: shape).enumerated() {
+                            writer.write("case \(index):")
+                            writer.indent()
+                            try writeDeserializeCall(
+                                ctx: ctx,
+                                writer: writer,
+                                shape: shape,
+                                member: member,
+                                schemaVarName: "memberSchema",
+                                depth: 1
+                            )
+                            writer.dedent()
+                        }
+                        if shape.type == .union {
+                            writer.write("default:")
+                            writer.indent()
+                            writer.write("self = try .sdkUnknown(deserializer.readString(memberSchema))")
+                            writer.dedent()
+                        } else {
+                            writer.write("default: break")
+                        }
+                        writer.indent()
+                    }
+                }
+            }
+            writer.write("")
+        }
+        writer.unwrite("\n")
+        return writer.contents
+    }
+
+    private func writeDeserializeCall(
+        ctx: GenerationContext,
+        writer: SwiftWriter,
+        shape: Shape,
+        member: MemberShape,
+        schemaVarName: String,
+        depth: Int
+    ) throws {
+        let target = try member.target
+        let propertySwiftType = try ctx.symbolProvider.swiftType(shape: target)
+        switch try member.target.type {
+        case .structure, .union:
+            let readMethodName = try target.deserializeMethodName
+            if target.type == .union && target.hasTrait(StreamingTrait.self) {
+                let streamType = "AsyncThrowingStream<\(propertySwiftType), any Swift.Error>"
+                writer.write("let value: \(streamType) = try deserializer.\(readMethodName)(\(schemaVarName))")
+            } else {
+                let initializer = target.type == .structure ? "()" : ".sdkUnknown(\"\")"
+                writer.write("var value = \(propertySwiftType)\(initializer)")
+                writer.write("try deserializer.\(readMethodName)(\(schemaVarName), &value)")
+            }
+        case .list, .set:
+            guard let listShape = target as? ListShape else {
+                throw SymbolProviderError("Shape has type .list but is not a ListShape")
+            }
+            let listMemberSchemaVarName = "listMemberSchema\(depth)"
+            writer.write("let \(listMemberSchemaVarName) = \(schemaVarName).target!.member")
+            let isSparse = listShape.hasTrait(SparseTrait.self)
+            let methodName = isSparse ? "readSparseList" : "readList"
+            try writer.openBlock(
+                "let value: \(propertySwiftType) = try deserializer.\(methodName)(\(schemaVarName)) { deserializer in",
+                "}"
+            ) { writer in
+                try writeDeserializeCall(
+                    ctx: ctx,
+                    writer: writer,
+                    shape: listShape,
+                    member: listShape.member,
+                    schemaVarName: listMemberSchemaVarName,
+                    depth: depth + 1
+                )
+            }
+        case .map:
+            guard let mapShape = target as? MapShape else {
+                throw SymbolProviderError("Shape has type .map but is not a MapShape")
+            }
+            let mapValueSchemaVarName = "mapValueSchema\(depth)"
+            writer.write("let \(mapValueSchemaVarName) = \(schemaVarName).target!.value")
+            let isSparse = mapShape.hasTrait(SparseTrait.self)
+            let methodName = isSparse ? "readSparseMap" : "readMap"
+            try writer.openBlock(
+                "let value: \(propertySwiftType) = try deserializer.\(methodName)(\(schemaVarName)) { deserializer in",
+                "}"
+            ) { writer in
+                try writeDeserializeCall(
+                    ctx: ctx,
+                    writer: writer,
+                    shape: mapShape,
+                    member: mapShape.value,
+                    schemaVarName: mapValueSchemaVarName,
+                    depth: depth + 1
+                )
+            }
+        case .document:
+            // Our current models use a type-erased Document struct, so the
+            // deserialized document is wrapped in one before assignment to the model.
+            // Future revs to models should accept 'any SmithyDocument', same as our
+            // deserializer returns.
+            writer.write(
+                "let value: Smithy.Document = try Smithy.Document(deserializer.readDocument(\(schemaVarName)))"
+            )
+        case .integer:
+            let methodName = try target.deserializeMethodName
+            writer.write("let value: \(propertySwiftType) = try Int(deserializer.\(methodName)(\(schemaVarName)))")
+        case .long:
+            let methodName = try target.deserializeMethodName
+            writer.write("let value: \(propertySwiftType) = " +
+                         "try SmithySerialization.Numerics.int(deserializer.\(methodName)(\(schemaVarName)))")
+        default:
+            let methodName = try target.deserializeMethodName
+            writer.write("let value: \(propertySwiftType) = try deserializer.\(methodName)(\(schemaVarName))")
+        }
+        try writeAssignment(ctx: ctx, writer: writer, shape: shape, member: member)
+    }
+
+    private func writeAssignment(
+        ctx: GenerationContext,
+        writer: SwiftWriter,
+        shape: Shape,
+        member: MemberShape
+    ) throws {
+        let target = try member.target
+
+        // The assignment being written is based on the shape enclosing the member.
+        switch shape.type {
+        case .structure:
+            // For a structure member, write the value to the appropriate structure property,
+            // making the appropriate adjustment for an error.
+            let properties = shape.hasTrait(ErrorTrait.self) ? "properties." : ""
+            let propertyName = try ctx.symbolProvider.propertyName(shapeID: member.id)
+            writer.write("self.\(properties)\(propertyName) = value")
+        case .union:
+            if target.hasTrait(ErrorTrait.self) && shape.hasTrait(StreamingTrait.self) {
+                // For an event stream error, throw it
+                writer.write("throw value")
+            } else {
+                // For a union member or event stream event, write the appropriate union case to the union variable
+                let enumCaseName = try ctx.symbolProvider.enumCaseName(shapeID: member.id)
+                writer.write("self = .\(enumCaseName)(value)")
+            }
+        case .list, .set, .map:
+            // For a collection member, return it to the caller since this is being written
+            // into a consumer block that returns the collection element.
+            writer.write("return value")
+        default:
+            throw CodegenError("Unsupported shape type \(shape.type) for rendering member deserialize")
+        }
+    }
+
+    private func members(of shape: Shape) throws -> [MemberShape] {
+        guard let hasMembers = shape as? HasMembers else { return [] }
+        return try hasMembers.members
+    }
+}

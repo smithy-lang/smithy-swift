@@ -5,15 +5,22 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
+import struct Foundation.Date
+import struct Foundation.TimeInterval
 import class Smithy.Context
 import class Smithy.ContextBuilder
 import protocol Smithy.RequestMessage
-import protocol Smithy.ResponseMessage
 import protocol Smithy.RequestMessageSerializer
+import protocol Smithy.ResponseMessage
 import protocol Smithy.ResponseMessageDeserializer
+import class SmithyHTTPAPI.HTTPResponse
 import struct SmithyHTTPAuthAPI.SelectedAuthScheme
-import protocol SmithyRetriesAPI.RetryStrategy
 import struct SmithyRetriesAPI.RetryErrorInfo
+import protocol SmithyRetriesAPI.RetryStrategy
+@_spi(SchemaBasedSerde)
+import protocol SmithySerialization.ClientProtocol
+@_spi(SchemaBasedSerde)
+import struct SmithySerialization.Operation
 
 /// Builds an Orchestrator, combining runtime components, interceptors, serializers, and deserializers.
 ///
@@ -33,6 +40,8 @@ public class OrchestratorBuilder<
     internal var deserialize: ((ResponseType, Context) async throws -> OutputType)?
     internal var retryStrategy: (any RetryStrategy)?
     internal var retryErrorInfoProvider: ((Error) -> RetryErrorInfo?)?
+    internal var longPollingBackoffProvider: ((Context, RetryErrorInfo, Int) async -> TimeInterval?)?
+    internal var clockSkewProvider: (ClockSkewProvider<RequestType, ResponseType>)?
     internal var telemetry: OrchestratorTelemetry?
     internal var selectAuthScheme: SelectAuthScheme?
     internal var applyEndpoint: (any ApplyEndpoint<RequestType>)?
@@ -40,6 +49,16 @@ public class OrchestratorBuilder<
     internal var executeRequest: (any ExecuteRequest<RequestType, ResponseType>)?
 
     public init() {}
+
+    @_spi(SchemaBasedSerde)
+    public convenience init<ClientProtocol: SmithySerialization.ClientProtocol>(
+        _ operation: Operation<InputType, OutputType>,
+        _ clientProtocol: ClientProtocol
+    ) where ClientProtocol.RequestType == RequestType, ClientProtocol.ResponseType == ResponseType {
+        self.init()
+        self.serialize(SchemaBodyMiddleware(operation, clientProtocol))
+        self.deserialize(SchemaDeserializeMiddleware(operation, clientProtocol))
+    }
 
     /// - Parameter attributes: Attributes the orchestrator will provide to runtime components
     /// - Returns: Builder
@@ -102,6 +121,23 @@ public class OrchestratorBuilder<
     @discardableResult
     public func retryErrorInfoProvider(_ retryErrorInfoProvider: @escaping (Error) -> RetryErrorInfo?) -> Self {
         self.retryErrorInfoProvider = retryErrorInfoProvider
+        return self
+    }
+
+    /// Backoff delay provider for long-polling operations when the token bucket is empty.
+    @discardableResult
+    public func longPollingBackoffProvider(
+        _ provider: @escaping (Context, RetryErrorInfo, Int) async -> TimeInterval?
+    ) -> Self {
+        self.longPollingBackoffProvider = provider
+        return self
+    }
+
+    /// - Parameter clockSkewProvider: Function that turns operation errors into a clock skew value
+    /// - Returns: Builder
+    @discardableResult
+    public func clockSkewProvider(_ clockSkewProvider: @escaping ClockSkewProvider<RequestType, ResponseType>) -> Self {
+        self.clockSkewProvider = clockSkewProvider
         return self
     }
 

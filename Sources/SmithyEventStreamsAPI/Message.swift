@@ -8,7 +8,7 @@
 import struct Foundation.Data
 
 /// A message in an event stream that can be sent or received.
-public struct Message: Equatable {
+public struct Message: Equatable, Sendable {
 
     /// The headers associated with the message.
     public let headers: [Header]

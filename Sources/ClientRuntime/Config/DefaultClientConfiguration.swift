@@ -5,13 +5,18 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
+import protocol Smithy.LogAgent
 import struct SmithyRetriesAPI.RetryStrategyOptions
 
 public protocol DefaultClientConfiguration: ClientConfiguration {
+
     /// The configuration for retry of failed network requests.
     ///
     /// Default options are used if none are set.
     var retryStrategyOptions: RetryStrategyOptions { get set }
+
+    /// The LogAgent to be used when logging messages related to API calls.
+    var logger: LogAgent { get }
 
     /// The log mode to use for request / response messages.
     ///
@@ -34,7 +39,7 @@ public protocol DefaultClientConfiguration: ClientConfiguration {
     /// Adds an `InterceptorProvider` that will be used to provide interceptors for all operations.
     ///
     /// - Parameter provider: The `InterceptorProvider` to add.
-    func addInterceptorProvider(_ provider: InterceptorProvider)
+    mutating func addInterceptorProvider(_ provider: InterceptorProvider)
 
     /// TODO(plugins): Add Checksum, etc.
 }

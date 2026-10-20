@@ -7,6 +7,7 @@
 
 import enum Smithy.ClientError
 
+@_spi(SmithyIdentity)
 public extension AWSCredentialIdentity {
     /// Creates `AWSCredentialIdentity` from the provided `CRTAWSCredentialIdentity`.
     ///
@@ -23,12 +24,14 @@ public extension AWSCredentialIdentity {
         self.init(
             accessKey: accessKey,
             secret: secret,
+            accountID: crtAWSCredentialIdentity.getAccountId(),
             expiration: crtAWSCredentialIdentity.getExpiration(),
             sessionToken: crtAWSCredentialIdentity.getSessionToken()
         )
     }
 }
 
+@_spi(SmithyIdentity)
 public extension CRTAWSCredentialIdentity {
     /// Creates `CRTAWSCredentialIdentity` from the provided `AWSCredentialIdentity`.
     convenience init(awsCredentialIdentity: AWSCredentialIdentity) throws {
@@ -36,6 +39,7 @@ public extension CRTAWSCredentialIdentity {
             accessKey: awsCredentialIdentity.accessKey,
             secret: awsCredentialIdentity.secret,
             sessionToken: awsCredentialIdentity.sessionToken,
+            accountId: awsCredentialIdentity.accountID,
             expiration: awsCredentialIdentity.expiration
         )
     }

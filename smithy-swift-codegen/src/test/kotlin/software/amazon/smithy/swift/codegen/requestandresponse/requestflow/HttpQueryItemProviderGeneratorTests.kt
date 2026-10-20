@@ -19,7 +19,7 @@ class HttpQueryItemProviderGeneratorTests {
     fun `001 it creates query item provider with idempotency token trait for httpQuery`() {
         val context = setupTests("http-binding-protocol-generator-test.smithy", "com.test#Example")
         val contents =
-            getModelFileContents("Sources/example", "QueryIdempotencyTokenAutoFillInput+QueryItemProvider.swift", context.manifest)
+            getModelFileContents("example/Sources/example", "QueryIdempotencyTokenAutoFillInput+QueryItemProvider.swift", context.manifest)
         contents.shouldSyntacticSanityCheck()
         val expectedContents = """
 extension QueryIdempotencyTokenAutoFillInput {
@@ -40,7 +40,7 @@ extension QueryIdempotencyTokenAutoFillInput {
     @Test
     fun `002 it creates query item middleware for timestamps with format`() {
         val context = setupTests("http-binding-protocol-generator-test.smithy", "com.test#Example")
-        val contents = getModelFileContents("Sources/example", "TimestampInputInput+QueryItemProvider.swift", context.manifest)
+        val contents = getModelFileContents("example/Sources/example", "TimestampInputInput+QueryItemProvider.swift", context.manifest)
         contents.shouldSyntacticSanityCheck()
         val expectedContents = """
 extension TimestampInputInput {
@@ -67,7 +67,7 @@ extension TimestampInputInput {
     @Test
     fun `003 it creates query item middleware smoke test`() {
         val context = setupTests("http-binding-protocol-generator-test.smithy", "com.test#Example")
-        val contents = getModelFileContents("Sources/example", "SmokeTestInput+QueryItemProvider.swift", context.manifest)
+        val contents = getModelFileContents("example/Sources/example", "SmokeTestInput+QueryItemProvider.swift", context.manifest)
         contents.shouldSyntacticSanityCheck()
         val expectedContents = """
 extension SmokeTestInput {
@@ -90,14 +90,14 @@ extension SmokeTestInput {
         val context = setupTests("http-query-params-stringmap.smithy", "com.test#Example")
         Assertions.assertEquals(
             Optional.empty<String>(),
-            context.manifest.getFileString("Sources/example/models/AllQueryStringTypesInput+BodyMiddleware.swift")
+            context.manifest.getFileString("Sources/example/models/AllQueryStringTypesInput+BodyMiddleware.swift"),
         )
     }
 
     @Test
     fun `005 httpQueryParams on StringMap`() {
         val context = setupTests("http-query-params-stringmap.smithy", "com.test#Example")
-        val contents = getFileContents(context.manifest, "Sources/example/models/AllQueryStringTypesInput+QueryItemProvider.swift")
+        val contents = getFileContents(context.manifest, "example/Sources/example/models/AllQueryStringTypesInput+QueryItemProvider.swift")
         contents.shouldSyntacticSanityCheck()
         val expectedContents = """
 extension AllQueryStringTypesInput {
@@ -133,7 +133,8 @@ extension AllQueryStringTypesInput {
     @Test
     fun `006 httpQueryParams on stringListMap`() {
         val context = setupTests("http-query-params-stringlistmap.smithy", "com.test#Example")
-        val contents = getFileContents(context.manifest, "Sources/example/models/QueryParamsAsStringListMapInput+QueryItemProvider.swift")
+        val contents =
+            getFileContents(context.manifest, "example/Sources/example/models/QueryParamsAsStringListMapInput+QueryItemProvider.swift")
         contents.shouldSyntacticSanityCheck()
         val expectedContents = """
 extension QueryParamsAsStringListMapInput {
@@ -165,7 +166,7 @@ extension QueryParamsAsStringListMapInput {
     @Test
     fun `007 query precedence with httpQuery and httpQueryParams`() {
         val context = setupTests("http-query-params-precedence.smithy", "com.test#Example")
-        val contents = getFileContents(context.manifest, "Sources/example/models/QueryPrecedenceInput+QueryItemProvider.swift")
+        val contents = getFileContents(context.manifest, "example/Sources/example/models/QueryPrecedenceInput+QueryItemProvider.swift")
         contents.shouldSyntacticSanityCheck()
         val expectedContents = """
 extension QueryPrecedenceInput {
@@ -195,7 +196,7 @@ extension QueryPrecedenceInput {
     @Test
     fun `008 it handles required http query items`() {
         val context = setupTests("http-binding-protocol-generator-test.smithy", "com.test#Example")
-        val contents = getModelFileContents("Sources/example", "RequiredHttpFieldsInput+QueryItemProvider.swift", context.manifest)
+        val contents = getModelFileContents("example/Sources/example", "RequiredHttpFieldsInput+QueryItemProvider.swift", context.manifest)
         contents.shouldSyntacticSanityCheck()
         val expectedContents = """
 extension RequiredHttpFieldsInput {
@@ -229,7 +230,54 @@ extension RequiredHttpFieldsInput {
         contents.shouldContainOnlyOnce(expectedContents)
     }
 
-    private fun setupTests(smithyFile: String, serviceShapeId: String): TestContext {
+    @Test
+    fun `009 it encodes float and double query items with encodeNumber`() {
+        // Floats & doubles must be rendered by URLEncodingUtils.encodeNumber so that the non-finite
+        // values are rendered as the Smithy-defined tokens NaN, Infinity, and -Infinity.  Swift's own
+        // string interpolation would render them as nan, inf, and -inf, which are invalid on the wire.
+        val context = setupTests("http-float-bindings.smithy", "com.test#Example")
+        val contents = getModelFileContents("example/Sources/example", "FloatBindingsInput+QueryItemProvider.swift", context.manifest)
+        contents.shouldSyntacticSanityCheck()
+        val expectedContents = """
+extension FloatBindingsInput {
+
+    static func queryItemProvider(_ value: FloatBindingsInput) throws -> [Smithy.URIQueryItem] {
+        var items = [Smithy.URIQueryItem]()
+        if let queryFloatList = value.queryFloatList {
+            queryFloatList.forEach { queryItemValue in
+                let queryItem = Smithy.URIQueryItem(name: "FloatList".urlPercentEncoding(), value: SmithyHTTPAPI.URLEncodingUtils.encodeNumber(queryItemValue).urlPercentEncoding())
+                items.append(queryItem)
+            }
+        }
+        if let queryFloat = value.queryFloat {
+            let queryFloatQueryItem = Smithy.URIQueryItem(name: "Float".urlPercentEncoding(), value: SmithyHTTPAPI.URLEncodingUtils.encodeNumber(queryFloat).urlPercentEncoding())
+            items.append(queryFloatQueryItem)
+        }
+        if let queryDoubleList = value.queryDoubleList {
+            queryDoubleList.forEach { queryItemValue in
+                let queryItem = Smithy.URIQueryItem(name: "DoubleList".urlPercentEncoding(), value: SmithyHTTPAPI.URLEncodingUtils.encodeNumber(queryItemValue).urlPercentEncoding())
+                items.append(queryItem)
+            }
+        }
+        if let queryString = value.queryString {
+            let queryStringQueryItem = Smithy.URIQueryItem(name: "String".urlPercentEncoding(), value: Swift.String(queryString).urlPercentEncoding())
+            items.append(queryStringQueryItem)
+        }
+        if let queryDouble = value.queryDouble {
+            let queryDoubleQueryItem = Smithy.URIQueryItem(name: "Double".urlPercentEncoding(), value: SmithyHTTPAPI.URLEncodingUtils.encodeNumber(queryDouble).urlPercentEncoding())
+            items.append(queryDoubleQueryItem)
+        }
+        return items
+    }
+}
+"""
+        contents.shouldContainOnlyOnce(expectedContents)
+    }
+
+    private fun setupTests(
+        smithyFile: String,
+        serviceShapeId: String,
+    ): TestContext {
         val context = TestContext.initContextFrom(smithyFile, serviceShapeId)
         context.generator.generateSerializers(context.generationCtx)
         context.generator.generateProtocolClient(context.generationCtx)

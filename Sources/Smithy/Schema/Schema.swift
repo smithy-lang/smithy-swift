@@ -1,0 +1,163 @@
+//
+// Copyright Amazon.com Inc. or its affiliates.
+// All Rights Reserved.
+//
+// SPDX-License-Identifier: Apache-2.0
+//
+
+/// A class which describes selected, modeled information for a Smithy shape.
+///
+/// Typically, the Schema contains only modeled info & properties that are relevant to
+/// serialization, transport bindings, and other functions performed by the SDK.
+@_spi(SchemaBasedSerde)
+public final class Schema: Sendable {
+
+    /// The Smithy shape ID for the shape described by this schema.
+    public let id: ShapeID
+
+    /// The type of the shape being described.
+    ///
+    /// If this Schema is a member, the type returned is that of the member's target.
+    public let type: ShapeType
+
+    /// A dictionary of the described shape's trait shape IDs to Nodes with trait data.
+    ///
+    /// Not all traits for a shape will be represented in the schema;
+    /// typically the Schema contains only the traits relevant to the client-side SDK.
+    ///
+    /// If this Schema is a member, then these traits come "pre-resolved" by merging
+    /// those of the member with those of its target; merging logic is provided per-trait.
+    public let traits: TraitCollection
+
+    /// The member schemas for this schema, if any.
+    ///
+    /// Typically only a schema of type Structure, Union, Enum, IntEnum, List or Map will have members.
+    /// For other schema types, this property is an empty array.
+    ///
+    /// When this schema is itself a Member, it returns the target's members.
+    public var members: [Schema] {
+        containerType != nil ? _target()!._members : _members
+    }
+
+    /// The members of this schema.
+    private let _members: [Schema]
+
+    /// The target schema for this schema.  Will only be used when this is a member schema.
+    public var target: Schema? {
+        _target()
+    }
+
+    /// Target schema is passed as an autoclosure so that schemas with self-referencing targets will not cause
+    /// an infinite loop when accessed.
+    private let _target: @Sendable () -> Schema?
+
+    /// The index of this schema, if it represents a Smithy member.
+    ///
+    /// For a member schema, index will be set to its index in the members array.
+    /// For other types of schema, index will be `-1`.
+    ///
+    /// This index is intended for use as a performance enhancement when looking up member schemas
+    /// during deserialization.
+    public let index: Int
+
+    /// The member name for this schema.
+    ///
+    /// Only returns a name for structure & union members.  Collection & enumeration members return `nil`.
+    public var memberName: String? {
+        [ShapeType.structure, .union].contains(containerType) ? id.member! : nil
+    }
+
+    /// The type of the shape containing this schema, if this schema is a member schema.
+    ///
+    /// Will be `nil` for any schema other than a member.
+    public let containerType: ShapeType?
+
+    private let _extensions = UniquelyIndexedMutableCollection([])
+
+    /// Creates a new Schema using the passed parameters.
+    ///
+    /// No validation is performed on the parameters since calls to this initializer
+    /// are almost always code-generated from a previously validated Smithy model.
+    public init(
+        id: ShapeID,
+        type: ShapeType,
+        traits: TraitCollection = TraitCollection(),
+        members: [Schema] = [],
+        containerType: ShapeType? = nil,
+        target: @Sendable @escaping @autoclosure () -> Schema? = nil,
+        index: Int = -1
+    ) {
+        self.id = id
+        self.type = type
+        self.traits = traits
+        self._members = members
+        self.containerType = containerType
+        self._target = target
+        self.index = index
+    }
+
+    /// Checks if a schema has a trait, by trait type.
+    /// - Parameter type: The trait type to be checked.
+    /// - Returns: `true` if the schema has a trait for the passed trait, `false` otherwise.
+    public func hasTrait<T: Trait>(_ type: T.Type) -> Bool {
+        return traits.hasTrait(T.self)
+    }
+
+    /// Gets a trait from the schema.
+    /// - Parameter type: The trait to be retrieved.
+    /// - Returns: The requested trait, or `nil` if the schema doesn't have that trait.
+    public func getTrait<T: Trait>(_ type: T.Type) -> T? {
+        traits.getTrait(type)
+    }
+
+    /// Returns the member for a List's element.
+    ///
+    /// Only access this property on a schema of type `.list` or `.document`.
+    public var member: Schema {
+        // `member` will be the only member in a list schema, the third in a document schema
+        members[type == .document ? 2 : 0]
+    }
+
+    /// Returns the key member for a Map's key.
+    ///
+    /// Only access this property on a schema of type `.map` or `.document`.
+    public var key: Schema {
+        members[0] // `key` will be the first member in a map or document schema, before `value`
+    }
+
+    /// Returns the value member for a Map's value.
+    ///
+    /// Only access this property on a schema of type `.map` or `.document`.
+    public var value: Schema {
+        members[1] // `value` will be the second member in a map or document schema, after `key`
+    }
+
+    /// Gets the requested type of schema extension for this schema.
+    /// - Parameter type: The type of schema extension to be retrieved & returned.
+    /// - Returns: A schema extension of the requested type, or `nil` if none exists.
+    public func getExtension<Extension: SchemaExtension>(_ type: Extension.Type) -> Extension? {
+        _extensions.get(Extension.self)
+    }
+
+    /// Stores the passed schema extension.
+    ///
+    /// If multiple callers attempt to create a schema extension from multiple threads at the same time, each will create & store the value.
+    /// This may result in extra work performed, but the type is thread-safe and the time spent blocking any calling thread is minimized.
+    /// - Parameter value: The schema extension to be stored.
+    public func setExtension<Extension: SchemaExtension>(_ value: Extension) {
+        _extensions.set(value)
+    }
+
+    /// Gets the requested type of schema extension for this schema, creating & storing it first if it does not exist.
+    ///
+    /// Creation & storage is not performed atomically; see ``setExtension(_:)`` for the implications when
+    /// this method is called from multiple threads at the same time.
+    /// - Parameter type: The type of schema extension to be retrieved & returned.
+    /// - Returns: A schema extension of the requested type.
+    public func getOrCreateExtension<Extension: SchemaExtension>(_ type: Extension.Type) throws -> Extension {
+        if let storedExtension = getExtension(Extension.self) { return storedExtension }
+        let newExtension = try Extension(schema: self)
+        setExtension(newExtension)
+        return newExtension
+    }
+}

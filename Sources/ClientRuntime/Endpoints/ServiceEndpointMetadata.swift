@@ -45,6 +45,7 @@ public struct ServiceEndpointMetadata {
 }
 
 extension ServiceEndpointMetadata {
+    // swiftlint:disable:next unused_declaration
     func resolve(region: String, defaults: ServiceEndpointMetadata) throws -> SmithyEndpoint {
         let serviceEndpointMetadata = buildEndpointMetadataIfNotSet(defaults: defaults)
         guard let hostname = serviceEndpointMetadata.hostName else {

@@ -5,6 +5,7 @@ import software.amazon.smithy.model.shapes.ShapeId
 import software.amazon.smithy.model.traits.Trait
 
 class EquatableConformanceTrait : Trait {
+    @Suppress("ktlint:standard:property-naming")
     val ID = ShapeId.from("software.amazon.smithy.swift.codegen.swift.synthetic#equatableConformance")
 
     override fun toNode(): Node = Node.objectNode()

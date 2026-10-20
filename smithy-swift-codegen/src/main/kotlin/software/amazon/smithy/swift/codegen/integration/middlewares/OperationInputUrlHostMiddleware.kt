@@ -16,15 +16,14 @@ class OperationInputUrlHostMiddleware(
     val model: Model,
     val symbolProvider: SymbolProvider,
     val operation: OperationShape,
-    val requiresHost: Boolean = false
+    val requiresHost: Boolean = false,
 ) : MiddlewareRenderable {
-
     override val name = "OperationInputUrlHostMiddleware"
 
     override fun renderMiddlewareInit(
         ctx: ProtocolGenerator.GenerationContext,
         writer: SwiftWriter,
-        op: OperationShape
+        op: OperationShape,
     ) {
         val inputShapeName = MiddlewareShapeUtils.inputSymbol(symbolProvider, model, op).name
         val outputShapeName = MiddlewareShapeUtils.outputSymbol(symbolProvider, model, op).name
@@ -39,7 +38,7 @@ class OperationInputUrlHostMiddleware(
 
         writer.write(
             "\$N<$inputShapeName, $outputShapeName>($inputParameters)",
-            ClientRuntimeTypes.Middleware.URLHostMiddleware
+            ClientRuntimeTypes.Middleware.URLHostMiddleware,
         )
     }
 }

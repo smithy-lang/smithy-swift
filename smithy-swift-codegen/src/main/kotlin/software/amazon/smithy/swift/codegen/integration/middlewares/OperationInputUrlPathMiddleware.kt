@@ -12,15 +12,14 @@ import software.amazon.smithy.swift.codegen.swiftmodules.ClientRuntimeTypes
 class OperationInputUrlPathMiddleware(
     val model: Model,
     val symbolProvider: SymbolProvider,
-    private val inputParameters: String
+    private val inputParameters: String,
 ) : MiddlewareRenderable {
-
     override val name = "OperationInputUrlPathMiddleware"
 
     override fun renderMiddlewareInit(
         ctx: ProtocolGenerator.GenerationContext,
         writer: SwiftWriter,
-        op: OperationShape
+        op: OperationShape,
     ) {
         val inputShapeName = MiddlewareShapeUtils.inputSymbol(symbolProvider, model, op).name
         val outputShapeName = MiddlewareShapeUtils.outputSymbol(symbolProvider, model, op).name
@@ -31,7 +30,7 @@ class OperationInputUrlPathMiddleware(
             inputShapeName,
             outputShapeName,
             params,
-            inputShapeName
+            inputShapeName,
         )
     }
 }

@@ -5,8 +5,8 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
-@preconcurrency import libxml2
 import struct Foundation.Data
+@preconcurrency import libxml2
 
 /// Extends Writer to copy its tree into libxml2, then write the tree to XML data.
 extension Writer {

@@ -5,29 +5,41 @@
 
 package software.amazon.smithy.swift.codegen
 
+import software.amazon.smithy.aws.traits.protocols.AwsJson1_0Trait
+import software.amazon.smithy.aws.traits.protocols.AwsJson1_1Trait
+import software.amazon.smithy.aws.traits.protocols.AwsQueryTrait
+import software.amazon.smithy.aws.traits.protocols.Ec2QueryTrait
+import software.amazon.smithy.aws.traits.protocols.RestJson1Trait
+import software.amazon.smithy.aws.traits.protocols.RestXmlTrait
 import software.amazon.smithy.codegen.core.CodegenException
 import software.amazon.smithy.model.Model
 import software.amazon.smithy.model.knowledge.ServiceIndex
+import software.amazon.smithy.model.node.Node
 import software.amazon.smithy.model.node.ObjectNode
 import software.amazon.smithy.model.node.StringNode
 import software.amazon.smithy.model.shapes.ServiceShape
 import software.amazon.smithy.model.shapes.Shape
 import software.amazon.smithy.model.shapes.ShapeId
+import software.amazon.smithy.protocol.traits.Rpcv2CborTrait
+import software.amazon.smithy.swift.codegen.utils.clientName
+import software.amazon.smithy.swift.codegen.utils.sdkId
 import java.util.logging.Logger
+import kotlin.collections.listOf
+import kotlin.jvm.optionals.getOrElse
+import kotlin.jvm.optionals.getOrNull
 import kotlin.streams.toList
 
-private const val SERVICE = "service"
-private const val MODULE_NAME = "module"
-private const val MODULE_VERSION = "moduleVersion"
-private const val MODULE_DESCRIPTION = "moduleDescription"
-private const val AUTHOR = "author"
-private const val HOMEPAGE = "homepage"
-// If SDK_ID is not provided by the service model, the value of sdkId defaults to the Service's shape id name.
-private const val SDK_ID = "sdkId"
-private const val GIT_REPO = "gitRepo"
-private const val SWIFT_VERSION = "swiftVersion"
-private const val MERGE_MODELS = "mergeModels"
-private const val COPYRIGHT_NOTICE = "copyrightNotice"
+// Prioritized list of protocols supported for code generation
+private val DEFAULT_PROTOCOL_RESOLUTION_PRIORITY =
+    listOf<ShapeId>(
+        Rpcv2CborTrait.ID,
+        AwsJson1_0Trait.ID,
+        AwsJson1_1Trait.ID,
+        RestJson1Trait.ID,
+        RestXmlTrait.ID,
+        AwsQueryTrait.ID,
+        Ec2QueryTrait.ID,
+    )
 
 class SwiftSettings(
     val service: ShapeId,
@@ -41,9 +53,33 @@ class SwiftSettings(
     val swiftVersion: String,
     val mergeModels: Boolean,
     val copyrightNotice: String,
+    val visibility: String,
+    val internalClient: Boolean,
+    val operations: List<String>,
+    val modelPath: String?,
+    val localDevelopment: Boolean,
+    val forceSchemaBased: Boolean,
 ) {
-
     companion object {
+        const val SERVICE = "service"
+        const val MODULE_NAME = "module"
+        const val MODULE_VERSION = "moduleVersion"
+        const val MODULE_DESCRIPTION = "moduleDescription"
+        const val AUTHOR = "author"
+        const val HOMEPAGE = "homepage"
+
+        // If SDK_ID is not provided by the service model, the value of sdkId defaults to the Service's shape id name.
+        const val SDK_ID = "sdkId"
+        const val GIT_REPO = "gitRepo"
+        const val SWIFT_VERSION = "swiftVersion"
+        const val MERGE_MODELS = "mergeModels"
+        const val COPYRIGHT_NOTICE = "copyrightNotice"
+        const val VISIBILITY = "visibility"
+        const val INTERNAL_CLIENT = "internalClient"
+        const val OPERATIONS = "operations"
+        const val MODEL_PATH = "modelPath"
+        const val LOCAL_DEVELOPMENT = "localDevelopment"
+        const val FORCE_SCHEMA_BASED = "forceSchemaBased"
 
         private val LOGGER: Logger = Logger.getLogger(SwiftSettings::class.java.name)
 
@@ -55,7 +91,10 @@ class SwiftSettings(
          * @throws software.amazon.smithy.model.node.ExpectationNotMetException
          * @return Returns the extracted settings
          */
-        fun from(model: Model, config: ObjectNode): SwiftSettings {
+        fun from(
+            model: Model,
+            config: ObjectNode,
+        ): SwiftSettings {
             config.warnIfAdditionalProperties(
                 listOf(
                     SERVICE,
@@ -69,31 +108,47 @@ class SwiftSettings(
                     SWIFT_VERSION,
                     MERGE_MODELS,
                     COPYRIGHT_NOTICE,
-                )
+                    VISIBILITY,
+                    INTERNAL_CLIENT,
+                    OPERATIONS,
+                    MODEL_PATH,
+                    LOCAL_DEVELOPMENT,
+                    FORCE_SCHEMA_BASED,
+                ),
             )
 
-            val serviceId = config.getStringMember(SERVICE)
-                .map(StringNode::expectShapeId)
-                .orElseGet { inferService(model) }
+            val serviceId =
+                config
+                    .getStringMember(SERVICE)
+                    .map(StringNode::expectShapeId)
+                    .orElseGet { inferService(model) }
+            val service = model.getShape(serviceId).getOrNull() as? ServiceShape
 
             val moduleName = config.expectStringMember(MODULE_NAME).value
-            val moduleVersion = config.expectStringMember(MODULE_VERSION).value
+            val version = config.expectStringMember(MODULE_VERSION).value
             val desc = config.getStringMemberOrDefault(MODULE_DESCRIPTION, "$moduleName client")
             val homepage = config.expectStringMember(HOMEPAGE).value
             val author = config.expectStringMember(AUTHOR).value
             val gitRepo = config.expectStringMember(GIT_REPO).value
             val swiftVersion = config.expectStringMember(SWIFT_VERSION).value
-            val sdkId = sanitizeSdkId(config.getStringMemberOrDefault(SDK_ID, serviceId.name))
+            val sdkId = config.getStringMemberOrDefault(SDK_ID, service?.sdkId ?: serviceId.name)
             val mergeModels = config.getBooleanMemberOrDefault(MERGE_MODELS)
-            val copyrightNotice = config.getStringMemberOrDefault(
-                COPYRIGHT_NOTICE,
-                "// Code generated by smithy-swift-codegen. DO NOT EDIT!\n\n"
-            )
+            val copyrightNotice =
+                config.getStringMemberOrDefault(
+                    COPYRIGHT_NOTICE,
+                    "// Code generated by smithy-swift-codegen. DO NOT EDIT!\n\n",
+                )
+            val visibility = config.getStringMemberOrDefault(VISIBILITY, "public")
+            val internalClient = config.getBooleanMemberOrDefault(INTERNAL_CLIENT, false)
+            val operations = config.getArrayMember(OPERATIONS).getOrElse { Node.arrayNode() }.map { it.expectStringNode().value }
+            val modelPath = config.getStringMember(MODEL_PATH).getOrNull()?.toString()
+            val localDevelopment = config.getBooleanMemberOrDefault(LOCAL_DEVELOPMENT)
+            val forceSchemaBased = config.getBooleanMemberOrDefault(FORCE_SCHEMA_BASED)
 
             return SwiftSettings(
                 serviceId,
                 moduleName,
-                moduleVersion,
+                version,
                 desc,
                 author,
                 homepage,
@@ -102,31 +157,35 @@ class SwiftSettings(
                 swiftVersion,
                 mergeModels,
                 copyrightNotice,
+                visibility,
+                internalClient,
+                operations,
+                modelPath,
+                localDevelopment,
+                forceSchemaBased,
             )
-        }
-
-        private fun sanitizeSdkId(sdkId: String): String {
-            return sdkId.removeSuffix(" Service")
         }
 
         // infer the service to generate from a model
         private fun inferService(model: Model): ShapeId {
-            val services = model.shapes(ServiceShape::class.java)
-                .map(Shape::getId)
-                .sorted()
-                .toList()
+            val services =
+                model
+                    .shapes(ServiceShape::class.java)
+                    .map(Shape::getId)
+                    .sorted()
+                    .toList()
 
             when {
                 services.isEmpty() -> {
                     throw CodegenException(
                         "Cannot infer a service to generate because the model does not " +
-                            "contain any service shapes"
+                            "contain any service shapes",
                     )
                 }
                 services.size > 1 -> {
                     throw CodegenException(
                         "Cannot infer service to generate because the model contains " +
-                            "multiple service shapes: " + services
+                            "multiple service shapes: " + services,
                     )
                 }
                 else -> {
@@ -146,13 +205,12 @@ class SwiftSettings(
      * @throws NullPointerException if the service has not been set.
      * @throws CodegenException if the service is invalid or not found.
      */
-    fun getService(model: Model): ServiceShape {
-        return model
+    fun getService(model: Model): ServiceShape =
+        model
             .getShape(this.service)
             .orElseThrow { CodegenException("Service shape not found: " + this.service) }
             .asServiceShape()
             .orElseThrow { CodegenException("Shape is not a Service: " + this.service) }
-    }
 
     /**
      * Resolves the highest priority protocol from a service shape that is
@@ -161,26 +219,45 @@ class SwiftSettings(
      * @param serviceIndex Service index containing the support
      * @param service Service to get the protocols from if "protocols" is not set.
      * @param supportedProtocolTraits The set of protocol traits supported by the generator.
+     * @param configuredProtocolPriority Optional configured protocol priority list, used to override the default priority.
      * @return Returns the resolved protocol name.
      * @throws UnresolvableProtocolException if no protocol could be resolved.
      */
     fun resolveServiceProtocol(
         serviceIndex: ServiceIndex,
         service: ServiceShape,
-        supportedProtocolTraits: Set<ShapeId>
+        supportedProtocolTraits: Set<ShapeId>,
+        configuredProtocolPriority: List<ShapeId>? = null,
     ): ShapeId {
         val resolvedProtocols: Set<ShapeId> = serviceIndex.getProtocols(service).keys
-        val protocol = resolvedProtocols.firstOrNull(supportedProtocolTraits::contains)
+
+        // Use the configured protocol priority if provided; otherwise, fall back to the default priority
+        val protocolResolutionPriority = configuredProtocolPriority ?: DEFAULT_PROTOCOL_RESOLUTION_PRIORITY
+
+        // Find the highest-priority protocol that is both supported and resolved
+        val protocol =
+            protocolResolutionPriority
+                .firstOrNull { it in resolvedProtocols && it in supportedProtocolTraits }
+
         return protocol ?: throw UnresolvableProtocolException(
             "The ${service.id} service supports the following unsupported protocols $resolvedProtocols. " +
-                "The following protocol generators were found on the class path: $supportedProtocolTraits"
+                "The following protocol generators were found on the class path: $supportedProtocolTraits",
         )
     }
+
+    val testModuleName: String
+        get() = "${moduleName}Tests"
+
+    val sdkIdStrippingService: String
+        get() = sdkId.removeSuffix(" Service")
+
+    val clientBaseNamePreservingService: String
+        get() = sdkId.clientName()
+
+    val clientBaseName: String
+        get() = sdkIdStrippingService.clientName()
 }
 
-class UnresolvableProtocolException(message: String) : CodegenException(message)
-
-val SwiftSettings.testModuleName: String
-    get() {
-        return "${this.moduleName}Tests"
-    }
+class UnresolvableProtocolException(
+    message: String,
+) : CodegenException(message)

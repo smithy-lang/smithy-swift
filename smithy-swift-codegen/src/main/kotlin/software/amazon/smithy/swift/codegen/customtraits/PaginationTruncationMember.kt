@@ -14,7 +14,9 @@ import software.amazon.smithy.model.traits.AnnotationTrait
  * Indicates the annotated member is a truncation indicator which conveys a non-standard termination condition for
  * pagination.
  */
-class PaginationTruncationMember(node: ObjectNode) : AnnotationTrait(ID, node) {
+class PaginationTruncationMember(
+    node: ObjectNode,
+) : AnnotationTrait(ID, node) {
     companion object {
         val ID: ShapeId = ShapeId.from("software.amazon.smithy.swift.codegen.synthetic#paginationTruncationMember")
     }

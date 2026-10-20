@@ -5,10 +5,13 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
+import enum SmithyHTTPAPI.EndpointPropertyValue
+
 /// Supported authentication schemes
 public enum EndpointsAuthScheme: Equatable {
     case sigV4(SigV4Parameters)
     case sigV4A(SigV4AParameters)
+    case sigV4S3Express(SigV4Parameters)
     case none
 
     /// The name of the auth scheme
@@ -16,6 +19,7 @@ public enum EndpointsAuthScheme: Equatable {
         switch self {
         case .sigV4: return "sigv4"
         case .sigV4A: return "sigv4a"
+        case .sigV4S3Express: return "sigv4-s3express"
         case .none: return "none"
         }
     }
@@ -25,7 +29,8 @@ extension EndpointsAuthScheme {
     /// Initialize an AuthScheme from a dictionary
     /// - Parameter dictionary: Dictionary containing the auth scheme
     public init(from dictionary: [String: Any]) throws {
-        guard let name = dictionary["name"] as? String else {
+        guard let endpointProperty = dictionary["name"] as? SmithyHTTPAPI.EndpointPropertyValue,
+              case let .string(name) = endpointProperty else {
             throw EndpointError.authScheme("Invalid auth scheme")
         }
         switch name {
@@ -33,6 +38,8 @@ extension EndpointsAuthScheme {
             self = .sigV4(try SigV4Parameters(from: dictionary))
         case "sigv4a":
             self = .sigV4A(try SigV4AParameters(from: dictionary))
+        case "sigv4-s3express":
+            self = .sigV4S3Express(try SigV4Parameters(from: dictionary))
         case "none":
             self = .none
         default:
@@ -60,9 +67,29 @@ extension EndpointsAuthScheme.SigV4Parameters {
     /// Initialize a SigV4AuthScheme from a dictionary
     /// - Parameter dictionary: Dictionary containing the auth scheme
     init(from dictionary: [String: Any]) throws {
-        self.signingName = dictionary["signingName"] as? String
-        self.signingRegion = dictionary["signingRegion"] as? String
-        self.disableDoubleEncoding = dictionary["disableDoubleEncoding"] as? Bool
+        // For signingName (expected to be a string)
+        if let value = dictionary["signingName"] as? EndpointPropertyValue,
+           case let .string(name) = value {
+            self.signingName = name
+        } else {
+            self.signingName = nil
+        }
+
+        // For signingRegion (expected to be a string)
+        if let value = dictionary["signingRegion"] as? EndpointPropertyValue,
+           case let .string(region) = value {
+            self.signingRegion = region
+        } else {
+            self.signingRegion = nil
+        }
+
+        // For disableDoubleEncoding (expected to be a bool)
+        if let value = dictionary["disableDoubleEncoding"] as? EndpointPropertyValue,
+           case let .bool(flag) = value {
+            self.disableDoubleEncoding = flag
+        } else {
+            self.disableDoubleEncoding = nil
+        }
     }
 }
 
@@ -86,9 +113,34 @@ extension EndpointsAuthScheme.SigV4AParameters {
     /// Initialize a SigV4AAuthScheme from a dictionary
     /// - Parameter dictionary: Dictionary containing the auth scheme
     init(from dictionary: [String: Any]) throws {
-        self.signingName = dictionary["signingName"] as? String
-        self.signingRegionSet = dictionary["signingRegionSet"] as? [String]
-        self.disableDoubleEncoding = dictionary["disableDoubleEncoding"] as? Bool
+        // Extract signingName
+        if let value = dictionary["signingName"] as? EndpointPropertyValue,
+           case let .string(name) = value {
+            self.signingName = name
+        } else {
+            self.signingName = nil
+        }
+
+        // Extract signingRegionSet as an array of String
+        if let value = dictionary["signingRegionSet"] as? EndpointPropertyValue,
+           case let .array(regions) = value {
+            self.signingRegionSet = regions.compactMap { element in
+                if case let .string(region) = element {
+                    return region
+                }
+                return nil
+            }
+        } else {
+            self.signingRegionSet = nil
+        }
+
+        // Extract disableDoubleEncoding
+        if let value = dictionary["disableDoubleEncoding"] as? EndpointPropertyValue,
+           case let .bool(flag) = value {
+            self.disableDoubleEncoding = flag
+        } else {
+            self.disableDoubleEncoding = nil
+        }
     }
 }
 
@@ -108,7 +160,7 @@ public struct DefaultEndpointsAuthSchemeResolver: EndpointsAuthSchemeResolver {
     /// Supported auth schemes by the SDK
     let supportedAuthSchemes: Set<String>
 
-    public init(supportedAuthSchemes: Set<String> = ["sigv4", "sigv4a", "none"]) {
+    public init(supportedAuthSchemes: Set<String> = ["sigv4", "sigv4a", "sigv4-s3express", "none"]) {
         self.supportedAuthSchemes = supportedAuthSchemes
     }
 

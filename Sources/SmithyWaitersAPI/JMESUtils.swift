@@ -5,8 +5,6 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
-import Foundation
-
 /// Utility functions for performing comparisons between values in JMESPath expressions.
 ///
 /// `Bool` may be compared for equality & inequality.

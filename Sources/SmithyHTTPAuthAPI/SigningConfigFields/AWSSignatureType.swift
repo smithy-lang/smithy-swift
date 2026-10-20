@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
-public enum AWSSignatureType {
+public enum AWSSignatureType: Sendable {
     case requestHeaders
     case requestQueryParams
     case requestChunk

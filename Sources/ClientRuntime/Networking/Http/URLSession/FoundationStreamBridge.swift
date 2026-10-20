@@ -7,21 +7,23 @@
 
 #if os(iOS) || os(macOS) || os(watchOS) || os(tvOS) || os(visionOS)
 
+import func Foundation.CFWriteStreamSetDispatchQueue
+import struct Foundation.Data
+import class Foundation.DispatchQueue
+import class Foundation.InputStream
+import class Foundation.NSObject
+import class Foundation.OutputStream
+import class Foundation.RunLoop
+import class Foundation.Stream
+import protocol Foundation.StreamDelegate
+import class Foundation.Thread
+import struct Foundation.TimeInterval
+import class Foundation.Timer
+import struct Smithy.Attributes
 import protocol Smithy.LogAgent
 import protocol Smithy.ReadableStream
-import struct Smithy.Attributes
-import func Foundation.CFWriteStreamSetDispatchQueue
-import class Foundation.DispatchQueue
-import class Foundation.NSObject
-import class Foundation.Stream
-import class Foundation.InputStream
-import class Foundation.OutputStream
-import class Foundation.Thread
-import class Foundation.RunLoop
-import class Foundation.Timer
-import struct Foundation.TimeInterval
-import struct Foundation.Data
-import protocol Foundation.StreamDelegate
+@_spi(SmithyHTTPClient) import enum SmithyHTTPClientAPI.HttpMetricsAttributesKeys
+import class SmithyHTTPClientAPI.HttpTelemetry
 
 /// Reads data from a smithy-swift native `ReadableStream` and streams the data through to a Foundation `InputStream`.
 ///
@@ -30,7 +32,7 @@ import protocol Foundation.StreamDelegate
 /// `InputStream` is exposed as a property, and may be used to stream the data to other components.
 ///
 /// Used to permit SDK streaming request bodies to be used with `URLSession`-based HTTP requests.
-class FoundationStreamBridge: NSObject, StreamDelegate {
+class FoundationStreamBridge: NSObject, StreamDelegate, @unchecked Sendable {
 
     /// The max number of bytes to buffer between the `ReadableStream` and the Foundation `OutputStream`
     /// at any given time.

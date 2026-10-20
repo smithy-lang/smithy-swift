@@ -21,6 +21,7 @@ workspace.xml
 local.properties
 
 # Swift/SPM config & temp
+.swiftpm
 .build/
 /Packages
 Package.resolved
@@ -31,6 +32,14 @@ xcuserdata
 
 # Codegen build products
 build/
+smithy-build.json
 
 # VS Code config files
 .vscode
+
+# swiftlint analyzer build logs
+xcodebuild.log
+xcodebuild-filtered.log
+
+# serde benchmark results
+/instance-results.json

@@ -5,10 +5,10 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
+import AwsCommonRuntimeKit
+import struct Foundation.Data
 import protocol SmithyChecksumsAPI.Checksum
 import enum SmithyChecksumsAPI.HashResult
-import struct Foundation.Data
-import AwsCommonRuntimeKit
 
 class CRC64NVME {
     let checksumName = "crc64nvme"

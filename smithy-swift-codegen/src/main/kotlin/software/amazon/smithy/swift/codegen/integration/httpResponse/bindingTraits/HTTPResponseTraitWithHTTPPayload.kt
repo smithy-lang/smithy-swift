@@ -28,13 +28,16 @@ class HTTPResponseTraitWithHTTPPayload(
     val shapeContainingMembers: Shape,
     val customizations: HTTPProtocolCustomizable,
 ) : HTTPResponseBindingRenderable {
-
     override fun render() {
         val memberName = ctx.symbolProvider.toMemberName(binding.member)
         val target = ctx.model.expectShape(binding.member.target)
         val symbol = ctx.symbolProvider.toSymbol(target)
         val isBinaryStream =
-            ctx.model.getShape(binding.member.target).get().hasTrait<StreamingTrait>() && target.type == ShapeType.BLOB
+            ctx.model
+                .getShape(binding.member.target)
+                .get()
+                .hasTrait<StreamingTrait>() &&
+                target.type == ShapeType.BLOB
         when (target.type) {
             ShapeType.DOCUMENT -> {
                 writer.openBlock("if let data = try await httpResponse.body.readData() {", "}") {
@@ -42,7 +45,11 @@ class HTTPResponseTraitWithHTTPPayload(
                 }
             }
             ShapeType.STRING -> {
-                writer.openBlock("if let data = try await httpResponse.body.readData(), let output = \$N(data: data, encoding: .utf8) {", "}", SwiftTypes.String) {
+                writer.openBlock(
+                    "if let data = try await httpResponse.body.readData(), let output = \$N(data: data, encoding: .utf8) {",
+                    "}",
+                    SwiftTypes.String,
+                ) {
                     if (target.isEnum) {
                         writer.write("value.\$L = \$L(rawValue: output)", memberName, symbol)
                     } else {
@@ -51,12 +58,17 @@ class HTTPResponseTraitWithHTTPPayload(
                 }
             }
             ShapeType.ENUM -> {
-                writer.openBlock("if let data = try await httpResponse.body.readData(), let output = \$N(data: data, encoding: .utf8) {", "}", SwiftTypes.String) {
+                writer.openBlock(
+                    "if let data = try await httpResponse.body.readData(), let output = \$N(data: data, encoding: .utf8) {",
+                    "}",
+                    SwiftTypes.String,
+                ) {
                     writer.write("value.\$L = \$L(rawValue: output)", memberName, symbol)
                 }
             }
             ShapeType.BLOB -> {
-                writer.write("switch httpResponse.body {")
+                writer
+                    .write("switch httpResponse.body {")
                     .write("case .data(let data):")
                     .indent()
                 if (isBinaryStream) {
@@ -68,7 +80,8 @@ class HTTPResponseTraitWithHTTPPayload(
                 // For binary streams, we need to set the member to the stream directly.
                 // this allows us to stream the data directly to the user
                 // without having to buffer it in memory.
-                writer.dedent()
+                writer
+                    .dedent()
                     .write("case .stream(let stream):")
                     .indent()
                 if (isBinaryStream) {
@@ -76,10 +89,12 @@ class HTTPResponseTraitWithHTTPPayload(
                 } else {
                     writer.write("value.\$L = try stream.readToEnd()", memberName)
                 }
-                writer.dedent()
+                writer
+                    .dedent()
                     .write("case .noStream:")
                     .indent()
-                    .write("value.\$L = nil", memberName).closeBlock("}")
+                    .write("value.\$L = nil", memberName)
+                    .closeBlock("}")
             }
             ShapeType.STRUCTURE, ShapeType.UNION -> {
                 if (target.hasTrait<StreamingTrait>()) {

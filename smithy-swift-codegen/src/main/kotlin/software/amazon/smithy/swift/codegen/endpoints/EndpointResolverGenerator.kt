@@ -14,6 +14,8 @@ import software.amazon.smithy.swift.codegen.integration.ProtocolGenerator
 import software.amazon.smithy.swift.codegen.model.getTrait
 import software.amazon.smithy.swift.codegen.swiftmodules.ClientRuntimeTypes
 import software.amazon.smithy.swift.codegen.swiftmodules.SmithyHTTPAPITypes
+import software.amazon.smithy.swift.codegen.swiftmodules.SwiftTypes
+import software.amazon.smithy.swift.codegen.utils.SDKFileUtils
 
 /**
  * Generates a per/service endpoint resolver (internal to the generated SDK)
@@ -25,25 +27,29 @@ class EndpointResolverGenerator(
         val ruleSetNode = ctx.service.getTrait<EndpointRuleSetTrait>()?.ruleSet
         val ruleSet = if (ruleSetNode != null) EndpointRuleSet.fromNode(ruleSetNode) else null
 
-        ctx.delegator.useFileWriter("Sources/${ctx.settings.moduleName}/Endpoints.swift") {
-            renderResolverProtocol(it)
+        val filename = SDKFileUtils(ctx.settings).sourcesDirFilePath("Endpoints")
+        ctx.delegator.useFileWriter(filename) {
+            renderResolverProtocol(it, ctx.settings.visibility)
             it.write("")
             renderResolver(it, ruleSet)
             renderStaticResolver(it)
-            val inputSymbol = Symbol.builder().name("HTTPRequestBuilder").build()
-            val outputSymbol = Symbol.builder().name("OperationStackOutput").build()
-            val outputErrorSymbol = Symbol.builder().name("OperationStackError").build()
             it.write("")
         }
     }
 
-    private fun renderResolverProtocol(writer: SwiftWriter) {
-        writer.openBlock("public protocol \$N {", "}", EndpointTypes.EndpointResolver) {
+    private fun renderResolverProtocol(
+        writer: SwiftWriter,
+        visibility: String,
+    ) {
+        writer.openBlock("$visibility protocol \$N: \$N {", "}", EndpointTypes.EndpointResolver, SwiftTypes.Protocols.Sendable) {
             writer.write("func resolve(params: EndpointParams) throws -> \$N", SmithyHTTPAPITypes.Endpoint)
         }
     }
 
-    private fun renderResolver(writer: SwiftWriter, endpointRuleSet: EndpointRuleSet?) {
+    private fun renderResolver(
+        writer: SwiftWriter,
+        endpointRuleSet: EndpointRuleSet?,
+    ) {
         writer.write(
             "typealias DefaultEndpointResolver = \$N<EndpointParams>",
             ClientRuntimeTypes.Core.DefaultEndpointResolver,
@@ -61,7 +67,7 @@ class EndpointResolverGenerator(
             }
         }
         writer.write("")
-        writer.write("extension DefaultEndpointResolver: EndpointResolver {}")
+        writer.write("extension DefaultEndpointResolver: EndpointResolver where Params == EndpointParams {}")
     }
 
     private fun renderStaticResolver(writer: SwiftWriter) {

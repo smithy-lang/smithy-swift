@@ -5,6 +5,7 @@
 
 import AwsCommonRuntimeKit
 
+/// Extension for CRT's LogLevel enum
 extension LogLevel {
     public var stringValue: String {
         switch self {

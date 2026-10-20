@@ -5,13 +5,13 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
-import class Smithy.Context
 import struct Smithy.AttributeKey
+import class Smithy.Context
 
 public extension Context {
     var isChunkedEligibleStream: Bool? {
-        get { attributes.get(key: isChunkedEligibleStreamKey) }
-        set { attributes.set(key: isChunkedEligibleStreamKey, value: newValue) }
+        get { get(key: isChunkedEligibleStreamKey) }
+        set { set(key: isChunkedEligibleStreamKey, value: newValue) }
     }
 }
 

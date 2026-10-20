@@ -23,80 +23,85 @@ import software.amazon.smithy.swift.codegen.swiftmodules.SmithyTimestampsTypes
 
 class WritingClosureUtils(
     val ctx: ProtocolGenerator.GenerationContext,
-    val writer: SwiftWriter
+    val writer: SwiftWriter,
 ) {
-
     private val nodeInfoUtils = NodeInfoUtils(ctx, writer, ctx.service.requestWireProtocol)
 
-    fun writingClosure(member: MemberShape, isSparse: Boolean): String {
+    fun writingClosure(
+        member: MemberShape,
+        isSparse: Boolean,
+    ): String {
         val target = ctx.model.expectShape(member.target)
         val memberTimestampFormatTrait = member.getTrait<TimestampFormatTrait>()
         return makeWritingClosure(target, memberTimestampFormatTrait, isSparse)
     }
 
-    fun writingClosure(shape: Shape): String {
-        return makeWritingClosure(shape, null, false)
-    }
+    fun writingClosure(shape: Shape): String = makeWritingClosure(shape, null, false)
 
-    private fun makeWritingClosure(shape: Shape, memberTimestampFormatTrait: TimestampFormatTrait?, isSparse: Boolean): String {
-        val base = when {
-            shape is MapShape -> {
-                val keyNodeInfo = nodeInfoUtils.nodeInfo(shape.key)
-                val valueNodeInfo = nodeInfoUtils.nodeInfo(shape.value)
-                val mapIsSparse = shape.hasTrait<SparseTrait>()
-                val valueWriter = writingClosure(shape.value, mapIsSparse)
-                val isFlattened = shape.hasTrait<XmlFlattenedTrait>()
-                writer.format(
-                    "\$N(valueWritingClosure: \$L, keyNodeInfo: \$L, valueNodeInfo: \$L, isFlattened: \$L)",
-                    SmithyReadWriteTypes.mapWritingClosure,
-                    valueWriter,
-                    keyNodeInfo,
-                    valueNodeInfo,
-                    isFlattened
-                )
+    private fun makeWritingClosure(
+        shape: Shape,
+        memberTimestampFormatTrait: TimestampFormatTrait?,
+        isSparse: Boolean,
+    ): String {
+        val base =
+            when {
+                shape is MapShape -> {
+                    val keyNodeInfo = nodeInfoUtils.nodeInfo(shape.key)
+                    val valueNodeInfo = nodeInfoUtils.nodeInfo(shape.value)
+                    val mapIsSparse = shape.hasTrait<SparseTrait>()
+                    val valueWriter = writingClosure(shape.value, mapIsSparse)
+                    val isFlattened = shape.hasTrait<XmlFlattenedTrait>()
+                    writer.format(
+                        "\$N(valueWritingClosure: \$L, keyNodeInfo: \$L, valueNodeInfo: \$L, isFlattened: \$L)",
+                        SmithyReadWriteTypes.mapWritingClosure,
+                        valueWriter,
+                        keyNodeInfo,
+                        valueNodeInfo,
+                        isFlattened,
+                    )
+                }
+                shape is ListShape -> {
+                    val memberNodeInfo = nodeInfoUtils.nodeInfo(shape.member)
+                    val listIsSparse = shape.hasTrait<SparseTrait>()
+                    val memberWriter = writingClosure(shape.member, listIsSparse)
+                    val isFlattened = shape.hasTrait<XmlFlattenedTrait>()
+                    writer.format(
+                        "\$N(memberWritingClosure: \$L, memberNodeInfo: \$L, isFlattened: \$L)",
+                        SmithyReadWriteTypes.listWritingClosure,
+                        memberWriter,
+                        memberNodeInfo,
+                        isFlattened,
+                    )
+                }
+                shape is TimestampShape -> {
+                    writer.format(
+                        "\$N(format: \$N\$L)",
+                        SmithyReadWriteTypes.timestampWritingClosure,
+                        SmithyTimestampsTypes.TimestampFormat,
+                        TimestampUtils.timestampFormat(ctx, memberTimestampFormatTrait, shape),
+                    )
+                }
+                shape is EnumShape || shape is IntEnumShape || shape.hasTrait<EnumTrait>() -> {
+                    writer.format(
+                        "\$N<\$N>().write(value:to:)",
+                        SmithyReadWriteTypes.WritingClosureBox,
+                        ctx.symbolProvider.toSymbol(shape),
+                    )
+                }
+                shape is MemberShape -> {
+                    return writingClosure(shape, isSparse)
+                }
+                shape is StructureShape || shape is UnionShape -> {
+                    writer.format("\$N.write(value:to:)", ctx.symbolProvider.toSymbol(shape))
+                }
+                else -> {
+                    writer.format(
+                        "\$N.write\$L(value:to:)",
+                        SmithyReadWriteTypes.WritingClosures,
+                        ctx.symbolProvider.toSymbol(shape).name,
+                    )
+                }
             }
-            shape is ListShape -> {
-                val memberNodeInfo = nodeInfoUtils.nodeInfo(shape.member)
-                val listIsSparse = shape.hasTrait<SparseTrait>()
-                val memberWriter = writingClosure(shape.member, listIsSparse)
-                val isFlattened = shape.hasTrait<XmlFlattenedTrait>()
-                writer.format(
-                    "\$N(memberWritingClosure: \$L, memberNodeInfo: \$L, isFlattened: \$L)",
-                    SmithyReadWriteTypes.listWritingClosure,
-                    memberWriter,
-                    memberNodeInfo,
-                    isFlattened
-                )
-            }
-            shape is TimestampShape -> {
-                writer.format(
-                    "\$N(format: \$N\$L)",
-                    SmithyReadWriteTypes.timestampWritingClosure,
-                    SmithyTimestampsTypes.TimestampFormat,
-                    TimestampUtils.timestampFormat(ctx, memberTimestampFormatTrait, shape),
-                )
-            }
-            shape is EnumShape || shape is IntEnumShape || shape.hasTrait<EnumTrait>() -> {
-                writer.format(
-                    "\$N<\$N>().write(value:to:)",
-                    SmithyReadWriteTypes.WritingClosureBox,
-                    ctx.symbolProvider.toSymbol(shape),
-                )
-            }
-            shape is MemberShape -> {
-                return writingClosure(shape, isSparse)
-            }
-            shape is StructureShape || shape is UnionShape -> {
-                writer.format("\$N.write(value:to:)", ctx.symbolProvider.toSymbol(shape))
-            }
-            else -> {
-                writer.format(
-                    "\$N.write\$L(value:to:)",
-                    SmithyReadWriteTypes.WritingClosures,
-                    ctx.symbolProvider.toSymbol(shape).name,
-                )
-            }
-        }
         return if (isSparse) {
             writer.format("\$N(writingClosure: \$L)", SmithyReadWriteTypes.sparseFormOf, base)
         } else {

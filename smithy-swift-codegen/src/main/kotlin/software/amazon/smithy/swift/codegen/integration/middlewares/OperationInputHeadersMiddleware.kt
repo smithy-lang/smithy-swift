@@ -6,14 +6,14 @@ import software.amazon.smithy.model.shapes.OperationShape
 import software.amazon.smithy.swift.codegen.SwiftWriter
 import software.amazon.smithy.swift.codegen.integration.ProtocolGenerator
 import software.amazon.smithy.swift.codegen.integration.middlewares.handlers.MiddlewareShapeUtils
+import software.amazon.smithy.swift.codegen.integration.serde.SerdeUtils
 import software.amazon.smithy.swift.codegen.middleware.MiddlewareRenderable
 import software.amazon.smithy.swift.codegen.swiftmodules.ClientRuntimeTypes
 
 class OperationInputHeadersMiddleware(
     val model: Model,
-    val symbolProvider: SymbolProvider
+    val symbolProvider: SymbolProvider,
 ) : MiddlewareRenderable {
-
     override val name = "OperationInputHeadersMiddleware"
 
     override fun render(
@@ -22,14 +22,19 @@ class OperationInputHeadersMiddleware(
         op: OperationShape,
         operationStackName: String,
     ) {
-        if (!MiddlewareShapeUtils.hasHttpHeaders(model, op)) { return }
+        // Mirrors the skip at HTTPBindingProtocolGenerator.generateSerializers; without it, the
+        // middleware references a headerProvider static that's never emitted.
+        if (SerdeUtils.useSchemaBased(ctx)) return
+        if (!MiddlewareShapeUtils.hasHttpHeaders(model, op)) {
+            return
+        }
         super.renderSpecific(ctx, writer, op, operationStackName, "serialize")
     }
 
     override fun renderMiddlewareInit(
         ctx: ProtocolGenerator.GenerationContext,
         writer: SwiftWriter,
-        op: OperationShape
+        op: OperationShape,
     ) {
         val inputShapeName = MiddlewareShapeUtils.inputSymbol(symbolProvider, model, op).name
         val outputShapeName = MiddlewareShapeUtils.outputSymbol(symbolProvider, model, op).name
@@ -38,7 +43,7 @@ class OperationInputHeadersMiddleware(
             ClientRuntimeTypes.Middleware.HeaderMiddleware,
             inputShapeName,
             outputShapeName,
-            inputShapeName
+            inputShapeName,
         )
     }
 }

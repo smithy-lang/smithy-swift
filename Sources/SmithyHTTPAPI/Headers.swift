@@ -6,6 +6,7 @@
 //
 
 public struct Headers: Sendable {
+
     public var headers: [Header] = []
 
     /// Creates an empty instance.
@@ -97,8 +98,8 @@ public struct Headers: Sendable {
     ///
     /// - Parameters:
     ///   - headers:  The `Headers` object.
-    public mutating func addAll(headers: Headers) {
-        self.headers.append(contentsOf: headers.headers)
+    public mutating func addAll(headers otherHeaders: Headers) {
+        headers.append(contentsOf: otherHeaders.headers)
     }
 
     /// Case-insensitively removes a `Header`, if it exists, from the instance.
@@ -106,7 +107,6 @@ public struct Headers: Sendable {
     /// - Parameter name: The name of the `HTTPHeader` to remove.
     public mutating func remove(name: String) {
         guard let index = headers.index(of: name) else { return }
-
         headers.remove(at: index)
     }
 
@@ -116,12 +116,16 @@ public struct Headers: Sendable {
     ///
     /// - Returns: The values of the header, if they exist.
     public func values(for name: String) -> [String]? {
-        guard let indices = headers.indices(of: name), !indices.isEmpty else { return nil }
-        var values = [String]()
-        for index in indices {
-            values.append(contentsOf: headers[index].value)
+        var values: [String]?
+        for header in headers where header.name.isCaseInsensitivelyEqual(to: name) {
+            if values == nil {
+                // A name almost always matches a single header, whose values are then returned
+                // as-is rather than copied into a fresh array.
+                values = header.value
+            } else {
+                values?.append(contentsOf: header.value)
+            }
         }
-
         return values
     }
 
@@ -131,9 +135,7 @@ public struct Headers: Sendable {
     ///
     /// - Returns: The value of header as a comma delimited string, if it exists.
     public func value(for name: String) -> String? {
-        guard let values = values(for: name) else {
-            return nil
-        }
+        guard let values = values(for: name) else { return nil }
         return values.joined(separator: ",")
     }
 
@@ -146,14 +148,13 @@ public struct Headers: Sendable {
     /// This representation does not preserve the current order of the instance.
     public var dictionary: [String: [String]] {
         let namesAndValues = headers.map { ($0.name, $0.value) }
-
         return Dictionary(namesAndValues) { (first, last) -> [String] in
-            return first + last
+            first + last
         }
     }
 
     public var isEmpty: Bool {
-        return self.headers.isEmpty
+        headers.isEmpty
     }
 }
 
@@ -164,7 +165,9 @@ extension Headers: Equatable {
     ///   - rhs: The second `Headers` to compare.
     /// - Returns: `true` if the two values are equal irrespective of order, otherwise `false`.
     public static func == (lhs: Headers, rhs: Headers) -> Bool {
-        return lhs.headers.sorted() == rhs.headers.sorted()
+        let lhsHeaders = lhs.headers.sorted()
+        let rhsHeaders = rhs.headers.sorted()
+        return lhsHeaders == rhsHeaders
     }
 }
 
@@ -178,14 +181,41 @@ extension Headers: Hashable {
 extension Array where Element == Header {
     /// Case-insensitively finds the index of an `Header` with the provided name, if it exists.
     func index(of name: String) -> Int? {
-        let lowercasedName = name.lowercased()
-        return firstIndex { $0.name.lowercased() == lowercasedName }
+        firstIndex { $0.name.isCaseInsensitivelyEqual(to: name) }
     }
+}
 
-    /// Case-insensitively finds the indexes of an `Header` with the provided name, if it exists.
-    func indices(of name: String) -> [Int]? {
-        let lowercasedName = name.lowercased()
-        return enumerated().compactMap { $0.element.name.lowercased() == lowercasedName ? $0.offset : nil }
+extension String {
+
+    /// Whether this string and `other` are equal, ignoring case.
+    ///
+    /// An HTTP field name is a token, and so is ASCII, by specification:
+    /// https://www.rfc-editor.org/rfc/rfc9110#section-5.1
+    /// Equality is therefore decided by comparing UTF-8 bytes with ASCII case folding, which unlike
+    /// `lowercased()` allocates nothing.  ASCII case folding also preserves length, so names of
+    /// different lengths are rejected without comparing them at all.
+    ///
+    /// Header names are compared once per stored header on every lookup, so this is on the hot path
+    /// for both request serialization and response deserialization.
+    func isCaseInsensitivelyEqual(to other: String) -> Bool {
+        let lhs = self.utf8
+        let rhs = other.utf8
+        guard lhs.count == rhs.count else { return false }
+        var lhsIterator = lhs.makeIterator()
+        var rhsIterator = rhs.makeIterator()
+        while let lhsByte = lhsIterator.next(), let rhsByte = rhsIterator.next() {
+            guard lhsByte.asciiLowercased == rhsByte.asciiLowercased else { return false }
+        }
+        return true
+    }
+}
+
+extension UInt8 {
+
+    /// This byte, lowercased if it is an uppercase ASCII letter and unchanged otherwise.
+    @inline(__always)
+    var asciiLowercased: UInt8 {
+        (UInt8(ascii: "A")...UInt8(ascii: "Z")).contains(self) ? self | 0x20 : self
     }
 }
 

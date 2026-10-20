@@ -5,7 +5,7 @@ import software.amazon.smithy.swift.codegen.SwiftWriter
 data class DefaultProvider(
     val block: (SwiftWriter) -> String,
     val isThrowable: Boolean,
-    val isAsync: Boolean
+    val isAsync: Boolean,
 ) {
     /**
      * Returns a default value for client configuration
@@ -24,14 +24,20 @@ data class DefaultProvider(
      * @param paramNilCheck parameter to nil check
      * @return default value.
      */
-    fun render(writer: SwiftWriter, paramNilCheck: String? = null): String {
+    fun render(
+        writer: SwiftWriter,
+        paramNilCheck: String? = null,
+    ): String {
         var res = block(writer)
-        if (paramNilCheck != null)
+        if (paramNilCheck != null) {
             res = "$paramNilCheck ?? $res"
-        if (isAsync)
+        }
+        if (isAsync) {
             res = "await $res"
-        if (isThrowable)
+        }
+        if (isThrowable) {
             res = "try $res"
+        }
         return res
     }
 }

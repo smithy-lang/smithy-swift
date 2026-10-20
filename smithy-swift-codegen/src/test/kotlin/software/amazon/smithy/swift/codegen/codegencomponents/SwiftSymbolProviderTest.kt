@@ -10,7 +10,6 @@ import org.junit.jupiter.api.Test
 import software.amazon.smithy.swift.codegen.utils.clientName
 
 class SwiftSymbolProviderTest {
-
     // See https://smithy.io/2.0/aws/aws-core.html#using-sdk-service-id-for-client-naming
     @Test
     fun `it produces the correct string transformation for client names`() {

@@ -7,7 +7,8 @@
 
 import Logging
 
-public enum SDKLogLevel: String, Codable, CaseIterable {
+/// Wrapper for Logger.Level; used by SDKLoggingSystem.
+public enum SDKLogLevel: String, Codable, CaseIterable, Sendable {
     case trace
     case debug
     case info

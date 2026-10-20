@@ -1,5 +1,6 @@
 package software.amazon.smithy.swift.codegen.utils
 
+import software.amazon.smithy.aws.traits.auth.SigV4Trait
 import software.amazon.smithy.model.knowledge.ServiceIndex
 import software.amazon.smithy.model.shapes.ShapeId
 import software.amazon.smithy.model.traits.HttpBearerAuthTrait
@@ -9,33 +10,41 @@ import software.amazon.smithy.swift.codegen.integration.ProtocolGenerator
 import software.amazon.smithy.swift.codegen.swiftmodules.SmithyHTTPAuthTypes
 
 open class AuthUtils(
-    private val ctx: ProtocolGenerator.GenerationContext
+    private val ctx: ProtocolGenerator.GenerationContext,
 ) {
-    val authSchemesDefaultProvider = DefaultProvider(
-        { getModeledAuthSchemesSupportedBySDK(ctx, it) },
-        isThrowable = false,
-        isAsync = false
-    )
+    val authSchemesDefaultProvider =
+        DefaultProvider(
+            { getModeledAuthSchemesSupportedBySDK(ctx, it) },
+            isThrowable = false,
+            isAsync = false,
+        )
 
-    fun isSupportedAuthScheme(authSchemeID: ShapeId): Boolean {
-        return ServiceIndex(ctx.model).getEffectiveAuthSchemes(ctx.service).contains(authSchemeID)
-    }
+    open val useSmithySigV4: Boolean = true
+
+    fun isSupportedAuthScheme(authSchemeID: ShapeId): Boolean =
+        ServiceIndex(ctx.model).getEffectiveAuthSchemes(ctx.service).contains(authSchemeID)
 
     fun getModeledAuthSchemesSupportedBySDK(
         ctx: ProtocolGenerator.GenerationContext,
         writer: SwiftWriter,
     ): String {
         val effectiveAuthSchemes = ServiceIndex(ctx.model).getEffectiveAuthSchemes(ctx.service)
-        var authSchemeList = mutableListOf<String>()
+        val authSchemeList = mutableListOf<String>()
 
+        if (useSmithySigV4 && effectiveAuthSchemes.contains(SigV4Trait.ID)) {
+            authSchemeList += writer.format("\$N()", SmithyHTTPAuthTypes.SigV4AuthScheme)
+        }
         if (effectiveAuthSchemes.contains(HttpBearerAuthTrait.ID)) {
             authSchemeList += writer.format("\$N()", SmithyHTTPAuthTypes.BearerTokenAuthScheme)
         }
 
-        return addAdditionalSchemes(writer, authSchemeList).joinToString(prefix = "[", postfix = "]")
+        return addAdditionalSchemes(writer, authSchemeList).joinToString(", ", "[", "]")
     }
 
-    open fun addAdditionalSchemes(writer: SwiftWriter, authSchemeList: MutableList<String>): List<String> {
+    open fun addAdditionalSchemes(
+        writer: SwiftWriter,
+        authSchemeList: MutableList<String>,
+    ): List<String> {
         // Override to add any additional auth schemes supported
         return authSchemeList
     }

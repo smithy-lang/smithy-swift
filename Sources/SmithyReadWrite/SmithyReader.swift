@@ -7,8 +7,8 @@
 
 import struct Foundation.Data
 import struct Foundation.Date
-@_spi(SmithyTimestamps) import enum SmithyTimestamps.TimestampFormat
 import struct Smithy.Document
+@_spi(SmithyTimestamps) import enum SmithyTimestamps.TimestampFormat
 
 @_spi(SmithyReadWrite)
 public protocol SmithyReader: AnyObject {
@@ -44,7 +44,8 @@ public protocol SmithyReader: AnyObject {
     ) throws -> [Member]?
 
     /// Attempts to read a `null` value from the source document.
-    /// - Returns: `true` if the value read is null, `false` if a value is present but it is not null, `nil` if no value is present.
+    /// - Returns: `true` if the value read is null, `false` if a value is present but it is not null,
+    ///   `nil` if no value is present.
     func readNullIfPresent() throws -> Bool?
 }
 
@@ -208,4 +209,5 @@ public extension SmithyReader {
 
 public enum ReaderError: Error {
     case requiredValueNotPresent
+    case invalidType(String)
 }

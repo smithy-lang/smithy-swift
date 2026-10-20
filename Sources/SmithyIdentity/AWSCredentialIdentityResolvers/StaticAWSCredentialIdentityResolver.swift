@@ -5,24 +5,36 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
-import class AwsCommonRuntimeKit.CredentialsProvider
+import struct Smithy.Attributes
+@_spi(ClientConfigDefaultIdentityResolver) import protocol SmithyIdentityAPI.ClientConfigDefaultIdentityResolver
 
 /// A credential identity resolver that provides a fixed set of credentials
-public struct StaticAWSCredentialIdentityResolver: AWSCredentialIdentityResolvedByCRT {
-    private let credentials: AWSCredentialIdentity
-    public let crtAWSCredentialIdentityResolver: AwsCommonRuntimeKit.CredentialsProvider
+public struct StaticAWSCredentialIdentityResolver: AWSCredentialIdentityResolver {
+    fileprivate let credentials: AWSCredentialIdentity
+
+    @_spi(StaticAWSCredentialIdentityResolver)
+    public init() {
+        self.credentials = AWSCredentialIdentity(accessKey: "", secret: "")
+    }
 
     /// Creates a credential identity resolver for a fixed set of credentials
     ///
     /// - Parameter credentials: The credentials that this provider will provide.
     ///
     /// - Returns: A credential identity resolver for a fixed set of credentials
-    public init(_ credentials: AWSCredentialIdentity) throws {
+    public init(_ credentials: AWSCredentialIdentity) {
         self.credentials = credentials
-        self.crtAWSCredentialIdentityResolver = try AwsCommonRuntimeKit.CredentialsProvider(source: .static(
-            accessKey: credentials.accessKey,
-            secret: credentials.secret,
-            sessionToken: credentials.sessionToken
-        ))
+    }
+
+    public func getIdentity(identityProperties: Attributes?) async throws -> AWSCredentialIdentity {
+        return credentials
+    }
+}
+
+@_spi(ClientConfigDefaultIdentityResolver)
+extension StaticAWSCredentialIdentityResolver: ClientConfigDefaultIdentityResolver {
+
+    public var isClientConfigDefault: Bool {
+        self.credentials.accessKey.isEmpty && self.credentials.secret.isEmpty
     }
 }

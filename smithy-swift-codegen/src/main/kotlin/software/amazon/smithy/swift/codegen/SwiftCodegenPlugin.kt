@@ -13,6 +13,7 @@ import software.amazon.smithy.model.Model
 import software.amazon.smithy.model.transform.ModelTransformer
 import software.amazon.smithy.swift.codegen.core.GenerationContext
 import software.amazon.smithy.swift.codegen.integration.SwiftIntegration
+import software.amazon.smithy.swift.codegen.integration.serde.SerdeUtils
 import software.amazon.smithy.swift.codegen.model.AddOperationShapes
 import software.amazon.smithy.swift.codegen.model.EquatableConformanceTransformer
 import software.amazon.smithy.swift.codegen.model.NeedsReaderWriterTransformer
@@ -27,24 +28,21 @@ import java.util.logging.Logger
  * Plugin to trigger Swift code generation.
  */
 class SwiftCodegenPlugin : SmithyBuildPlugin {
-
     private var resolvedModel: Model? = null
 
     companion object {
-
         private val LOGGER = Logger.getLogger(SwiftCodegenPlugin::class.java.getName())
 
-        /**
-         * Creates a Kotlin symbol provider.
-         * @param model The model to generate symbols for
-         * @param rootPackageNamespace The root package name (e.g. com.foo.bar). All symbols will be generated as part of this
-         * package (or as a child of it)
-         * @param sdkId name to use to represent client type. e.g. an sdkId of "foo" would produce a client type "FooClient".
-         * @return Returns the created provider
-         */
-        fun createSymbolProvider(model: Model, swiftSettings: SwiftSettings): SymbolProvider = SwiftSymbolProvider(model, swiftSettings)
+        fun createSymbolProvider(
+            model: Model,
+            swiftSettings: SwiftSettings,
+        ): SymbolProvider = SwiftSymbolProvider(model, swiftSettings)
 
-        fun preprocessModel(model: Model, settings: SwiftSettings, integrations: List<SwiftIntegration>): Model {
+        fun preprocessModel(
+            model: Model,
+            settings: SwiftSettings,
+            integrations: List<SwiftIntegration>,
+        ): Model {
             var resolvedModel = model
 
             for (integration in integrations) {
@@ -62,14 +60,17 @@ class SwiftCodegenPlugin : SmithyBuildPlugin {
             return resolvedModel
         }
 
-        fun getEnabledIntegrations(model: Model, settings: SwiftSettings): List<SwiftIntegration> {
-            return ServiceLoader.load(SwiftIntegration::class.java, CodegenDirector::class.java.getClassLoader())
+        fun getEnabledIntegrations(
+            model: Model,
+            settings: SwiftSettings,
+        ): List<SwiftIntegration> =
+            ServiceLoader
+                .load(SwiftIntegration::class.java, CodegenDirector::class.java.getClassLoader())
                 .also { integration -> LOGGER.info("Loaded SwiftIntegration: ${integration.javaClass.name}") }
                 .filter { integration -> integration.enabledForService(model, settings) }
                 .also { integration -> LOGGER.info("Enabled SwiftIntegration: ${integration.javaClass.name}") }
                 .sortedBy(SwiftIntegration::order)
                 .toList()
-        }
     }
 
     override fun getName(): String = "swift-codegen"
@@ -91,6 +92,12 @@ class SwiftCodegenPlugin : SmithyBuildPlugin {
 
         val enabledIntegrations = getEnabledIntegrations(context.model, swiftSettings)
 
+        // Write the model as JSON AST, before any preprocessing occurs
+        // Only write JSON model if schema-based is in use and JSON model wasn't provided
+        if (SerdeUtils.useSchemaBased(swiftSettings, context.model) && swiftSettings.modelPath == null) {
+            ModelWriter().write(context.model, context.fileManifest, swiftSettings)
+        }
+
         val resolvedModel = preprocessModel(context.model, swiftSettings, enabledIntegrations)
 
         codegenDirector.model(resolvedModel)
@@ -104,7 +111,5 @@ class SwiftCodegenPlugin : SmithyBuildPlugin {
         this.resolvedModel = resolvedModel
     }
 
-    fun getResolvedModel(): Model? {
-        return resolvedModel
-    }
+    fun getResolvedModel(): Model? = resolvedModel
 }

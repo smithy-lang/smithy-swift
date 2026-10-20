@@ -6,6 +6,6 @@
 //
 
 /// The type of flow the middleware context is being constructed for
-public enum FlowType {
+public enum FlowType: Sendable {
     case NORMAL, PRESIGN_REQUEST, PRESIGN_URL
 }

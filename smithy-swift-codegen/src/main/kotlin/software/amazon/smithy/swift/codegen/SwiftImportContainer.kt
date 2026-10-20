@@ -15,9 +15,11 @@ class SwiftImportContainer : ImportContainer {
         packageName: String,
         isTestable: Boolean = false,
         internalSPINames: List<String> = emptyList(),
-        importOnlyIfCanImport: Boolean = false
+        importOnlyIfCanImport: Boolean = false,
     ) {
-        if (packageName.isEmpty()) { return }
+        if (packageName.isEmpty()) {
+            return
+        }
         importStatements.find { it.packageName == packageName }?.let {
             // Update isTestable to true if needed
             it.isTestable = it.isTestable || isTestable
@@ -30,7 +32,10 @@ class SwiftImportContainer : ImportContainer {
         }
     }
 
-    override fun importSymbol(symbol: Symbol, alias: String) {
+    override fun importSymbol(
+        symbol: Symbol,
+        alias: String,
+    ) {
         symbol.dependencies
             .forEach { addImport(it.packageName, false) }
     }
@@ -51,7 +56,7 @@ private data class ImportStatement(
     val packageName: String,
     var isTestable: Boolean,
     val internalSPINames: MutableSet<String>,
-    var importOnlyIfCanImport: Boolean
+    var importOnlyIfCanImport: Boolean,
 ) {
     val statement: String
         get() {

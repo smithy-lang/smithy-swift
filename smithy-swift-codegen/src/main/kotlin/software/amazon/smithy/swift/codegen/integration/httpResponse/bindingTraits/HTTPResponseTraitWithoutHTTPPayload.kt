@@ -31,17 +31,22 @@ class HTTPResponseTraitWithoutHTTPPayload(
         val bodyMembers = responseBindings.filter { it.location == HttpBinding.Location.DOCUMENT }.toSet()
         val streamingMember = bodyMembers.firstOrNull { it.member.targetOrSelf(ctx.model).hasTrait(StreamingTrait::class.java) }
         if (streamingMember != null) {
-            val initialResponseMembers = bodyMembers.filter {
-                val targetShape = it.member.targetOrSelf(ctx.model)
-                targetShape?.hasTrait(StreamingTrait::class.java) == false
-            }.toSet()
+            val initialResponseMembers =
+                bodyMembers
+                    .filter {
+                        val targetShape = it.member.targetOrSelf(ctx.model)
+                        targetShape?.hasTrait(StreamingTrait::class.java) == false
+                    }.toSet()
             writeStreamingMember(streamingMember, initialResponseMembers)
         } else {
             writeNonStreamingMembers(bodyMembers)
         }
     }
 
-    fun writeStreamingMember(streamingMember: HttpBindingDescriptor, initialResponseMembers: Set<HttpBindingDescriptor>) {
+    fun writeStreamingMember(
+        streamingMember: HttpBindingDescriptor,
+        initialResponseMembers: Set<HttpBindingDescriptor>,
+    ) {
         val shape = ctx.model.expectShape(streamingMember.member.target)
         val symbol = ctx.symbolProvider.toSymbol(shape)
         val memberName = ctx.symbolProvider.toMemberName(streamingMember.member)
@@ -62,7 +67,8 @@ class HTTPResponseTraitWithoutHTTPPayload(
                 }
             }
             ShapeType.BLOB -> {
-                writer.write("switch httpResponse.body {")
+                writer
+                    .write("switch httpResponse.body {")
                     .write("case .data(let data):")
                     .indent()
                 writer.write("value.\$L = .data(data)", memberName)
@@ -70,14 +76,17 @@ class HTTPResponseTraitWithoutHTTPPayload(
                 // For binary streams, we need to set the member to the stream directly.
                 // this allows us to stream the data directly to the user
                 // without having to buffer it in memory.
-                writer.dedent()
+                writer
+                    .dedent()
                     .write("case .stream(let stream):")
                     .indent()
                 writer.write("value.\$L = .stream(stream)", memberName)
-                writer.dedent()
+                writer
+                    .dedent()
                     .write("case .noStream:")
                     .indent()
-                    .write("value.\$L = nil", memberName).closeBlock("}")
+                    .write("value.\$L = nil", memberName)
+                    .closeBlock("}")
             }
             else -> {
                 throw CodegenException("member shape ${streamingMember.member} cannot stream")
@@ -94,7 +103,7 @@ class HTTPResponseTraitWithoutHTTPPayload(
     private fun writeInitialResponseMembers(initialResponseMembers: Set<HttpBindingDescriptor>) {
         writer.openBlock(
             "if let initialDataWithoutHttp = await messageDecoder.awaitInitialResponse() {",
-            "}"
+            "}",
         ) {
             writer.write("let payloadReader = try Reader.from(data: initialDataWithoutHttp)")
             initialResponseMembers.forEach { responseMember ->

@@ -8,9 +8,8 @@ import software.amazon.smithy.swift.codegen.integration.middlewares.handlers.Mid
 class ResponseErrorClosureUtils(
     val ctx: ProtocolGenerator.GenerationContext,
     val writer: SwiftWriter,
-    val op: OperationShape
+    val op: OperationShape,
 ) {
-
     fun render(): String {
         val outputErrorSymbol = MiddlewareShapeUtils.outputErrorSymbol(op)
         return writer.format("\$N.httpError(from:)", outputErrorSymbol)

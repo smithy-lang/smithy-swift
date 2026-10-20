@@ -70,6 +70,7 @@ extension DefaultInterceptorContext: BeforeDeserialization {
 }
 
 extension DefaultInterceptorContext: MutableResponse {
+
     public func updateResponse(updated: ResponseType) {
         self.response = updated
     }
@@ -93,8 +94,13 @@ extension DefaultInterceptorContext: AfterAttempt {
 }
 
 extension DefaultInterceptorContext: MutableOutputAfterAttempt {
+
     public func updateOutput(updated: OutputType) {
         self.result = .success(updated)
+    }
+
+    public func updateError(updated: any Error) {
+        self.result = .failure(updated)
     }
 }
 

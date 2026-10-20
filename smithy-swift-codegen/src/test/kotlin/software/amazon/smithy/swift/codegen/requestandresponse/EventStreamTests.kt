@@ -18,7 +18,7 @@ class EventStreamTests {
     fun `test MessageMarshallable`() {
         val context = setupTests("eventstream.smithy", "aws.protocoltests.restjson#TestService")
         println(context.manifest.files)
-        val contents = getFileContents(context.manifest, "Sources/Example/models/TestStream+MessageMarshallable.swift")
+        val contents = getFileContents(context.manifest, "Example/Sources/Example/models/TestStream+MessageMarshallable.swift")
         val expected = """
 extension EventStreamTestClientTypes.TestStream {
     static var marshal: SmithyEventStreamsAPI.MarshalClosure<EventStreamTestClientTypes.TestStream> {
@@ -105,7 +105,7 @@ extension EventStreamTestClientTypes.TestStream {
     @Test
     fun `test MessageUnmarshallable`() {
         val context = setupTests("eventstream.smithy", "aws.protocoltests.restjson#TestService")
-        val contents = getFileContents(context.manifest, "Sources/Example/models/TestStream+MessageUnmarshallable.swift")
+        val contents = getFileContents(context.manifest, "Example/Sources/Example/models/TestStream+MessageUnmarshallable.swift")
         val expected = """
 extension EventStreamTestClientTypes.TestStream {
     static var unmarshal: SmithyEventStreamsAPI.UnmarshalClosure<EventStreamTestClientTypes.TestStream> {
@@ -209,21 +209,15 @@ extension EventStreamTestClientTypes.TestStream {
     fun `operation stack`() {
         val context = setupTests("eventstream.smithy", "aws.protocoltests.restjson#TestService")
         println(context.manifest.files)
-        val contents = getFileContents(context.manifest, "Sources/Example/EventStreamTestClient.swift")
-        var expected = """
+        val contents = getFileContents(context.manifest, "Example/Sources/Example/EventStreamTestClient.swift")
+        val expected = """
     public func testStreamOp(input: TestStreamOpInput) async throws -> TestStreamOpOutput {
         let context = Smithy.ContextBuilder()
                       .withMethod(value: .post)
                       .withServiceName(value: serviceName)
                       .withOperation(value: "testStreamOp")
-                      .withIdempotencyTokenGenerator(value: config.idempotencyTokenGenerator)
-                      .withLogger(value: config.logger)
-                      .withPartitionID(value: config.partitionID)
-                      .withAuthSchemes(value: config.authSchemes ?? [])
-                      .withAuthSchemeResolver(value: config.authSchemeResolver)
                       .withUnsignedPayloadTrait(value: false)
-                      .withSocketTimeout(value: config.httpClientConfiguration.socketTimeout)
-                      .withIdentityResolver(value: config.bearerTokenIdentityResolver, schemeID: "smithy.api#httpBearerAuth")
+                      .withSmithyDefaultConfig(config)
                       .build()
         let builder = ClientRuntime.OrchestratorBuilder<TestStreamOpInput, TestStreamOpOutput, SmithyHTTPAPI.HTTPRequest, SmithyHTTPAPI.HTTPResponse>()
         config.interceptorProviders.forEach { provider in
@@ -239,7 +233,8 @@ extension EventStreamTestClientTypes.TestStream {
         builder.interceptors.add(ClientRuntime.ContentLengthMiddleware<TestStreamOpInput, TestStreamOpOutput>())
         builder.deserialize(ClientRuntime.DeserializeMiddleware<TestStreamOpOutput>(TestStreamOpOutput.httpOutput(from:), TestStreamOpOutputError.httpError(from:)))
         builder.interceptors.add(ClientRuntime.LoggerMiddleware<TestStreamOpInput, TestStreamOpOutput>(clientLogMode: config.clientLogMode))
-        builder.retryStrategy(SmithyRetries.DefaultRetryStrategy(options: config.retryStrategyOptions))
+        builder.clockSkewProvider(ClientRuntime.DefaultClockSkewProvider.provider())
+        builder.retryStrategy(self.retryStrategy)
         builder.retryErrorInfoProvider(ClientRuntime.DefaultRetryErrorInfoProvider.errorInfo(for:))
         builder.applySigner(ClientRuntime.SignerMiddleware<TestStreamOpOutput>())
         builder.selectAuthScheme(ClientRuntime.AuthSchemeMiddleware<TestStreamOpOutput>())
@@ -261,14 +256,18 @@ extension EventStreamTestClientTypes.TestStream {
         contents.shouldContainOnlyOnce(expected)
     }
 
-    private fun setupTests(smithyFile: String, serviceShapeId: String): TestContext {
-        val context = TestContext.initContextFrom(
-            listOf(smithyFile),
-            serviceShapeId,
-            MockHTTPRestJsonProtocolGenerator(),
-            { model -> model.defaultSettings(serviceShapeId, "Example", "456", "EventStreamTest") },
-            listOf(DefaultClientConfigurationIntegration())
-        )
+    private fun setupTests(
+        smithyFile: String,
+        serviceShapeId: String,
+    ): TestContext {
+        val context =
+            TestContext.initContextFrom(
+                listOf(smithyFile),
+                serviceShapeId,
+                MockHTTPRestJsonProtocolGenerator(),
+                { model -> model.defaultSettings(serviceShapeId, "Example", "456", "EventStreamTest") },
+                listOf(DefaultClientConfigurationIntegration()),
+            )
         context.generator.initializeMiddleware(context.generationCtx)
         context.generator.generateProtocolClient(context.generationCtx)
         context.generator.generateMessageMarshallable(context.generationCtx)

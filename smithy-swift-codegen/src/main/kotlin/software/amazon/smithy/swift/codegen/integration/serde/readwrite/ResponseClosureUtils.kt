@@ -7,9 +7,8 @@ import software.amazon.smithy.swift.codegen.integration.ProtocolGenerator
 class ResponseClosureUtils(
     val ctx: ProtocolGenerator.GenerationContext,
     val writer: SwiftWriter,
-    val op: OperationShape
+    val op: OperationShape,
 ) {
-
     fun render(): String {
         val outputShape = ctx.model.expectShape(op.outputShape)
         val outputSymbol = ctx.symbolProvider.toSymbol(outputShape)

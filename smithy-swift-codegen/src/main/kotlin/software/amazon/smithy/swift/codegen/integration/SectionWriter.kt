@@ -26,7 +26,10 @@ fun interface SectionWriter {
      *  [CodeWriter](https://github.com/smithy-lang/smithy/blob/main/smithy-utils/src/main/java/software/amazon/smithy/utils/CodeWriter.java)
      *  documentation for more details
      */
-    fun write(writer: SwiftWriter, previousValue: String?)
+    fun write(
+        writer: SwiftWriter,
+        previousValue: String?,
+    )
 }
 
 /**
@@ -43,4 +46,7 @@ fun interface SectionWriter {
  *    1 and provide an implementation of [SectionWriter] which will add or mutate the codegen
  *    associated with the section.
  */
-data class SectionWriterBinding(val sectionId: SectionId, val emitter: SectionWriter)
+data class SectionWriterBinding(
+    val sectionId: SectionId,
+    val emitter: SectionWriter,
+)

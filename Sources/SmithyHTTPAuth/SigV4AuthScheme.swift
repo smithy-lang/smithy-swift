@@ -5,13 +5,13 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
-import class Smithy.Context
-import enum SmithyHTTPAuthAPI.AWSSignedBodyHeader
-import enum SmithyHTTPAuthAPI.SigningPropertyKeys
-import protocol SmithyHTTPAuthAPI.AuthScheme
-import protocol SmithyHTTPAuthAPI.Signer
 import struct Smithy.Attributes
+import class Smithy.Context
 import SmithyChecksumsAPI
+import protocol SmithyHTTPAuthAPI.AuthScheme
+import enum SmithyHTTPAuthAPI.AWSSignedBodyHeader
+import protocol SmithyHTTPAuthAPI.Signer
+import enum SmithyHTTPAuthAPI.SigningPropertyKeys
 
 public struct SigV4AuthScheme: AuthScheme {
     public let schemeID: String = "aws.auth#sigv4"
@@ -34,8 +34,9 @@ public struct SigV4AuthScheme: AuthScheme {
             value: context.isBidirectionalStreamingEnabled
         )
 
-        // Set signing name and signing region flags
-        updatedSigningProperties.set(key: SigningPropertyKeys.signingName, value: context.signingName)
+        // Set resolved signing name and signing region flags
+        let signingName = updatedSigningProperties.get(key: SigningPropertyKeys.signingName) ?? context.signingName
+        updatedSigningProperties.set(key: SigningPropertyKeys.signingName, value: signingName)
         updatedSigningProperties.set(key: SigningPropertyKeys.signingRegion, value: context.signingRegion)
 
         // Set expiration flag

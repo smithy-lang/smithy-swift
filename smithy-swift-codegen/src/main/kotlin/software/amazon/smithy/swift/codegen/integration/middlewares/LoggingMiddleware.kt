@@ -16,15 +16,14 @@ import software.amazon.smithy.swift.codegen.swiftmodules.ClientRuntimeTypes
 
 class LoggingMiddleware(
     private val model: Model,
-    private val symbolProvider: SymbolProvider
+    private val symbolProvider: SymbolProvider,
 ) : MiddlewareRenderable {
-
     override val name = "LoggingMiddleware"
 
     override fun renderMiddlewareInit(
         ctx: ProtocolGenerator.GenerationContext,
         writer: SwiftWriter,
-        op: OperationShape
+        op: OperationShape,
     ) {
         val input = MiddlewareShapeUtils.inputSymbol(ctx.symbolProvider, model, op)
         val output = MiddlewareShapeUtils.outputSymbol(symbolProvider, model, op)
@@ -37,7 +36,5 @@ class LoggingMiddleware(
         )
     }
 
-    private fun middlewareParamsString(): String {
-        return "clientLogMode: config.clientLogMode"
-    }
+    private fun middlewareParamsString(): String = "clientLogMode: config.clientLogMode"
 }

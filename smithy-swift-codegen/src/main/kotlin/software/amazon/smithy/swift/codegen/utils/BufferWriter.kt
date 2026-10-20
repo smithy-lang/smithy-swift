@@ -17,7 +17,7 @@ import java.util.UUID
  */
 class BufferWriter(
     val writer: SwiftWriter,
-    private val mutableBuffer: MutableList<String> = mutableListOf()
+    private val mutableBuffer: MutableList<String> = mutableListOf(),
 ) {
     /**
      * Record whatever text is written in the block to the internal buffer.

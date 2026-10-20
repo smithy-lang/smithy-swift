@@ -13,16 +13,15 @@ import software.amazon.smithy.swift.codegen.swiftmodules.ClientRuntimeTypes
 
 class DeserializeMiddleware(
     val model: Model,
-    val symbolProvider: SymbolProvider
+    val symbolProvider: SymbolProvider,
 ) : MiddlewareRenderable {
-
     override val name = "DeserializeMiddleware"
 
     override fun render(
         ctx: ProtocolGenerator.GenerationContext,
         writer: SwiftWriter,
         op: OperationShape,
-        operationStackName: String
+        operationStackName: String,
     ) {
         super.renderSpecific(ctx, writer, op, operationStackName, "deserialize")
     }
@@ -30,7 +29,7 @@ class DeserializeMiddleware(
     override fun renderMiddlewareInit(
         ctx: ProtocolGenerator.GenerationContext,
         writer: SwiftWriter,
-        op: OperationShape
+        op: OperationShape,
     ) {
         val output = MiddlewareShapeUtils.outputSymbol(symbolProvider, model, op)
         val httpResponseClosure = ResponseClosureUtils(ctx, writer, op).render()
@@ -41,7 +40,7 @@ class DeserializeMiddleware(
             ClientRuntimeTypes.Middleware.DeserializeMiddleware,
             output,
             httpResponseClosure,
-            httpResponseErrorClosure
+            httpResponseErrorClosure,
         )
     }
 }

@@ -21,7 +21,7 @@ class WaiterConfigGenerator(
     val service: ServiceShape,
     val waitedOperation: OperationShape,
     val waiterName: String,
-    val waiter: Waiter
+    val waiter: Waiter,
 ) {
     fun render() {
         val configFunctionName = "${waiterName.toLowerCamelCase()}WaiterConfig"
@@ -52,7 +52,7 @@ class WaiterConfigGenerator(
                 inputTypeName,
                 outputTypeName,
                 waiter.minDelay,
-                waiter.maxDelay
+                waiter.maxDelay,
             )
         }
     }

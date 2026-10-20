@@ -20,6 +20,7 @@ public enum HTTPBodyContentType {
     case xml
     case json
     case formURL
+    case cbor
 }
 
 open class HttpRequestTestBase: XCTestCase {
@@ -64,8 +65,7 @@ open class HttpRequestTestBase: XCTestCase {
 
         if let headers = headers {
             for (headerName, headerValue) in headers {
-                let value = sanitizeStringForNonConformingValues(headerValue)
-                builder.withHeader(name: headerName, value: value)
+                builder.withHeader(name: headerName, value: headerValue)
             }
         }
 
@@ -122,7 +122,7 @@ open class HttpRequestTestBase: XCTestCase {
         for queryParam in queryParams {
             let queryParamComponents = queryParam.components(separatedBy: "=")
             if queryParamComponents.count > 1 {
-                let value = sanitizeStringForNonConformingValues(queryParamComponents[1])
+                let value = queryParamComponents[1]
 
                 builder.withQueryItem(URIQueryItem(name: queryParamComponents[0],
                                                    value: value))
@@ -136,7 +136,7 @@ open class HttpRequestTestBase: XCTestCase {
         for queryParam in queryParams {
             let queryParamComponents = queryParam.components(separatedBy: "=")
             if queryParamComponents.count > 1 {
-                let value = sanitizeStringForNonConformingValues(queryParamComponents[1])
+                let value = queryParamComponents[1]
 
                 builder.withForbiddenQueryItem(URIQueryItem(name: queryParamComponents[0],
                                                    value: value))
@@ -150,23 +150,13 @@ open class HttpRequestTestBase: XCTestCase {
         for queryParam in queryParams {
             let queryParamComponents = queryParam.components(separatedBy: "=")
             if queryParamComponents.count > 1 {
-                let value = sanitizeStringForNonConformingValues(queryParamComponents[1])
+                let value = queryParamComponents[1]
 
                 builder.withRequiredQueryItem(URIQueryItem(name: queryParamComponents[0],
                                                    value: value))
             } else {
                 builder.withRequiredQueryItem(URIQueryItem(name: queryParamComponents[0], value: nil))
             }
-        }
-    }
-
-    func sanitizeStringForNonConformingValues(_ input: String) -> String {
-        switch input {
-        case "Infinity": return "inf"
-        case "-Infinity": return "-inf"
-        case "NaN": return "nan"
-        default:
-            return input
         }
     }
 
@@ -303,6 +293,8 @@ open class HttpRequestTestBase: XCTestCase {
                 XCTAssertJSONDataEqual(actual, expected, message(), file: file, line: line)
             case .formURL:
                 XCTAssertFormURLDataEqual(actual, expected, message(), file: file, line: line)
+            case .cbor:
+                XCTAssertCBORDataEqual(actual, expected, message(), file: file, line: line)
             }
         } else if expected != nil && actual == nil {
             XCTFail("actual data in ByteStream is nil but expected is not", file: file, line: line)

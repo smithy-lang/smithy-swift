@@ -29,12 +29,14 @@ object UnionIndirectivizer {
     private fun transformInner(model: Model): Model? {
         val index = TopologicalIndex(model)
         val recursiveUnions = index.recursiveShapes.filter { it.isUnionShape }
-        val loops = recursiveUnions.map { shape: Shape ->
-            index.getRecursiveClosure(shape)
-        }
-        val loopToFix = loops.firstOrNull { loop: Set<PathFinder.Path> ->
-            !containsIndirection(loop.map { it.startShape })
-        }
+        val loops =
+            recursiveUnions.map { shape: Shape ->
+                index.getRecursiveClosure(shape)
+            }
+        val loopToFix =
+            loops.firstOrNull { loop: Set<PathFinder.Path> ->
+                !containsIndirection(loop.map { it.startShape })
+            }
 
         return loopToFix?.let { loop: Set<PathFinder.Path> ->
             check(loop.isNotEmpty())
@@ -42,7 +44,12 @@ object UnionIndirectivizer {
             val unionShapeToIndirectivize = unionPathToIndirectivize.startShape.asUnionShape().get()
             ModelTransformer.create().mapShapes(model) { shape ->
                 if (shape.id == unionShapeToIndirectivize.id) {
-                    shape.asUnionShape().get().toBuilder().addTrait(RecursiveUnionTrait()).build()
+                    shape
+                        .asUnionShape()
+                        .get()
+                        .toBuilder()
+                        .addTrait(RecursiveUnionTrait())
+                        .build()
                 } else {
                     shape
                 }
@@ -50,16 +57,17 @@ object UnionIndirectivizer {
         }
     }
 
-    private fun containsIndirection(loop: List<Shape>): Boolean {
-        return loop.find {
+    private fun containsIndirection(loop: List<Shape>): Boolean =
+        loop.find {
             when {
                 it is ListShape ||
                     it is MapShape ||
-                    it is UnionShape && it.hasTrait<RecursiveUnionTrait>() ||
-                    it is StructureShape && it.hasTrait<SwiftBoxTrait>() ||
+                    it is UnionShape &&
+                    it.hasTrait<RecursiveUnionTrait>() ||
+                    it is StructureShape &&
+                    it.hasTrait<SwiftBoxTrait>() ||
                     it is SetShape -> true
                 else -> false
             }
         } != null
-    }
 }

@@ -6,7 +6,7 @@
 //
 
 /// Message that is sent from client to service.
-public protocol RequestMessage {
+public protocol RequestMessage: Sendable {
 
     /// The type of the builder that can build this request message.
     associatedtype RequestBuilderType: RequestMessageBuilder<Self>

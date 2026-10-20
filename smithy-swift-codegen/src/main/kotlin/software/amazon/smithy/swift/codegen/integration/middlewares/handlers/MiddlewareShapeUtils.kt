@@ -16,50 +16,82 @@ import software.amazon.smithy.swift.codegen.model.toUpperCamelCase
 
 class MiddlewareShapeUtils {
     companion object {
-        fun inputShape(model: Model, op: OperationShape): Shape {
-            return model.expectShape(op.input.get())
-        }
-        fun inputSymbol(symbolProvider: SymbolProvider, model: Model, op: OperationShape): Symbol {
+        fun inputShape(
+            model: Model,
+            op: OperationShape,
+        ): Shape = model.expectShape(op.input.get())
+
+        fun inputSymbol(
+            symbolProvider: SymbolProvider,
+            model: Model,
+            op: OperationShape,
+        ): Symbol {
             val opIndex = OperationIndex.of(model)
             return inputSymbol(symbolProvider, opIndex, op)
         }
-        fun inputSymbol(symbolProvider: SymbolProvider, opIndex: OperationIndex, op: OperationShape): Symbol {
+
+        fun inputSymbol(
+            symbolProvider: SymbolProvider,
+            opIndex: OperationIndex,
+            op: OperationShape,
+        ): Symbol {
             val inputShape = opIndex.getInput(op).get()
             return symbolProvider.toSymbol(inputShape)
         }
-        fun outputSymbol(symbolProvider: SymbolProvider, model: Model, op: OperationShape): Symbol {
+
+        fun outputSymbol(
+            symbolProvider: SymbolProvider,
+            model: Model,
+            op: OperationShape,
+        ): Symbol {
             val opIndex = OperationIndex.of(model)
             return outputSymbol(symbolProvider, opIndex, op)
         }
-        fun outputSymbol(symbolProvider: SymbolProvider, opIndex: OperationIndex, op: OperationShape): Symbol {
+
+        fun outputSymbol(
+            symbolProvider: SymbolProvider,
+            opIndex: OperationIndex,
+            op: OperationShape,
+        ): Symbol {
             val outputShape = opIndex.getOutput(op).get()
             return symbolProvider.toSymbol(outputShape)
         }
+
         fun outputErrorSymbol(op: OperationShape): Symbol {
             val operationErrorName = outputErrorSymbolName(op)
             return Symbol.builder().name(operationErrorName).build()
         }
-        fun outputErrorSymbolName(op: OperationShape): String {
-            return "${op.toUpperCamelCase()}OutputError"
-        }
 
-        fun hasHttpBody(model: Model, op: OperationShape): Boolean {
+        fun outputErrorSymbolName(op: OperationShape): String = "${op.toUpperCamelCase()}OutputError"
+
+        fun hasHttpBody(
+            model: Model,
+            op: OperationShape,
+        ): Boolean {
             val inputShape = inputShape(model, op)
             return inputShape.members().any { it.isInHttpBody() }
         }
 
-        fun hasHttpHeaders(model: Model, op: OperationShape): Boolean {
+        fun hasHttpHeaders(
+            model: Model,
+            op: OperationShape,
+        ): Boolean {
             val bindingIndex = HttpBindingIndex.of(model)
             val requestBindings = bindingIndex.getRequestBindings(op).values.map { HttpBindingDescriptor(it) }
-            val headerBindings = requestBindings
-                .filter { it.location == HttpBinding.Location.HEADER }
-                .sortedBy { it.memberName }
-            val prefixHeaderBindings = requestBindings
-                .filter { it.location == HttpBinding.Location.PREFIX_HEADERS }
+            val headerBindings =
+                requestBindings
+                    .filter { it.location == HttpBinding.Location.HEADER }
+                    .sortedBy { it.memberName }
+            val prefixHeaderBindings =
+                requestBindings
+                    .filter { it.location == HttpBinding.Location.PREFIX_HEADERS }
             return headerBindings.isNotEmpty() || prefixHeaderBindings.isNotEmpty()
         }
 
-        fun hasQueryItems(model: Model, op: OperationShape): Boolean {
+        fun hasQueryItems(
+            model: Model,
+            op: OperationShape,
+        ): Boolean {
             val bindingIndex = HttpBindingIndex.of(model)
             val httpTrait = op.getTrait<HttpTrait>()
             val requestBindings = bindingIndex.getRequestBindings(op).values.map { HttpBindingDescriptor(it) }

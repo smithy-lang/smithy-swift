@@ -16,9 +16,9 @@ import software.amazon.smithy.swift.codegen.integration.ProtocolGenerator
 import software.amazon.smithy.swift.codegen.integration.SwiftIntegration
 import software.amazon.smithy.swift.codegen.model.hasTrait
 import software.amazon.smithy.swift.codegen.swiftmodules.SwiftTypes
+import software.amazon.smithy.swift.codegen.utils.SDKFileUtils
 
 class TestEquatableConformanceIntegration : SwiftIntegration {
-
     override fun writeAdditionalFiles(
         ctx: SwiftCodegenContext,
         protocolGenerationContext: ProtocolGenerator.GenerationContext,
@@ -26,18 +26,26 @@ class TestEquatableConformanceIntegration : SwiftIntegration {
     ) {
         // For shapes that need Equatable conformance for testing and didn't already get it in the
         // SDK, generate Equatable conformance & place it in the protocol test target.
-        ctx.model.shapes()
+        ctx.model
+            .shapes()
             .filter { it.hasTrait<TestEquatableConformanceTrait>() }
             .filter { !it.hasTrait<EquatableConformanceTrait>() }
             .forEach { writeEquatableFor(it, ctx, delegator) }
     }
 
-    private fun writeEquatableFor(shape: Shape, ctx: SwiftCodegenContext, delegator: SwiftDelegator) {
+    private fun writeEquatableFor(
+        shape: Shape,
+        ctx: SwiftCodegenContext,
+        delegator: SwiftDelegator,
+    ) {
         val symbol = ctx.symbolProvider.toSymbol(shape)
-        val httpBindingSymbol = Symbol.builder()
-            .definitionFile("Tests/${ctx.settings.moduleName}Tests/models/${symbol.name}+Equatable.swift")
-            .name(symbol.name)
-            .build()
+        val filename = SDKFileUtils(ctx.settings).testsDirFilePath("models/${symbol.name}+Equatable")
+        val httpBindingSymbol =
+            Symbol
+                .builder()
+                .definitionFile(filename)
+                .name(symbol.name)
+                .build()
         delegator.useShapeWriter(httpBindingSymbol) { writer ->
             writer.addImport(ctx.settings.moduleName)
             writer.addImport(SwiftDependency.SMITHY_TEST_UTIL.target)
@@ -56,7 +64,7 @@ class TestEquatableConformanceIntegration : SwiftIntegration {
                                         writer.write(
                                             "if (!floatingPointValuesMatch(lhs: lhs.\$L, rhs: rhs.\$L)) { return false }",
                                             propertyAccessor,
-                                            propertyAccessor
+                                            propertyAccessor,
                                         )
                                     }
                                     else -> {

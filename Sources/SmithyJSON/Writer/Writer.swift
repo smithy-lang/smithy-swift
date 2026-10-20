@@ -5,14 +5,14 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
-@_spi(SmithyReadWrite) import protocol SmithyReadWrite.SmithyWriter
-@_spi(SmithyDocumentImpl) import protocol Smithy.SmithyDocument
-import enum Smithy.DocumentError
-@_spi(SmithyTimestamps) import enum SmithyTimestamps.TimestampFormat
-@_spi(SmithyTimestamps) import struct SmithyTimestamps.TimestampFormatter
 import struct Foundation.Data
 import struct Foundation.Date
 import class Foundation.NSNumber
+import enum Smithy.DocumentError
+@_spi(SmithyDocumentImpl) import protocol Smithy.SmithyDocument
+@_spi(SmithyReadWrite) import protocol SmithyReadWrite.SmithyWriter
+@_spi(SmithyTimestamps) import enum SmithyTimestamps.TimestampFormat
+@_spi(SmithyTimestamps) import struct SmithyTimestamps.TimestampFormatter
 
 @_spi(SmithyReadWrite)
 public final class Writer: SmithyWriter {

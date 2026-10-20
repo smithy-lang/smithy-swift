@@ -1,0 +1,105 @@
+//
+// Copyright Amazon.com Inc. or its affiliates.
+// All Rights Reserved.
+//
+// SPDX-License-Identifier: Apache-2.0
+//
+
+import ArgumentParser
+import Foundation
+import struct SmithyCodegenCore.CodeGenerator
+
+@main
+struct SmithyCodegenCLI: AsyncParsableCommand {
+
+    @Option(help: "The full or relative path to read the Swift settings input file.")
+    var swiftSettingsPath: String?
+
+    @Option(help: "The full or relative path to read the JSON AST model input file.")
+    var modelPath: String?
+
+    @Option(help: "The full or relative path to write the Schemas output file.")
+    var schemasPath: String?
+
+    @Option(help: "The full or relative path to write the Serialize output file.")
+    var serializePath: String?
+
+    @Option(help: "The full or relative path to write the Deserialize output file.")
+    var deserializePath: String?
+
+    @Option(help: "The full or relative path to write the TypeRegistry output file.")
+    var typeRegistryPath: String?
+
+    @Option(help: "The full or relative path to write the Operations output file.")
+    var operationsPath: String?
+
+    func run() async throws {
+        let currentWorkingDirectoryFileURL = currentWorkingDirectoryFileURL()
+
+        // Create the swift settings file URL
+        guard let swiftSettingsPath else {
+            throw SmithyCodegenCLIError("no swift-settings path was supplied")
+        }
+        let swiftSettingsFileURL = URL(fileURLWithPath: swiftSettingsPath, relativeTo: currentWorkingDirectoryFileURL)
+        guard FileManager.default.fileExists(atPath: swiftSettingsFileURL.path) else {
+            throw SmithyCodegenCLIError("no file at swift-settings path \(swiftSettingsFileURL.path)")
+        }
+
+        // Create the model file URL
+        guard let modelPath else {
+            throw SmithyCodegenCLIError("no model path was supplied")
+        }
+        let modelFileURL = URL(fileURLWithPath: modelPath, relativeTo: currentWorkingDirectoryFileURL)
+        guard FileManager.default.fileExists(atPath: modelFileURL.path) else {
+            throw SmithyCodegenCLIError("no file at model path \(modelFileURL.path)")
+        }
+
+        // If --schemas-path was supplied, create the schema file URL
+        let schemasFileURL = resolve(path: schemasPath)
+
+        // If --serialize-path was supplied, create the Serialize file URL
+        let serializeFileURL = resolve(path: serializePath)
+
+        // If --deserialize-path was supplied, create the Deserialize file URL
+        let deserializeFileURL = resolve(path: deserializePath)
+
+        // If --type-registry-path was supplied, create the TypeRegistry file URL
+        let typeRegistryFileURL = resolve(path: typeRegistryPath)
+
+        // If --operations-path was supplied, create the Operations file URL
+        let operationsFileURL = resolve(path: operationsPath)
+
+        // Use resolved file URLs to run code generator
+        try CodeGenerator(
+            swiftSettingsFileURL: swiftSettingsFileURL,
+            modelFileURL: modelFileURL,
+            schemasFileURL: schemasFileURL,
+            serializeFileURL: serializeFileURL,
+            deserializeFileURL: deserializeFileURL,
+            typeRegistryFileURL: typeRegistryFileURL,
+            operationsFileURL: operationsFileURL
+        ).run()
+    }
+
+    private func currentWorkingDirectoryFileURL() -> URL {
+        // Get the current working directory as a file URL
+        var currentWorkingDirectoryPath = FileManager.default.currentDirectoryPath
+        if !currentWorkingDirectoryPath.hasSuffix("/") {
+            currentWorkingDirectoryPath.append("/")
+        }
+        return URL(fileURLWithPath: currentWorkingDirectoryPath)
+    }
+
+    private func resolve(path: String?) -> URL? {
+        guard let path else { return nil }
+        return URL(fileURLWithPath: path, relativeTo: currentWorkingDirectoryFileURL())
+    }
+}
+
+struct SmithyCodegenCLIError: Error {
+    let localizedDescription: String
+
+    init(_ localizedDescription: String) {
+        self.localizedDescription = localizedDescription
+    }
+}

@@ -27,7 +27,6 @@ import software.amazon.smithy.swift.codegen.protocolgeneratormocks.MockHTTPRestJ
 import software.amazon.smithy.waiters.WaitableTrait
 
 class WaiterConfigGeneratorTests {
-
     @Test
     fun `renders correct function signature for waiter config`() {
         val context = setupTests("waiters.smithy", "com.test#TestHasWaiters")
@@ -58,50 +57,48 @@ static func bucketExistsWaiterConfig() throws -> SmithyWaitersAPI.WaiterConfigur
         contents.shouldContainOnlyOnce(expected)
     }
 
-    private fun setupTests(smithyFile: String, serviceShapeId: String): TestContext {
+    private fun setupTests(
+        smithyFile: String,
+        serviceShapeId: String,
+    ): TestContext {
         val context =
             TestContext.initContextFrom(smithyFile, serviceShapeId, MockHTTPRestJsonProtocolGenerator()) { model ->
                 model.defaultSettings(serviceShapeId, "Test", "2019-12-16", "Test")
             }
         context.generator.generateProtocolClient(context.generationCtx)
-        val codegenContext = object : SwiftCodegenContext {
-            override val model: Model = context.generationCtx.model
-            override val symbolProvider: SymbolProvider = context.generationCtx.symbolProvider
-            override val settings: SwiftSettings = context.generationCtx.settings
-            override val fileManifest: FileManifest = context.manifest
-            override val protocolGenerator: ProtocolGenerator = context.generator
-            override val integrations: List<SwiftIntegration> = context.generationCtx.integrations
+        val codegenContext =
+            object : SwiftCodegenContext {
+                override val model: Model = context.generationCtx.model
+                override val symbolProvider: SymbolProvider = context.generationCtx.symbolProvider
+                override val settings: SwiftSettings = context.generationCtx.settings
+                override val fileManifest: FileManifest = context.manifest
+                override val protocolGenerator: ProtocolGenerator = context.generator
+                override val integrations: List<SwiftIntegration> = context.generationCtx.integrations
 
-            override fun model(): Model {
-                return model
-            }
+                override fun model(): Model = model
 
-            override fun settings(): SwiftSettings {
-                return settings
-            }
+                override fun settings(): SwiftSettings = settings
 
-            override fun symbolProvider(): SymbolProvider {
-                return symbolProvider
-            }
+                override fun symbolProvider(): SymbolProvider = symbolProvider
 
-            override fun fileManifest(): FileManifest {
-                return fileManifest
-            }
+                override fun fileManifest(): FileManifest = fileManifest
 
-            override fun writerDelegator(): WriterDelegator<SwiftWriter> {
-                return SwiftDelegator(settings, model, fileManifest, symbolProvider, integrations)
-            }
+                override fun writerDelegator(): WriterDelegator<SwiftWriter> =
+                    SwiftDelegator(settings, model, fileManifest, symbolProvider, integrations)
 
-            override fun integrations(): MutableList<SwiftIntegration> {
-                return integrations.toMutableList()
+                override fun integrations(): MutableList<SwiftIntegration> = integrations.toMutableList()
             }
-        }
         val path = "Sources/Test/Waiters.swift"
         context.generationCtx.delegator.useFileWriter(path) { writer ->
             val service = codegenContext.model.expectShape<ServiceShape>(codegenContext.settings.service)
-            val waitedOperation = service.allOperations
-                .map { codegenContext.model.expectShape<OperationShape>(it) }.first()
-            val waitableTrait = waitedOperation.allTraits.values.mapNotNull { it as? WaitableTrait }.first()
+            val waitedOperation =
+                service.allOperations
+                    .map { codegenContext.model.expectShape<OperationShape>(it) }
+                    .first()
+            val waitableTrait =
+                waitedOperation.allTraits.values
+                    .mapNotNull { it as? WaitableTrait }
+                    .first()
             val (waiterName, waiter) = waitableTrait.waiters.entries.first()
             val unit = WaiterConfigGenerator(writer, codegenContext, service, waitedOperation, waiterName, waiter)
             unit.render()

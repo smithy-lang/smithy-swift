@@ -13,7 +13,7 @@ class UnionEncodeXMLGenerationTests {
     @Test
     fun `001 XmlUnionShape+Codable`() {
         val context = setupTests("Isolated/Restxml/xml-unions.smithy", "aws.protocoltests.restxml#RestXml")
-        val contents = getFileContents(context.manifest, "Sources/RestXml/models/XmlUnionShape+ReadWrite.swift")
+        val contents = getFileContents(context.manifest, "RestXml/Sources/RestXml/models/XmlUnionShape+ReadWrite.swift")
         val expectedContents = """
 extension RestXmlProtocolClientTypes.XmlUnionShape {
 
@@ -69,7 +69,7 @@ extension RestXmlProtocolClientTypes.XmlUnionShape {
     @Test
     fun `002 XmlUnionShape should be marked as indirect`() {
         val context = setupTests("Isolated/Restxml/xml-unions.smithy", "aws.protocoltests.restxml#RestXml")
-        val contents = getFileContents(context.manifest, "Sources/RestXml/models/XmlUnionShape.swift")
+        val contents = getFileContents(context.manifest, "RestXml/Sources/RestXml/models/XmlUnionShape.swift")
         val expectedContents = """
 extension ExampleClientTypes {
 

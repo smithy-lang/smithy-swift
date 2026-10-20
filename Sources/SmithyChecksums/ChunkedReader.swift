@@ -5,14 +5,15 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
+import AwsCommonRuntimeKit
+import struct Foundation.Data
+import Smithy
 import protocol SmithyChecksumsAPI.Checksum
 import enum SmithyChecksumsAPI.ChecksumAlgorithm
 import struct SmithyHTTPAPI.Headers
-import AwsCommonRuntimeKit
-import SmithyHTTPClient
-import struct Foundation.Data
-import Smithy
+@_spi(SmithyHTTPClient) import SmithyHTTPClient
 
+@_spi(SmithyChecksums)
 public class ChunkedReader {
     private var stream: ReadableStream
     private var signingConfig: SigningConfig
@@ -21,18 +22,20 @@ public class ChunkedReader {
     private var hasLastChunkBeenSent = false
     private var chunk = Data()
     private var chunkBody = Data()
-    private var currentHash: UInt32 = 0
     private var emptyChunkSigned = false
     private var checksumAlgorithm: ChecksumAlgorithm?
     private var checksum: (any Checksum)?
     private var checksumString: String?
+    private let context: Smithy.Context
+    private let cachedChecksum: String?
 
     init(
         stream: ReadableStream,
         signingConfig: SigningConfig,
         previousSignature: String,
         trailingHeaders: Headers,
-        checksumString: String? = nil // if nil, chunked encoding without checksum
+        checksumString: String? = nil, // if nil, chunked encoding without checksum
+        context: Smithy.Context
     ) throws {
         self.stream = stream
         self.signingConfig = signingConfig
@@ -52,7 +55,8 @@ public class ChunkedReader {
         } else {
             checksumAlgorithm = nil
         }
-
+        self.context = context
+        self.cachedChecksum = context.get(key: AttributeKey<String>(name: "ChunkedStreamCachedChecksum"))
         self.checksumAlgorithm = checksumAlgorithm // Enum for working with the checksum
         self.checksum = self.checksumAlgorithm?.createChecksum() // Create an instance of the Checksum
     }
@@ -67,10 +71,9 @@ public class ChunkedReader {
         let nextChunk = try await fetchNextChunk()
 
         if let chunk = nextChunk {
-            if let checksum = self.checksum {
+            if let checksum = self.checksum, cachedChecksum == nil {
                 try checksum.update(chunk: self.chunkBody)
             }
-
             self.chunk = chunk // Store the current chunk
             return true // Chunk processed successfully
         } else {
@@ -86,7 +89,15 @@ public class ChunkedReader {
         // Add a checksum if it is not nil
         if let checksum = self.checksum {
             let headerName = "x-amz-checksum-\(checksum.checksumName)"
-            let hashResult = try checksum.digest().toBase64String()
+            let hashResult: String!
+            // Use cached checksum from previous attempt if present.
+            // Allows request to fail if file payload has changed between retries, increasing durability for S3.
+            if let cachedChecksum {
+                hashResult = cachedChecksum
+            } else {
+                hashResult = try checksum.digest().toBase64String()
+                context.set(key: AttributeKey<String>(name: "ChunkedStreamCachedChecksum"), value: hashResult)
+            }
             self.updateTrailingHeader(name: headerName, value: hashResult)
         }
 

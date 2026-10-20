@@ -23,10 +23,16 @@ object SmithyTypes {
     val URIQueryItem = runtimeSymbol("URIQueryItem", SwiftDeclaration.STRUCT)
 }
 
-private fun runtimeSymbol(name: String, declaration: SwiftDeclaration? = null): Symbol = SwiftSymbol.make(
-    name,
-    declaration,
-    SwiftDependency.SMITHY,
-    emptyList(),
-    emptyList(),
-)
+private fun runtimeSymbol(
+    name: String,
+    declaration: SwiftDeclaration?,
+    additionalImports: List<Symbol> = emptyList(),
+    spiName: List<String> = emptyList(),
+): Symbol =
+    SwiftSymbol.make(
+        name,
+        declaration,
+        SwiftDependency.SMITHY.takeIf { additionalImports.isEmpty() },
+        additionalImports,
+        spiName,
+    )

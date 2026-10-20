@@ -5,15 +5,15 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
+import struct Smithy.AttributeKey
 import class Smithy.Context
 import class Smithy.ContextBuilder
-import struct Smithy.AttributeKey
 
-public let flowTypeKey = AttributeKey<FlowType>(name: "FlowType")
+private let flowTypeKey = AttributeKey<FlowType>(name: "FlowType")
 
 extension Context {
     public func getFlowType() -> FlowType {
-        return attributes.get(key: flowTypeKey) ?? .NORMAL
+        get(key: flowTypeKey) ?? .NORMAL
     }
 }
 

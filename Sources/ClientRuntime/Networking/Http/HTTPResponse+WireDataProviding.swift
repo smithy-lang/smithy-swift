@@ -5,10 +5,10 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
-import class SmithyHTTPAPI.HTTPResponse
-import enum Smithy.ByteStream
-@_spi(SmithyReadWrite) import protocol SmithyReadWrite.WireDataProviding
 import struct Foundation.Data
+import enum Smithy.ByteStream
+import class SmithyHTTPAPI.HTTPResponse
+@_spi(SmithyReadWrite) import protocol SmithyReadWrite.WireDataProviding
 
 @_spi(SmithyReadWrite)
 extension HTTPResponse: WireDataProviding {

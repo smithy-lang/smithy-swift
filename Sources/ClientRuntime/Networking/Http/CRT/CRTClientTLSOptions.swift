@@ -8,7 +8,7 @@
 import AwsCommonRuntimeKit
 import Smithy
 
-public struct CRTClientTLSOptions: TLSConfiguration {
+public struct CRTClientTLSOptions: TLSConfiguration, Sendable {
 
     /// Optional PEM certificate filename
     public var certificate: String?

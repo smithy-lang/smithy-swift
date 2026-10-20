@@ -5,15 +5,25 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 public class ClientBuilder<ClientType: Client> {
+    private var config: ClientType.Configuration?
+    private var plugins = [any Plugin]()
 
-    private var plugins: [Plugin]
-
-    public init(defaultPlugins: [Plugin] = []) {
+    public init(defaultPlugins: [any Plugin] = []) {
         self.plugins = defaultPlugins
+    }
+
+    public func withConfig(_ config: ClientType.Configuration) -> Self {
+        self.config = config
+        return self
     }
 
     public func withPlugin(_ plugin: any Plugin) -> ClientBuilder<ClientType> {
         self.plugins.append(plugin)
+        return self
+    }
+
+    public func withPlugins(_ plugins: [any Plugin]) -> ClientBuilder<ClientType> {
+        self.plugins.append(contentsOf: plugins)
         return self
     }
 
@@ -22,10 +32,15 @@ public class ClientBuilder<ClientType: Client> {
         return ClientType(config: configuration)
     }
 
-    func resolve(plugins: [any Plugin]) async throws -> ClientType.Config {
-        let clientConfiguration = try await ClientType.Config()
+    private func resolve(plugins: [any Plugin]) async throws -> ClientType.Configuration {
+        var clientConfiguration: ClientType.Configuration
+        if let config {
+            clientConfiguration = config
+        } else {
+            clientConfiguration = try await ClientType.Configuration()
+        }
         for plugin in plugins {
-            try await plugin.configureClient(clientConfiguration: clientConfiguration)
+            try await plugin.configureClient(clientConfiguration: &clientConfiguration)
         }
         return clientConfiguration
     }

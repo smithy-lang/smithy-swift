@@ -19,10 +19,14 @@ object SmithyEventStreamsAPITypes {
     val MarshalClosure = runtimeSymbol("MarshalClosure", SwiftDeclaration.TYPEALIAS)
 }
 
-private fun runtimeSymbol(name: String, declaration: SwiftDeclaration? = null): Symbol = SwiftSymbol.make(
-    name,
-    declaration,
-    SwiftDependency.SMITHY_EVENT_STREAMS_API,
-    emptyList(),
-    emptyList(),
-)
+private fun runtimeSymbol(
+    name: String,
+    declaration: SwiftDeclaration? = null,
+): Symbol =
+    SwiftSymbol.make(
+        name,
+        declaration,
+        SwiftDependency.SMITHY_EVENT_STREAMS_API,
+        emptyList(),
+        emptyList(),
+    )

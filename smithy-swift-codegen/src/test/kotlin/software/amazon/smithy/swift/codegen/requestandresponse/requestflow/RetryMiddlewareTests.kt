@@ -11,13 +11,12 @@ import software.amazon.smithy.swift.codegen.getFileContents
 import software.amazon.smithy.swift.codegen.protocolspecificserde.xml.setupTests
 
 class RetryMiddlewareTests {
-
     @Test
     fun `generates operation with retry middleware`() {
         val context = setupTests("Isolated/contentmd5checksum.smithy", "aws.protocoltests.restxml#RestXml")
-        val contents = getFileContents(context.manifest, "Sources/RestXml/RestXmlProtocolClient.swift")
+        val contents = getFileContents(context.manifest, "RestXml/Sources/RestXml/RestXmlProtocolClient.swift")
         val expectedContents = """
-        builder.retryStrategy(SmithyRetries.DefaultRetryStrategy(options: config.retryStrategyOptions))
+        builder.retryStrategy(self.retryStrategy)
         builder.retryErrorInfoProvider(ClientRuntime.DefaultRetryErrorInfoProvider.errorInfo(for:))
 """
         contents.shouldContainOnlyOnce(expectedContents)

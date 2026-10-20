@@ -5,8 +5,6 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
-import Foundation
-
 /// A type that can triage errors for determining how & if to retry the error.
 ///
 /// Based on the error's content & properties, the retry error info provider will determine the general retry type of this error

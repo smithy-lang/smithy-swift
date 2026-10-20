@@ -7,9 +7,9 @@
 
 import struct Foundation.Data
 import struct Foundation.Date
-@_spi(SmithyTimestamps) import enum SmithyTimestamps.TimestampFormat
 import enum Smithy.ByteStream
 import protocol Smithy.SmithyDocument
+@_spi(SmithyTimestamps) import enum SmithyTimestamps.TimestampFormat
 
 @_spi(SmithyReadWrite)
 public protocol SmithyWriter: AnyObject {
@@ -74,4 +74,8 @@ public extension SmithyWriter {
     func write<T>(_ value: T, with writingClosure: WritingClosure<T, Self>) throws {
         return try writingClosure(value, self)
     }
+}
+
+public enum WriterError: Error {
+    case invalidType(String)
 }

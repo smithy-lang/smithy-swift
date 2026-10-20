@@ -5,8 +5,8 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
-import protocol Smithy.RequestMessageSerializer
 import class Smithy.Context
+import protocol Smithy.RequestMessageSerializer
 import SmithyHTTPAPI
 
 public struct QueryItemMiddleware<OperationStackInput, OperationStackOutput> {

@@ -13,12 +13,13 @@ import software.amazon.smithy.swift.codegen.integration.ProtocolGenerator
 class HTTPResponseTraitResponseCode(
     val ctx: ProtocolGenerator.GenerationContext,
     val responseBindings: List<HttpBindingDescriptor>,
-    val writer: SwiftWriter
+    val writer: SwiftWriter,
 ) {
     fun render() {
-        val responseCodeTraitMembers = responseBindings
-            .filter { it.member.hasTrait(HttpResponseCodeTrait::class.java) }
-            .toMutableSet()
+        val responseCodeTraitMembers =
+            responseBindings
+                .filter { it.member.hasTrait(HttpResponseCodeTrait::class.java) }
+                .toMutableSet()
         if (responseCodeTraitMembers.isNotEmpty()) {
             responseCodeTraitMembers.forEach {
                 writer.write("value.${it.locationName.decapitalize()} = httpResponse.statusCode.rawValue")

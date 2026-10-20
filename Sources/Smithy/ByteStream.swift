@@ -5,8 +5,8 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
-import class Foundation.FileHandle
 import struct Foundation.Data
+import class Foundation.FileHandle
 
 public enum ByteStream: Sendable {
     case data(Data?)
@@ -73,8 +73,8 @@ extension ByteStream: CustomDebugStringConvertible {
     }
 }
 
-public enum ByteStreamError: Error {
-    case streamNotSeeakble
+public enum ByteStreamError: Error, Sendable {
+    case streamNotSeekable
     case invalidStreamTypeForChunkedBody(String)
     case streamClosedOrEmpty
     case streamDoesNotConformToChunkedStream(String)

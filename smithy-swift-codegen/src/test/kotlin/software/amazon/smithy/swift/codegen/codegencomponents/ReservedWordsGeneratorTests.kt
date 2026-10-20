@@ -14,7 +14,7 @@ class ReservedWordsGeneratorTests {
     @Test
     fun `test enum`() {
         val context = setupTests("reserved-name-enum-test.smithy", "com.test#Example")
-        val contents = getFileContents(context.manifest, "Sources/example/models/ReservedWordsEnum.swift")
+        val contents = getFileContents(context.manifest, "example/Sources/example/models/ReservedWordsEnum.swift")
         val expectedContents = """
 extension ExampleClientTypes {
 
@@ -57,7 +57,7 @@ extension ExampleClientTypes {
     @Test
     fun `it handles type name that conflicts with swift metatype`() {
         val context = setupTests("reserved-name-enum-test.smithy", "com.test#Example")
-        val contents = getFileContents(context.manifest, "Sources/example/models/Type.swift")
+        val contents = getFileContents(context.manifest, "example/Sources/example/models/Type.swift")
         val expectedContents = """
 extension ExampleClientTypes {
 
@@ -94,7 +94,7 @@ extension ExampleClientTypes {
     @Test
     fun `it handles protocol name that conflicts with swift metatype`() {
         val context = setupTests("reserved-name-enum-test.smithy", "com.test#Example")
-        val contents = getFileContents(context.manifest, "Sources/example/models/Protocol.swift")
+        val contents = getFileContents(context.manifest, "example/Sources/example/models/Protocol.swift")
         val expectedContents = """
 extension ExampleClientTypes {
 
@@ -128,7 +128,10 @@ extension ExampleClientTypes {
         contents.shouldContainOnlyOnce(expectedContents)
     }
 
-    private fun setupTests(smithyFile: String, serviceShapeId: String): TestContext {
+    private fun setupTests(
+        smithyFile: String,
+        serviceShapeId: String,
+    ): TestContext {
         val context = TestContext.initContextFrom(smithyFile, serviceShapeId)
         context.generator.generateSerializers(context.generationCtx)
         context.generationCtx.delegator.flushWriters()

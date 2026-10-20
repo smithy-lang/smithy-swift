@@ -12,10 +12,14 @@ object SmithyWaitersAPITypes {
     val JMESUtils = runtimeSymbol("JMESUtils", SwiftDeclaration.ENUM)
 }
 
-private fun runtimeSymbol(name: String, declaration: SwiftDeclaration? = null): Symbol = SwiftSymbol.make(
-    name,
-    declaration,
-    SwiftDependency.SMITHY_WAITERS_API,
-    emptyList(),
-    emptyList(),
-)
+private fun runtimeSymbol(
+    name: String,
+    declaration: SwiftDeclaration? = null,
+): Symbol =
+    SwiftSymbol.make(
+        name,
+        declaration,
+        SwiftDependency.SMITHY_WAITERS_API,
+        emptyList(),
+        emptyList(),
+    )

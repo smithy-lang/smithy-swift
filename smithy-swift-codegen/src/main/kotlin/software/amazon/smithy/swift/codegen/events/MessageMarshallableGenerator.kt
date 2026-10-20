@@ -19,31 +19,34 @@ import software.amazon.smithy.swift.codegen.model.hasTrait
 import software.amazon.smithy.swift.codegen.swiftmodules.FoundationTypes
 import software.amazon.smithy.swift.codegen.swiftmodules.SmithyEventStreamsAPITypes
 import software.amazon.smithy.swift.codegen.swiftmodules.SmithyTypes
-import software.amazon.smithy.swift.codegen.utils.ModelFileUtils
+import software.amazon.smithy.swift.codegen.utils.SDKFileUtils
 
 class MessageMarshallableGenerator(
     private val ctx: ProtocolGenerator.GenerationContext,
-    private val payloadContentType: String
+    private val payloadContentType: String,
 ) {
     internal fun render(streamShape: UnionShape) {
         val streamSymbol: Symbol = ctx.symbolProvider.toSymbol(streamShape)
-        val filename = ModelFileUtils.filename(ctx.settings, "${streamSymbol.name}+MessageMarshallable")
-        val streamMember = Symbol.builder()
-            .definitionFile(filename)
-            .name(streamSymbol.name)
-            .build()
+        val filename = SDKFileUtils(ctx.settings).modelFilePath("${streamSymbol.name}+MessageMarshallable")
+        val streamMember =
+            Symbol
+                .builder()
+                .definitionFile(filename)
+                .name(streamSymbol.name)
+                .build()
         ctx.delegator.useShapeWriter(streamMember) { writer ->
             writer.apply {
                 openBlock("extension \$L {", "}", streamSymbol.fullName) {
                     openBlock(
-                        "static var marshal: \$N<\$N> {", "}",
+                        "static var marshal: \$N<\$N> {",
+                        "}",
                         SmithyEventStreamsAPITypes.MarshalClosure,
-                        streamSymbol
+                        streamSymbol,
                     ) {
                         openBlock("{ (self) in", "}") {
                             write(
                                 "var headers: [\$N] = [.init(name: \":message-type\", value: .string(\"event\"))]",
-                                SmithyEventStreamsAPITypes.Header
+                                SmithyEventStreamsAPITypes.Header,
                             )
                             write("var payload: \$D", FoundationTypes.Data)
                             write("switch self {")
@@ -55,15 +58,18 @@ class MessageMarshallableGenerator(
                                 // Unbound, header-bound, and payload-bound members require access to
                                 // the event value for serialization, so unwrap value when
                                 // those members exist.  The actual members will be written below.
-                                val eventHeaderBindings = variant.members().filter {
-                                    it.hasTrait<EventHeaderTrait>()
-                                }
-                                val eventPayloadBinding = variant.members().firstOrNull {
-                                    it.hasTrait<EventPayloadTrait>()
-                                }
-                                val unbound = variant.members().filterNot {
-                                    it.hasTrait<EventHeaderTrait>() || it.hasTrait<EventPayloadTrait>()
-                                }
+                                val eventHeaderBindings =
+                                    variant.members().filter {
+                                        it.hasTrait<EventHeaderTrait>()
+                                    }
+                                val eventPayloadBinding =
+                                    variant.members().firstOrNull {
+                                        it.hasTrait<EventPayloadTrait>()
+                                    }
+                                val unbound =
+                                    variant.members().filterNot {
+                                        it.hasTrait<EventHeaderTrait>() || it.hasTrait<EventPayloadTrait>()
+                                    }
                                 if (unbound.isNotEmpty() || eventHeaderBindings.isNotEmpty() || eventPayloadBinding != null) {
                                     write("case .\$L(let value):", memberName)
                                 } else {
@@ -87,7 +93,11 @@ class MessageMarshallableGenerator(
                                         val nodeInfo = NodeInfoUtils(ctx, writer, ctx.service.requestWireProtocol).nodeInfo(member, true)
                                         writer.write("let writer = \$N(nodeInfo: \$L)", ctx.service.writerSymbol, nodeInfo)
                                         unbound.forEach {
-                                            val writingClosure = WritingClosureUtils(ctx, writer).writingClosure(ctx.model.expectShape(it.target))
+                                            val writingClosure =
+                                                WritingClosureUtils(
+                                                    ctx,
+                                                    writer,
+                                                ).writingClosure(ctx.model.expectShape(it.target))
                                             writer.write(
                                                 "try writer[\$S].write(value.\$L, with: \$L)",
                                                 it.memberName,
@@ -110,7 +120,7 @@ class MessageMarshallableGenerator(
                             writer.write("}")
                             writer.write(
                                 "return \$N(headers: headers, payload: payload ?? .init())",
-                                SmithyEventStreamsAPITypes.Message
+                                SmithyEventStreamsAPITypes.Message,
                             )
                         }
                     }
@@ -119,7 +129,11 @@ class MessageMarshallableGenerator(
         }
     }
 
-    private fun renderSerializeEventPayload(ctx: ProtocolGenerator.GenerationContext, member: MemberShape, writer: SwiftWriter) {
+    private fun renderSerializeEventPayload(
+        ctx: ProtocolGenerator.GenerationContext,
+        member: MemberShape,
+        writer: SwiftWriter,
+    ) {
         val target = ctx.model.expectShape(member.target)
         val memberName = ctx.symbolProvider.toMemberName(member)
         when (target.type) {
@@ -135,50 +149,30 @@ class MessageMarshallableGenerator(
                 writer.addStringHeader(":content-type", payloadContentType)
                 renderPayloadSerialization(ctx, writer, member)
             }
-            else -> throw CodegenException("unsupported shape type `${target.type}` for target: $target; expected blob, string, structure, or union for eventPayload member: $member")
+            else -> throw CodegenException(
+                "unsupported shape type `${target.type}` for target: $target; expected blob, string, structure, or union for eventPayload member: $member",
+            )
         }
     }
 
-    /**
-     *
-     *     if let headerValue = value.blob {
-     *         headers.append(.init(name: "blob", value: .byteArray(headerValue)))
-     *     }
-     *     if let headerValue = value.boolean {
-     *         headers.append(.init(name: "boolean", value: .bool(headerValue)))
-     *     }
-     *     if let headerValue = value.byte {
-     *         headers.append(.init(name: "byte", value: .byte(headerValue)))
-     *     }
-     *     if let headerValue = value.int {
-     *         headers.append(.init(name: "int", value: .int32(Int32(headerValue))))
-     *     }
-     *     if let headerValue = value.long {
-     *         headers.append(.init(name: "long", value: .int64(Int64(headerValue))))
-     *     }
-     *     if let headerValue = value.short {
-     *         headers.append(.init(name: "short", value: .int16(headerValue)))
-     *     }
-     *     if let headerValue = value.string {
-     *         headers.append(.init(name: "string", value: .string(headerValue)))
-     *     }
-     *     if let headerValue = value.timestamp {
-     *         headers.append(.init(name: "timestamp", value: .timestamp(headerValue)))
-     *     }
-     */
-    private fun renderSerializeEventHeader(ctx: ProtocolGenerator.GenerationContext, member: MemberShape, writer: SwiftWriter) {
+    private fun renderSerializeEventHeader(
+        ctx: ProtocolGenerator.GenerationContext,
+        member: MemberShape,
+        writer: SwiftWriter,
+    ) {
         val target = ctx.model.expectShape(member.target)
-        val headerValue = when (target.type) {
-            ShapeType.BOOLEAN -> "bool"
-            ShapeType.BYTE -> "byte"
-            ShapeType.SHORT -> "int16"
-            ShapeType.INTEGER -> "int32"
-            ShapeType.LONG -> "int64"
-            ShapeType.BLOB -> "byteArray"
-            ShapeType.STRING -> "string"
-            ShapeType.TIMESTAMP -> "timestamp"
-            else -> throw CodegenException("unsupported shape type `${target.type}` for eventHeader member `$member`; target: $target")
-        }
+        val headerValue =
+            when (target.type) {
+                ShapeType.BOOLEAN -> "bool"
+                ShapeType.BYTE -> "byte"
+                ShapeType.SHORT -> "int16"
+                ShapeType.INTEGER, ShapeType.INT_ENUM -> "int32"
+                ShapeType.LONG -> "int64"
+                ShapeType.BLOB -> "byteArray"
+                ShapeType.STRING, ShapeType.ENUM -> "string"
+                ShapeType.TIMESTAMP -> "timestamp"
+                else -> throw CodegenException("unsupported shape type `${target.type}` for eventHeader member `$member`; target: $target")
+            }
 
         val memberName = ctx.symbolProvider.toMemberName(member)
         writer.openBlock("if let headerValue = value.\$L {", "}", memberName) {
@@ -186,8 +180,22 @@ class MessageMarshallableGenerator(
                 ShapeType.INTEGER -> {
                     writer.write("headers.append(.init(name: \"${member.memberName}\", value: .\$L(Int32(headerValue))))", headerValue)
                 }
+                ShapeType.INT_ENUM -> {
+                    writer.write(
+                        "headers.append(.init(name: \$S, value: .\$L(Int32(headerValue.rawValue))))",
+                        member.memberName,
+                        headerValue,
+                    )
+                }
                 ShapeType.LONG -> {
                     writer.write("headers.append(.init(name: \"${member.memberName}\", value: .\$L(Int64(headerValue))))", headerValue)
+                }
+                ShapeType.ENUM -> {
+                    writer.write(
+                        "headers.append(.init(name: \$S, value: .\$L(headerValue.rawValue)))",
+                        member.memberName,
+                        headerValue,
+                    )
                 }
                 else -> {
                     writer.write("headers.append(.init(name: \"${member.memberName}\", value: .\$L(headerValue)))", headerValue)
@@ -196,11 +204,18 @@ class MessageMarshallableGenerator(
         }
     }
 
-    private fun SwiftWriter.addStringHeader(name: String, value: String) {
+    private fun SwiftWriter.addStringHeader(
+        name: String,
+        value: String,
+    ) {
         write("headers.append(.init(name: \$S, value: .string(\$S)))", name, value)
     }
 
-    private fun renderPayloadSerialization(ctx: ProtocolGenerator.GenerationContext, writer: SwiftWriter, memberShape: MemberShape) {
+    private fun renderPayloadSerialization(
+        ctx: ProtocolGenerator.GenerationContext,
+        writer: SwiftWriter,
+        memberShape: MemberShape,
+    ) {
         // get a payload serializer for the given members of the variant
         val nodeInfoUtils = NodeInfoUtils(ctx, writer, ctx.service.responseWireProtocol)
         val rootNodeInfo = nodeInfoUtils.nodeInfo(memberShape, true)

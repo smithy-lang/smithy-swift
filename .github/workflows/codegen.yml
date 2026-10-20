@@ -6,8 +6,19 @@ on:
   pull_request:
   workflow_dispatch:
 
+permissions:
+  contents: read
+
+env:
+  # Keep the Gradle user home inside the workspace so that it resolves identically
+  # for Gradle and for setup-gradle's cache.  In container jobs the runner sets
+  # HOME=/github/home, but the JVM derives user.home from the passwd entry (/root),
+  # so the default ~/.gradle refers to two different directories.
+  GRADLE_USER_HOME: ${{ github.workspace }}/.gradle-home
+
 jobs:
   codegen:
+    if: github.repository == 'smithy-lang/smithy-swift' || github.event_name == 'pull_request'
     runs-on: ${{ matrix.os }}
     name: Java ${{ matrix.java }} ${{ matrix.os }}
     strategy:
@@ -16,14 +27,17 @@ jobs:
         os: [macos-latest, ubuntu-latest, windows-latest]
 
     steps:
-      - uses: actions/checkout@v4
-      - uses: gradle/wrapper-validation-action@v2
+      - uses: actions/checkout@v6
+      - uses: gradle/actions/wrapper-validation@v6
 
       - name: Set up JDK ${{ matrix.java }}
-        uses: actions/setup-java@v4
+        uses: actions/setup-java@v5
         with:
           java-version: ${{ matrix.java }}
           distribution: 'corretto'
+
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v5
 
       - name: Log Kotlin version
         run: |

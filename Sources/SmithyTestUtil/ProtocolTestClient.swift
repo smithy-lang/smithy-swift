@@ -8,7 +8,7 @@ import class SmithyHTTPAPI.HTTPRequest
 import class SmithyHTTPAPI.HTTPResponse
 import ClientRuntime
 
-public class ProtocolTestClient {
+public final class ProtocolTestClient {
     public init() {}
 }
 
@@ -22,7 +22,7 @@ extension ProtocolTestClient: HTTPClient {
     }
 }
 
-public class ProtocolTestIdempotencyTokenGenerator: ClientRuntime.IdempotencyTokenGenerator {
+public class ProtocolTestIdempotencyTokenGenerator: ClientRuntime.IdempotencyTokenGenerator, @unchecked Sendable {
     public init() {}
 
     public func generateToken() -> String {

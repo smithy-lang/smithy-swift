@@ -17,9 +17,12 @@ class NodeInfoUtils(
     val writer: SwiftWriter,
     val wireProtocol: WireProtocol,
 ) {
-
     val awsProtocol = ctx.service.awsProtocol
-    fun nodeInfo(shape: Shape, forRootNode: Boolean = false): String {
+
+    fun nodeInfo(
+        shape: Shape,
+        forRootNode: Boolean = false,
+    ): String {
         if (wireProtocol != WireProtocol.XML && forRootNode) return "\"\""
         val xmlName = shape.getTrait<XmlNameTrait>()?.value
         val symbol = ctx.symbolProvider.toSymbol(shape)
@@ -31,7 +34,10 @@ class NodeInfoUtils(
         return nodeInfo(resolvedName, "", xmlNamespaceParam)
     }
 
-    fun nodeInfo(member: MemberShape, forRootNode: Boolean = false): String {
+    fun nodeInfo(
+        member: MemberShape,
+        forRootNode: Boolean = false,
+    ): String {
         if (wireProtocol != WireProtocol.XML && forRootNode) return "\"\""
         val targetShape = ctx.model.expectShape(member.target)
 
@@ -39,13 +45,18 @@ class NodeInfoUtils(
 
         val xmlAttributeParam = ", location: .attribute".takeIf { member.hasTrait<XmlAttributeTrait>() } ?: ""
 
-        val xmlNamespaceTrait = member.getTrait<XmlNamespaceTrait>() ?: targetShape.getTrait<XmlNamespaceTrait>() ?: ctx.service.getTrait<XmlNamespaceTrait>().takeIf { forRootNode }
+        val xmlNamespaceTrait =
+            member.getTrait<XmlNamespaceTrait>() ?: targetShape.getTrait<XmlNamespaceTrait>()
+                ?: ctx.service.getTrait<XmlNamespaceTrait>().takeIf { forRootNode }
         val xmlNamespaceParam = namespaceParam(xmlNamespaceTrait)
 
         return nodeInfo(resolvedName, xmlAttributeParam, xmlNamespaceParam)
     }
 
-    private fun resolvedName(member: MemberShape, forRootNode: Boolean): String {
+    private fun resolvedName(
+        member: MemberShape,
+        forRootNode: Boolean,
+    ): String {
         val targetShape = ctx.model.expectShape(member.target)
         when (wireProtocol) {
             WireProtocol.XML -> {
@@ -61,7 +72,8 @@ class NodeInfoUtils(
                     return "\"\""
                 } else {
                     if (ctx.service.awsProtocol == AWSProtocol.EC2_QUERY) {
-                        return member.getTrait<Ec2QueryNameTrait>()?.value ?: member.getTrait<XmlNameTrait>()?.value?.capitalize() ?: member.memberName.capitalize()
+                        return member.getTrait<Ec2QueryNameTrait>()?.value ?: member.getTrait<XmlNameTrait>()?.value?.capitalize()
+                            ?: member.memberName.capitalize()
                     } else {
                         return member.getTrait<XmlNameTrait>()?.value ?: member.memberName
                     }
@@ -76,21 +88,34 @@ class NodeInfoUtils(
                     return member.memberName
                 }
             }
+            WireProtocol.CBOR -> {
+                if (forRootNode) {
+                    return "\"\""
+                } else {
+                    return member.memberName
+                }
+            }
         }
     }
 
     private fun namespaceParam(xmlNamespaceTrait: XmlNamespaceTrait?): String {
-        if (wireProtocol != WireProtocol.XML) { return "" }
+        if (wireProtocol != WireProtocol.XML) {
+            return ""
+        }
         return xmlNamespaceTrait?.let {
             writer.format(
                 ", namespaceDef: .init(prefix: \$S, uri: \$S)",
                 it.prefix,
-                it.uri
+                it.uri,
             )
         } ?: ""
     }
 
-    private fun nodeInfo(resolvedName: String, xmlAttributeParam: String, xmlNamespaceParam: String): String {
+    private fun nodeInfo(
+        resolvedName: String,
+        xmlAttributeParam: String,
+        xmlNamespaceParam: String,
+    ): String {
         if (xmlAttributeParam == "" && xmlNamespaceParam == "" || wireProtocol != WireProtocol.XML) {
             return writer.format("\$S", resolvedName)
         } else {
@@ -98,7 +123,7 @@ class NodeInfoUtils(
                 ".init(\$S\$L\$L)",
                 resolvedName,
                 xmlAttributeParam,
-                xmlNamespaceParam
+                xmlNamespaceParam,
             )
         }
     }

@@ -5,10 +5,10 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
-import enum SmithyEventStreamsAPI.EventStreamError
-import enum SmithyEventStreamsAPI.MessageType
-import struct SmithyEventStreamsAPI.Message
 import AwsCommonRuntimeKit
+import enum SmithyEventStreamsAPI.EventStreamError
+import struct SmithyEventStreamsAPI.Message
+import enum SmithyEventStreamsAPI.MessageType
 
 extension Message {
     /// Parses the protocol level headers into a `MessageType`

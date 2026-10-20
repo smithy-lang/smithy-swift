@@ -5,32 +5,32 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
+import enum AwsCommonRuntimeKit.CommonRunTimeError
 import class AwsCommonRuntimeKit.HTTPRequestBase
 import class AwsCommonRuntimeKit.Signer
-import class SmithyHTTPAPI.HTTPRequest
-import class SmithyHTTPAPI.HTTPRequestBuilder
-import enum AwsCommonRuntimeKit.CommonRunTimeError
-import enum Smithy.ClientError
-import enum SmithyHTTPAuthAPI.AWSSignedBodyHeader
-import enum SmithyHTTPAuthAPI.AWSSignedBodyValue
-import enum SmithyHTTPAuthAPI.AWSSignatureType
-import enum SmithyHTTPAuthAPI.SigningAlgorithm
-import enum SmithyHTTPAuthAPI.SigningPropertyKeys
-import protocol SmithyIdentity.AWSCredentialIdentityResolver
-import protocol SmithyIdentityAPI.Identity
-import protocol SmithyHTTPAuthAPI.Signer
 import struct AwsCommonRuntimeKit.SigningConfig
-import struct Smithy.AttributeKey
-import struct Smithy.Attributes
-import struct Smithy.SwiftLogger
-import struct SmithyIdentity.AWSCredentialIdentity
-import struct SmithyHTTPAuthAPI.SigningFlags
 import struct Foundation.Date
 import struct Foundation.TimeInterval
 import struct Foundation.URL
-import SmithyHTTPClient
+import struct Smithy.AttributeKey
+import struct Smithy.Attributes
+import enum Smithy.ClientError
+import struct Smithy.SwiftLogger
+import class SmithyHTTPAPI.HTTPRequest
+import class SmithyHTTPAPI.HTTPRequestBuilder
+import enum SmithyHTTPAuthAPI.AWSSignatureType
+import enum SmithyHTTPAuthAPI.AWSSignedBodyHeader
+import enum SmithyHTTPAuthAPI.AWSSignedBodyValue
+import protocol SmithyHTTPAuthAPI.Signer
+import enum SmithyHTTPAuthAPI.SigningAlgorithm
+import struct SmithyHTTPAuthAPI.SigningFlags
+import enum SmithyHTTPAuthAPI.SigningPropertyKeys
+@_spi(SmithyHTTPClient) import SmithyHTTPClient
+import struct SmithyIdentity.AWSCredentialIdentity
+import protocol SmithyIdentity.AWSCredentialIdentityResolver
+import protocol SmithyIdentityAPI.Identity
 
-public class SigV4Signer: SmithyHTTPAuthAPI.Signer {
+public class SigV4Signer: SmithyHTTPAuthAPI.Signer, @unchecked Sendable {
     public init() {}
 
     public func signRequest<IdentityT>(
@@ -52,7 +52,13 @@ public class SigV4Signer: SmithyHTTPAuthAPI.Signer {
             )
         }
 
-        let signingConfig = try constructSigningConfig(identity: identity, signingProperties: signingProperties)
+        let signedAt = Date()
+
+        let signingConfig = try constructSigningConfig(
+            identity: identity,
+            signingProperties: signingProperties,
+            signedAt: signedAt
+        )
 
         let unsignedRequest = requestBuilder.build()
         let crtUnsignedRequest: HTTPRequestBase = isBidirectionalStreamingEnabled ?
@@ -66,7 +72,11 @@ public class SigV4Signer: SmithyHTTPAuthAPI.Signer {
             config: crtSigningConfig
         )
 
-        let sdkSignedRequest = requestBuilder.update(from: crtSignedRequest, originalRequest: unsignedRequest)
+        let sdkSignedRequest = requestBuilder.update(
+            from: crtSignedRequest,
+            originalRequest: unsignedRequest,
+            signedAt: signedAt
+        )
 
         // Return signed request
         return sdkSignedRequest
@@ -74,7 +84,8 @@ public class SigV4Signer: SmithyHTTPAuthAPI.Signer {
 
     private func constructSigningConfig(
         identity: AWSCredentialIdentity,
-        signingProperties: Smithy.Attributes
+        signingProperties: Smithy.Attributes,
+        signedAt: Date
     ) throws -> AWSSigningConfig {
         guard let unsignedBody = signingProperties.get(key: SigningPropertyKeys.unsignedBody) else {
             throw Smithy.ClientError.authError(
@@ -97,7 +108,8 @@ public class SigV4Signer: SmithyHTTPAuthAPI.Signer {
             )
         }
 
-        let expiration: TimeInterval = signingProperties.get(key: SigningPropertyKeys.expiration) ?? 0
+        let clockSkew = signingProperties.get(key: SigningPropertyKeys.clockSkew) ?? 0.0
+        let expiration = signingProperties.get(key: SigningPropertyKeys.expiration) ?? 0.0
         let signedBodyHeader: AWSSignedBodyHeader =
             signingProperties.get(key: SigningPropertyKeys.signedBodyHeader) ?? .none
 
@@ -127,7 +139,7 @@ public class SigV4Signer: SmithyHTTPAuthAPI.Signer {
             signedBodyHeader: signedBodyHeader,
             signedBodyValue: signedBodyValue,
             flags: flags,
-            date: Date(),
+            date: signedAt.addingTimeInterval(clockSkew),
             service: signingName,
             region: signingRegion,
             signatureType: signatureType,

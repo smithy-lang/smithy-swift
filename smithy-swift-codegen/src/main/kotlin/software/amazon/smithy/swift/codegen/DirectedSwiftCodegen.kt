@@ -25,16 +25,18 @@ import software.amazon.smithy.swift.codegen.integration.CustomDebugStringConvert
 import software.amazon.smithy.swift.codegen.integration.CustomDebugStringConvertibleGenerator.Companion.isSensitive
 import software.amazon.smithy.swift.codegen.integration.ProtocolGenerator
 import software.amazon.smithy.swift.codegen.integration.SwiftIntegration
+import software.amazon.smithy.swift.codegen.integration.serde.SerdeUtils
 import software.amazon.smithy.swift.codegen.model.hasTrait
 import java.util.logging.Logger
 
-class DirectedSwiftCodegen(val context: PluginContext) :
-    DirectedCodegen<GenerationContext, SwiftSettings, SwiftIntegration> {
+class DirectedSwiftCodegen(
+    val context: PluginContext,
+) : DirectedCodegen<GenerationContext, SwiftSettings, SwiftIntegration> {
+    @Suppress("ktlint:standard:property-naming")
     private val LOGGER = Logger.getLogger(javaClass.name)
 
-    override fun createSymbolProvider(directive: CreateSymbolProviderDirective<SwiftSettings>): SymbolProvider {
-        return SwiftSymbolProvider(directive.model(), directive.settings())
-    }
+    override fun createSymbolProvider(directive: CreateSymbolProviderDirective<SwiftSettings>): SymbolProvider =
+        SwiftSymbolProvider(directive.model(), directive.settings())
 
     override fun createContext(directive: CreateContextDirective<SwiftSettings, SwiftIntegration>): GenerationContext {
         val model = directive.model()
@@ -56,7 +58,7 @@ class DirectedSwiftCodegen(val context: PluginContext) :
             directive.settings(),
             directive.fileManifest(),
             protocolGenerator,
-            directive.integrations()
+            directive.integrations(),
         )
     }
 
@@ -71,7 +73,6 @@ class DirectedSwiftCodegen(val context: PluginContext) :
 
         LOGGER.info("Generating Swift client for service ${directive.settings().service}")
 
-        var shouldGenerateTestTarget = false
         context.protocolGenerator?.apply {
             val ctx = ProtocolGenerator.GenerationContext(settings, model, service, symbolProvider, integrations, this.protocol, writers)
             LOGGER.info("[${service.id}] Generating serde for protocol ${this.protocol}")
@@ -85,24 +86,27 @@ class DirectedSwiftCodegen(val context: PluginContext) :
 
             LOGGER.info("[${service.id}] Generating unit tests for protocol ${this.protocol}")
             val numProtocolUnitTestsGenerated = generateProtocolUnitTests(ctx)
-            shouldGenerateTestTarget = (numProtocolUnitTestsGenerated > 0)
 
             LOGGER.info("[${service.id}] Generated $numProtocolUnitTestsGenerated tests for protocol ${this.protocol}")
 
             LOGGER.info("[${service.id}] Generating service client for protocol ${this.protocol}")
             generateProtocolClient(ctx)
 
-            integrations.forEach { it.writeAdditionalFiles(context, ctx, writers) }
-
             LOGGER.info("[${service.id}] Generating smoke tests for service")
             generateSmokeTests(ctx)
 
-            LOGGER.info("Generating package manifest file")
-            PackageManifestGenerator(ctx).writePackageManifest(writers.dependencies)
+            LOGGER.info("[${service.id}] Generating additional files")
+            integrations.forEach { it.writeAdditionalFiles(context, ctx, writers) }
 
-            LOGGER.info("Flushing swift writers")
-            writers.flushWriters()
+            LOGGER.info("[${service.id}] Generating swift-settings.json")
+            SwiftSettingsJSONGenerator(ctx).render()
         }
+
+        LOGGER.info("[${service.id}] Generating package manifest file")
+        PackageManifestGenerator(context).writePackageManifest(writers.dependencies)
+
+        LOGGER.info("[${service.id}] Flushing swift writers")
+        writers.flushWriters()
     }
 
     override fun generateStructure(directive: GenerateStructureDirective<GenerationContext, SwiftSettings>) {
@@ -118,9 +122,11 @@ class DirectedSwiftCodegen(val context: PluginContext) :
             StructureGenerator(model, symbolProvider, writer, shape, settings, protocolGenerator?.serviceErrorProtocolSymbol).render()
         }
 
-        if (shape.hasTrait<SensitiveTrait>() || shape.members().any { it.isSensitive(model) }) {
-            writers.useShapeExtensionWriter(shape, "CustomDebugStringConvertible") { writer: SwiftWriter ->
-                CustomDebugStringConvertibleGenerator(symbolProvider, writer, shape, model).render()
+        if (!SerdeUtils.useSchemaBased(settings, model)) {
+            if (shape.hasTrait<SensitiveTrait>() || shape.members().any { it.isSensitive(model) }) {
+                writers.useShapeExtensionWriter(shape, "CustomDebugStringConvertible") { writer: SwiftWriter ->
+                    CustomDebugStringConvertibleGenerator(symbolProvider, writer, shape, model).render()
+                }
             }
         }
     }
@@ -172,14 +178,16 @@ class DirectedSwiftCodegen(val context: PluginContext) :
         val settings = directive.settings()
         val symbolProvider = directive.symbolProvider()
         val writers = context.writerDelegator()
-        writers.useShapeWriter(shape) { writer: SwiftWriter -> IntEnumGenerator(model, symbolProvider, writer, shape.asIntEnumShape().get(), settings).render() }
+        writers.useShapeWriter(
+            shape,
+        ) { writer: SwiftWriter -> IntEnumGenerator(model, symbolProvider, writer, shape.asIntEnumShape().get(), settings).render() }
     }
 
     private fun resolveProtocolGenerator(
         integrations: List<SwiftIntegration>,
         model: Model,
         service: ServiceShape,
-        settings: SwiftSettings
+        settings: SwiftSettings,
     ): ProtocolGenerator? {
         val generators = integrations.flatMap { it.protocolGenerators }.associateBy { it.protocol }
         val serviceIndex = ServiceIndex.of(model)

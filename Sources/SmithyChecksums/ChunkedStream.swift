@@ -5,10 +5,11 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
+import AwsCommonRuntimeKit
+import struct Foundation.Data
+import class Smithy.Context
 import protocol Smithy.Stream
 import struct SmithyHTTPAPI.Headers
-import struct Foundation.Data
-import AwsCommonRuntimeKit
 import class SmithyStreams.BufferedStream
 
 /// Reads data from the input stream, chunks it, and passes it out through its output stream.
@@ -16,6 +17,7 @@ import class SmithyStreams.BufferedStream
 /// URLSessionHTTPClient streams chunked payloads using this stream type.
 /// CRTClientEngine uses only the reader provided by this type to create chunks, then it
 /// streams them itself.
+@_spi(SmithyChecksums)
 public class ChunkedStream: @unchecked Sendable {
     private let inputStream: Stream
     private var signingConfig: SigningConfig
@@ -50,20 +52,21 @@ public class ChunkedStream: @unchecked Sendable {
         signingConfig: SigningConfig,
         previousSignature: String,
         trailingHeaders: Headers,
-        checksumString: String? = nil
+        checksumString: String? = nil,
+        context: Smithy.Context
     ) throws {
         self.inputStream = inputStream
         self.signingConfig = signingConfig
         self.previousSignature = previousSignature
         self.trailingHeaders = trailingHeaders
         self.checksumString = checksumString
-
         self.chunkedReader = try ChunkedReader(
             stream: self.inputStream,
             signingConfig: self.signingConfig,
             previousSignature: self.previousSignature,
             trailingHeaders: self.trailingHeaders,
-            checksumString: self.checksumString
+            checksumString: self.checksumString,
+            context: context
         )
     }
 }

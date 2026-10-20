@@ -20,6 +20,7 @@ import software.amazon.smithy.swift.codegen.shouldSyntacticSanityCheck
 
 class UnionDecodeGeneratorTests {
     var model = javaClass.classLoader.getResource("http-binding-protocol-generator-test.smithy").asSmithy()
+
     private fun newTestContext(): TestContext {
         val settings = model.defaultSettings()
         model = AddOperationShapes.execute(model, settings.getService(model), settings.moduleName)
@@ -27,6 +28,7 @@ class UnionDecodeGeneratorTests {
         model = NeedsReaderWriterTransformer.transform(model, settings.getService(model))
         return model.newTestContext()
     }
+
     val newTestContext = newTestContext()
 
     init {
@@ -37,12 +39,12 @@ class UnionDecodeGeneratorTests {
 
     @Test
     fun `it creates decodable conformance for nested structures`() {
-        Assertions.assertTrue(newTestContext.manifest.hasFile("Sources/example/models/MyUnion+ReadWrite.swift"))
+        Assertions.assertTrue(newTestContext.manifest.hasFile("example/Sources/example/models/MyUnion+ReadWrite.swift"))
     }
 
     @Test
     fun `it decodes a union with various member shape types`() {
-        val contents = getModelFileContents("Sources/example", "MyUnion+ReadWrite.swift", newTestContext.manifest)
+        val contents = getModelFileContents("example/Sources/example", "MyUnion+ReadWrite.swift", newTestContext.manifest)
         contents.shouldSyntacticSanityCheck()
         val expectedContents = """
 extension ExampleClientTypes.MyUnion {

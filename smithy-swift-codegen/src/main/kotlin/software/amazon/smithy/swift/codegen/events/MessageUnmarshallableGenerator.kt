@@ -20,21 +20,21 @@ import software.amazon.smithy.swift.codegen.swiftmodules.SmithyEventStreamsAPITy
 import software.amazon.smithy.swift.codegen.swiftmodules.SmithyHTTPAPITypes
 import software.amazon.smithy.swift.codegen.swiftmodules.SmithyTypes
 import software.amazon.smithy.swift.codegen.swiftmodules.SwiftTypes
-import software.amazon.smithy.swift.codegen.utils.ModelFileUtils
+import software.amazon.smithy.swift.codegen.utils.SDKFileUtils
 
 class MessageUnmarshallableGenerator(
     val ctx: ProtocolGenerator.GenerationContext,
     val customizations: HTTPProtocolCustomizable,
 ) {
-    fun render(
-        streamingMember: MemberShape
-    ) {
+    fun render(streamingMember: MemberShape) {
         val symbol: Symbol = ctx.symbolProvider.toSymbol(ctx.model.expectShape(streamingMember.target))
-        val filename = ModelFileUtils.filename(ctx.settings, "${symbol.name}+MessageUnmarshallable")
-        val streamMember = Symbol.builder()
-            .definitionFile(filename)
-            .name(symbol.name)
-            .build()
+        val filename = SDKFileUtils(ctx.settings).modelFilePath("${symbol.name}+MessageUnmarshallable")
+        val streamMember =
+            Symbol
+                .builder()
+                .definitionFile(filename)
+                .name(symbol.name)
+                .build()
 
         val streamShape = ctx.model.expectShape<UnionShape>(streamingMember.target)
         val streamSymbol = ctx.symbolProvider.toSymbol(streamShape)
@@ -43,7 +43,8 @@ class MessageUnmarshallableGenerator(
 
             writer.openBlock("extension \$L {", "}", streamSymbol.fullName) {
                 writer.openBlock(
-                    "static var unmarshal: \$N<\$N> {", "}",
+                    "static var unmarshal: \$N<\$N> {",
+                    "}",
                     SmithyEventStreamsAPITypes.UnmarshalClosure,
                     streamSymbol,
                 ) {
@@ -60,7 +61,9 @@ class MessageUnmarshallableGenerator(
                             }
                             writer.write("default:")
                             writer.indent {
-                                writer.write("return .sdkUnknown(\"error processing event stream, unrecognized event: \\(params.eventType)\")")
+                                writer.write(
+                                    "return .sdkUnknown(\"error processing event stream, unrecognized event: \\(params.eventType)\")",
+                                )
                             }
                             writer.write("}")
                         }
@@ -70,7 +73,7 @@ class MessageUnmarshallableGenerator(
                                 "let makeError: (\$N, \$N.ExceptionParams) throws -> \$N = { message, params in",
                                 SmithyEventStreamsAPITypes.Message,
                                 SmithyEventStreamsAPITypes.MessageType,
-                                SwiftTypes.Error
+                                SwiftTypes.Error,
                             )
                             writer.indent {
                                 writer.write("switch params.exceptionType {")
@@ -125,7 +128,12 @@ class MessageUnmarshallableGenerator(
         }
     }
 
-    private fun renderDeserializeEventVariant(ctx: ProtocolGenerator.GenerationContext, unionSymbol: Symbol, member: MemberShape, writer: SwiftWriter) {
+    private fun renderDeserializeEventVariant(
+        ctx: ProtocolGenerator.GenerationContext,
+        unionSymbol: Symbol,
+        member: MemberShape,
+        writer: SwiftWriter,
+    ) {
         val variant = ctx.model.expectShape(member.target)
 
         val eventHeaderBindings = variant.members().filter { it.hasTrait<EventHeaderTrait>() }
@@ -143,23 +151,30 @@ class MessageUnmarshallableGenerator(
             eventHeaderBindings.forEach { hdrBinding ->
                 val target = ctx.model.expectShape(hdrBinding.target)
 
-                val conversionFn = when (target.type) {
-                    ShapeType.BOOLEAN -> "bool"
-                    ShapeType.BYTE -> "byte"
-                    ShapeType.SHORT -> "int16"
-                    ShapeType.INTEGER -> "int32"
-                    ShapeType.LONG -> "int64"
-                    ShapeType.BLOB -> "byteArray"
-                    ShapeType.STRING -> "string"
-                    ShapeType.TIMESTAMP -> "timestamp"
-                    else -> throw CodegenException("unsupported eventHeader shape: member=$hdrBinding; targetShape=$target")
-                }
+                val conversionFn =
+                    when (target.type) {
+                        ShapeType.BOOLEAN -> "bool"
+                        ShapeType.BYTE -> "byte"
+                        ShapeType.SHORT -> "int16"
+                        ShapeType.INTEGER, ShapeType.INT_ENUM -> "int32"
+                        ShapeType.LONG -> "int64"
+                        ShapeType.BLOB -> "byteArray"
+                        ShapeType.STRING, ShapeType.ENUM -> "string"
+                        ShapeType.TIMESTAMP -> "timestamp"
+                        else -> throw CodegenException("unsupported eventHeader shape: member=$hdrBinding; targetShape=$target")
+                    }
 
                 writer.openBlock("if case .\$L(let value) = message.headers.value(name: \$S) {", "}", conversionFn, hdrBinding.memberName) {
                     val memberName = ctx.symbolProvider.toMemberName(hdrBinding)
                     when (target.type) {
                         ShapeType.INTEGER, ShapeType.LONG -> {
                             writer.write("event.\$L = Int(value)", memberName)
+                        }
+                        ShapeType.INT_ENUM -> {
+                            writer.write("event.\$L = .init(rawValue: Int(value))", memberName)
+                        }
+                        ShapeType.ENUM -> {
+                            writer.write("event.\$L = .init(rawValue: value)", memberName)
                         }
                         else -> {
                             writer.write("event.\$L = value", memberName)
@@ -200,11 +215,16 @@ class MessageUnmarshallableGenerator(
                 renderReadToValue(writer, member)
                 writer.write("event.\$L = value", ctx.symbolProvider.toMemberName(member))
             }
-            else -> throw CodegenException("unsupported shape type `${target.type}` for target: $target; expected blob, string, structure, or union for eventPayload member: $member")
+            else -> throw CodegenException(
+                "unsupported shape type `${target.type}` for target: $target; expected blob, string, structure, or union for eventPayload member: $member",
+            )
         }
     }
 
-    private fun renderReadToValue(writer: SwiftWriter, memberShape: MemberShape) {
+    private fun renderReadToValue(
+        writer: SwiftWriter,
+        memberShape: MemberShape,
+    ) {
         val readingClosure = ReadingClosureUtils(ctx, writer).readingClosure(memberShape)
         writer.write(
             "let value = try \$N.readFrom(message.payload, with: \$L)",

@@ -3,7 +3,9 @@
  * SPDX-License-Identifier: Apache-2.0.
  */
 
-struct CRTClientEngineConfig {
+import class SmithyHTTPClientAPI.HttpTelemetry
+
+struct CRTClientEngineConfig: Sendable {
 
     /// Max connections the manager can contain per endpoint
     let maxConnectionsPerEndpoint: Int

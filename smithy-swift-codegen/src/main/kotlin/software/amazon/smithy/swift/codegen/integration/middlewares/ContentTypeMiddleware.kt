@@ -13,9 +13,8 @@ class ContentTypeMiddleware(
     val model: Model,
     val symbolProvider: SymbolProvider,
     val defaultContentType: String,
-    val shouldRender: Boolean = false
+    val shouldRender: Boolean = false,
 ) : MiddlewareRenderable {
-
     override val name = "ContentTypeMiddleware"
 
     override fun render(
@@ -33,7 +32,7 @@ class ContentTypeMiddleware(
     override fun renderMiddlewareInit(
         ctx: ProtocolGenerator.GenerationContext,
         writer: SwiftWriter,
-        op: OperationShape
+        op: OperationShape,
     ) {
         val inputShapeName = MiddlewareShapeUtils.inputSymbol(symbolProvider, model, op).name
         val outputShapeName = MiddlewareShapeUtils.outputSymbol(symbolProvider, model, op).name

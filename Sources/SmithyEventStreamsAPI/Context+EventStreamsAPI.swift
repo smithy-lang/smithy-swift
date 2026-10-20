@@ -5,14 +5,14 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
-import class Smithy.Context
 import struct Smithy.AttributeKey
+import class Smithy.Context
 
 public extension Context {
 
     var messageEncoder: MessageEncoder? {
-        get { attributes.get(key: messageEncoderKey) }
-        set { attributes.set(key: messageEncoderKey, value: newValue) }
+        get { get(key: messageEncoderKey) }
+        set { set(key: messageEncoderKey, value: newValue) }
     }
 }
 

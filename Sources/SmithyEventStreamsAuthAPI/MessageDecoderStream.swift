@@ -7,14 +7,14 @@
 
 /// Stream adapter that decodes input data into `Message` objects.
 public protocol MessageDecoderStream: AsyncSequence where Event == Element {
-    associatedtype Event
+    associatedtype Event: Sendable
 }
 
-extension MessageDecoderStream {
+extension MessageDecoderStream where Self: Sendable {
     /// Returns an `AsyncThrowingStream` that decodes input data into `Event` objects.
     public func toAsyncStream() -> AsyncThrowingStream<Event, Error> where Event == Element {
         let stream = AsyncThrowingStream<Event, Error> { continuation in
-            Task {
+            Task { [self] in // explicitly capture self
                 do {
                     for try await event in self {
                         continuation.yield(event)

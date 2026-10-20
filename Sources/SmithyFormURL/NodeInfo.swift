@@ -5,6 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
+@_spi(SmithyReadWrite)
 public struct NodeInfo: Equatable {
 
     /// The name for this FormURL node, or an empty string if none.

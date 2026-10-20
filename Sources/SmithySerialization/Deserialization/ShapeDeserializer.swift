@@ -1,0 +1,94 @@
+//
+// Copyright Amazon.com Inc. or its affiliates.
+// All Rights Reserved.
+//
+// SPDX-License-Identifier: Apache-2.0
+//
+
+import struct Foundation.Data
+import struct Foundation.Date
+import enum Smithy.ByteStream
+@_spi(SchemaBasedSerde)
+import class Smithy.Schema
+import protocol Smithy.SmithyDocument
+
+/// The protocol for a shape deserializer, which converts encoded data into modeled types.
+///
+/// If `null` is encountered while reading to any supported type, the `DecodedNull` error should be thrown back to the caller.
+/// `DecodedNull` may be caught and handled when a null value is to be expected or (at least) tolerated.
+@_spi(SchemaBasedSerde)
+public protocol ShapeDeserializer {
+    func readStruct<T: DeserializableStruct>(_ schema: Schema, _ value: inout T) throws
+    func readList<E>(_ schema: Schema, _ consumer: ReadValueConsumer<E>) throws -> [E]
+    func readMap<V>(_ schema: Schema, _ consumer: ReadValueConsumer<V>) throws -> [String: V]
+    func readBoolean(_ schema: Schema) throws -> Bool
+    func readBlob(_ schema: Schema) throws -> Data
+    func readByte(_ schema: Schema) throws -> Int8
+    func readShort(_ schema: Schema) throws -> Int16
+    func readInteger(_ schema: Schema) throws -> Int32
+    func readLong(_ schema: Schema) throws -> Int64
+    func readFloat(_ schema: Schema) throws -> Float
+    func readDouble(_ schema: Schema) throws -> Double
+    func readBigInteger(_ schema: Schema) throws -> Int64
+    func readBigDecimal(_ schema: Schema) throws -> Double
+    func readString(_ schema: Schema) throws -> String
+    func readDocument(_ schema: Schema) throws -> any SmithyDocument
+    func readTimestamp(_ schema: Schema) throws -> Date
+    func readDataStream(_ schema: Schema) throws -> ByteStream
+    func readEventStream<E: DeserializableStruct & Sendable>(
+        _ schema: Schema
+    ) throws -> AsyncThrowingStream<E, any Error>
+    var containerSize: Int { get }
+
+    var mediaType: String? { get }
+}
+
+@_spi(SchemaBasedSerde)
+public extension ShapeDeserializer {
+
+    func readEnum<T: RawRepresentable>(_ schema: Schema) throws -> T where T.RawValue == String {
+        // Force-unwrap is safe here because generated enums & intEnums never return nil from init(rawValue:)
+        try T(rawValue: readString(schema))!
+    }
+
+    func readIntEnum<T: RawRepresentable>(_ schema: Schema) throws -> T where T.RawValue == Int {
+        // Force-unwrap is safe here because generated enums & intEnums never return nil from init(rawValue:)
+        try T(rawValue: Int(readInteger(schema)))!
+    }
+
+    func readSparseList<E>(_ schema: Schema, _ consumer: ReadValueConsumer<E>) throws -> [E?] {
+        try readList(schema) { deserializer in
+            do {
+                return try consumer(deserializer)
+            } catch is DecodedNull {
+                return nil
+            }
+        }
+    }
+
+    func readSparseMap<V>(_ schema: Schema, _ consumer: ReadValueConsumer<V>) throws -> [String: V?] {
+        try readMap(schema) { deserializer in
+            do {
+                return try consumer(deserializer)
+            } catch is DecodedNull {
+                return nil
+            }
+        }
+    }
+
+    func readDataStream(_ schema: Schema) throws -> ByteStream {
+        // by default, do nothing
+        return ByteStream.data(nil)
+    }
+
+    func readEventStream<E: DeserializableStruct & Sendable>(
+        _ schema: Schema
+    ) throws -> AsyncThrowingStream<E, any Error> {
+        // by default, do nothing
+        return AsyncThrowingStream { continuation in
+            continuation.finish()
+        }
+    }
+
+    var containerSize: Int { -1 }
+}

@@ -9,7 +9,7 @@ import class SmithyHTTPAPI.HTTPRequest
 import class SmithyHTTPAPI.HTTPResponse
 
 /// this class will implement Handler per new middleware implementation
-public class SdkHttpClient: ExecuteRequest {
+public class SdkHttpClient: ExecuteRequest, @unchecked Sendable {
 
     let engine: HTTPClient
 
@@ -25,6 +25,7 @@ public class SdkHttpClient: ExecuteRequest {
         }
     }
 
+    // swiftlint:disable:next unused_declaration
     func send(request: HTTPRequest) async throws -> HTTPResponse {
         return try await engine.send(request: request)
     }

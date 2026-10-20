@@ -23,18 +23,21 @@ import software.amazon.smithy.swift.codegen.createModelFromShapes
 import software.amazon.smithy.swift.codegen.defaultSettings
 
 class EnumGeneratorTests {
-
     @Test
     fun `generates unnamed enums`() {
-
-        val stringShapeWithEnumTrait = createStringWithEnumTrait(
-            EnumDefinition.builder().value("FOO_BAZ@-. XAP - . ").build(),
-            EnumDefinition.builder().value("BAR").documentation("Documentation for BAR").build()
-        )
+        val stringShapeWithEnumTrait =
+            createStringWithEnumTrait(
+                EnumDefinition.builder().value("FOO_BAZ@-. XAP - . ").build(),
+                EnumDefinition
+                    .builder()
+                    .value("BAR")
+                    .documentation("Documentation for BAR")
+                    .build(),
+            )
         val model = createModelFromShapes(stringShapeWithEnumTrait)
         val settings = model.defaultSettings()
         val provider: SymbolProvider = SwiftCodegenPlugin.createSymbolProvider(model, settings)
-        val writer = SwiftWriter("MockPackage")
+        val writer = SwiftWriter("MockPackage", moduleName = settings.moduleName)
 
         val generator = EnumGenerator(model, provider, writer, stringShapeWithEnumTrait, settings)
         generator.render()
@@ -77,23 +80,29 @@ public enum MyEnum: Swift.Sendable, Swift.Equatable, Swift.RawRepresentable, Swi
 
     @Test
     fun `generates named enums`() {
-        val stringShapeWithEnumTrait = createStringWithEnumTrait(
-            EnumDefinition.builder().value("t2.nano").name("T2_NANO").build(),
-            EnumDefinition.builder().value("t2.micro")
-                .name("T2_MICRO")
-                .documentation(
-                    "\"\"\"\n" +
-                        "T2 instances are Burstable Performance\n" +
-                        "Instances that provide a baseline level of CPU\n" +
-                        "performance with the ability to burst above the\n" +
-                        "baseline.\"\"\""
-                )
-                .build()
-        )
+        val stringShapeWithEnumTrait =
+            createStringWithEnumTrait(
+                EnumDefinition
+                    .builder()
+                    .value("t2.nano")
+                    .name("T2_NANO")
+                    .build(),
+                EnumDefinition
+                    .builder()
+                    .value("t2.micro")
+                    .name("T2_MICRO")
+                    .documentation(
+                        "\"\"\"\n" +
+                            "T2 instances are Burstable Performance\n" +
+                            "Instances that provide a baseline level of CPU\n" +
+                            "performance with the ability to burst above the\n" +
+                            "baseline.\"\"\"",
+                    ).build(),
+            )
         val model = createModelFromShapes(stringShapeWithEnumTrait)
         val settings = model.defaultSettings()
         val provider: SymbolProvider = SwiftCodegenPlugin.createSymbolProvider(model, settings)
-        val writer = SwiftWriter("MockPackage")
+        val writer = SwiftWriter("MockPackage", moduleName = settings.moduleName)
 
         val generator = EnumGenerator(model, provider, writer, stringShapeWithEnumTrait, settings)
         generator.render()
@@ -140,8 +149,10 @@ public enum MyEnum: Swift.Sendable, Swift.Equatable, Swift.RawRepresentable, Swi
         val manifest = MockManifest()
         val context = buildMockPluginContext(model, manifest, "smithy.example#Example")
         SwiftCodegenPlugin().execute(context)
-        val suitEnumShape = manifest
-            .getFileString("Sources/example/models/Suit.swift").get()
+        val suitEnumShape =
+            manifest
+                .getFileString("example/Sources/example/models/Suit.swift")
+                .get()
         Assertions.assertNotNull(suitEnumShape)
 
         var expectedGeneratedEnum = """
@@ -189,11 +200,13 @@ extension ExampleClientTypes {
             enumTraitBuilder.addEnum(enumDefinition)
         }
 
-        val shape = StringShape.builder()
-            .id("smithy.example#MyEnum")
-            .addTrait(enumTraitBuilder.build())
-            .addTrait(DocumentationTrait("Really long multi-line\nDocumentation for the enum"))
-            .build()
+        val shape =
+            StringShape
+                .builder()
+                .id("smithy.example#MyEnum")
+                .addTrait(enumTraitBuilder.build())
+                .addTrait(DocumentationTrait("Really long multi-line\nDocumentation for the enum"))
+                .build()
 
         return shape
     }

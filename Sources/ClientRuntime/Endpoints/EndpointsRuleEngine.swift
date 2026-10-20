@@ -4,7 +4,7 @@
 import AwsCommonRuntimeKit
 
 /// Wrapper for CRTAWSEndpointsRuleEngine
-public class EndpointsRuleEngine {
+public final class EndpointsRuleEngine: @unchecked Sendable {
 
     let crtEngine: AwsCommonRuntimeKit.EndpointsRuleEngine
 

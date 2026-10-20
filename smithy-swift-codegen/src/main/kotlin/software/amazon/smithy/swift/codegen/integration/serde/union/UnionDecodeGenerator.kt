@@ -23,11 +23,11 @@ class UnionDecodeGenerator(
     private val members: List<MemberShape>,
     private val writer: SwiftWriter,
 ) : MemberShapeDecodeGenerator(ctx, writer, shapeContainingMembers) {
-
     fun render() {
         val symbol = ctx.symbolProvider.toSymbol(shapeContainingMembers)
         writer.openBlock(
-            "static func read(from reader: \$N) throws -> \$N {", "}",
+            "static func read(from reader: \$N) throws -> \$N {",
+            "}",
             ctx.service.readerSymbol,
             symbol,
         ) {

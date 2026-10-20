@@ -14,9 +14,8 @@ import software.amazon.smithy.swift.codegen.declareSection
 import software.amazon.smithy.swift.codegen.integration.SectionId
 
 class SwiftWriterTests {
-
     @Test fun `writes doc strings`() {
-        val writer = SwiftWriter("MockPackage")
+        val writer = SwiftWriter("MockPackage", moduleName = "TestModule")
         val docs = "This is a big doc string.\nMore."
         writer.writeDocs(docs)
         val result = writer.toString()
@@ -28,7 +27,7 @@ class SwiftWriterTests {
     }
 
     @Test fun `escapes $ in doc strings`() {
-        val writer = SwiftWriter("MockPackage")
+        val writer = SwiftWriter("MockPackage", moduleName = "TestModule")
         val docs = "This is $ valid documentation."
         writer.writeDocs(docs)
         val result = writer.toString()
@@ -36,15 +35,18 @@ class SwiftWriterTests {
     }
 
     object TestSectionId : SectionId {
+        @Suppress("ktlint:standard:property-naming")
         const val a = "a"
     }
+
     object NestedTestSectionId : SectionId {
+        @Suppress("ktlint:standard:property-naming")
         const val a = "a" // intentionally collides with [TestSectionId]
     }
 
     @Test
     fun `it handles overriding stateful sections`() {
-        val unit = SwiftWriter("MockPackage")
+        val unit = SwiftWriter("MockPackage", moduleName = "TestModule")
 
         unit.customizeSection(TestSectionId) { writer, previousValue ->
             val state = writer.getContext(TestSectionId.a)
@@ -58,12 +60,13 @@ class SwiftWriterTests {
         }
         unit.write("// after section")
 
-        val expected = """
+        val expected =
+            """
             // before section
             // original in section
             // section with state 1
             // after section
-        """.trimIndent()
+            """.trimIndent()
         val actual = unit.toString()
 
         actual.shouldContainOnlyOnce(expected)
@@ -71,7 +74,7 @@ class SwiftWriterTests {
 
     @Test
     fun `it handles nested stateful sections`() {
-        val unit = SwiftWriter("MockPackage")
+        val unit = SwiftWriter("MockPackage", moduleName = "TestModule")
 
         unit.customizeSection(TestSectionId) { writer, previousValue ->
             val state = writer.getContext(TestSectionId.a)
@@ -92,18 +95,17 @@ class SwiftWriterTests {
         }
         unit.write("// after section")
 
-        val expected = """
+        val expected =
+            """
             // before section
             // section with state 1
             // nested section with state 2
             // after section
-        """.trimIndent()
+            """.trimIndent()
         val actual = unit.toString()
 
         actual.shouldContainOnlyOnce(expected)
     }
 
-    private fun createSingleLineDocComment(docs: String): String {
-        return "/// " + docs
-    }
+    private fun createSingleLineDocComment(docs: String): String = "/// " + docs
 }

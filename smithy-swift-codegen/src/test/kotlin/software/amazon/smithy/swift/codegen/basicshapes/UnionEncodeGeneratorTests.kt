@@ -22,10 +22,12 @@ import software.amazon.smithy.swift.codegen.shouldSyntacticSanityCheck
 
 class UnionEncodeGeneratorTests {
     var model = javaClass.classLoader.getResource("http-binding-protocol-generator-test.smithy").asSmithy()
+
     private fun newTestContext(): TestContext {
         model = preprocessModel(model)
         return model.newTestContext()
     }
+
     private fun preprocessModel(model: Model): Model {
         val settings = model.defaultSettings()
         var resolvedModel = model
@@ -35,7 +37,9 @@ class UnionEncodeGeneratorTests {
         resolvedModel = NeedsReaderWriterTransformer.transform(resolvedModel, settings.getService(resolvedModel))
         return resolvedModel
     }
+
     val newTestContext = newTestContext()
+
     init {
         newTestContext.generator.generateSerializers(newTestContext.generationCtx)
         newTestContext.generator.generateCodableConformanceForNestedTypes(newTestContext.generationCtx)
@@ -44,17 +48,17 @@ class UnionEncodeGeneratorTests {
 
     @Test
     fun `it creates encodable conformance in correct file`() {
-        Assertions.assertTrue(newTestContext.manifest.hasFile("Sources/example/models/JsonUnionsInput+Write.swift"))
+        Assertions.assertTrue(newTestContext.manifest.hasFile("example/Sources/example/models/JsonUnionsInput+Write.swift"))
     }
 
     @Test
     fun `it creates encodable conformance for nested structures`() {
-        Assertions.assertTrue(newTestContext.manifest.hasFile("Sources/example/models/MyUnion+ReadWrite.swift"))
+        Assertions.assertTrue(newTestContext.manifest.hasFile("example/Sources/example/models/MyUnion+ReadWrite.swift"))
     }
 
     @Test
     fun `it encodes a union member in an operation`() {
-        val contents = getModelFileContents("Sources/example", "JsonUnionsInput+Write.swift", newTestContext.manifest)
+        val contents = getModelFileContents("example/Sources/example", "JsonUnionsInput+Write.swift", newTestContext.manifest)
         contents.shouldSyntacticSanityCheck()
         val expectedContents = """
 extension JsonUnionsInput {
@@ -70,7 +74,7 @@ extension JsonUnionsInput {
 
     @Test
     fun `it encodes a union with various member shape types`() {
-        val contents = getModelFileContents("Sources/example", "MyUnion+ReadWrite.swift", newTestContext.manifest)
+        val contents = getModelFileContents("example/Sources/example", "MyUnion+ReadWrite.swift", newTestContext.manifest)
         contents.shouldSyntacticSanityCheck()
         val expectedContents = """
 extension ExampleClientTypes.MyUnion {
@@ -138,7 +142,7 @@ extension ExampleClientTypes.MyUnion {
 
     @Test
     fun `it generates codable conformance for a recursive union`() {
-        val contents = getModelFileContents("Sources/example", "IndirectEnum+ReadWrite.swift", newTestContext.manifest)
+        val contents = getModelFileContents("example/Sources/example", "IndirectEnum+ReadWrite.swift", newTestContext.manifest)
         contents.shouldSyntacticSanityCheck()
         val expectedContents = """
 extension ExampleClientTypes.IndirectEnum {

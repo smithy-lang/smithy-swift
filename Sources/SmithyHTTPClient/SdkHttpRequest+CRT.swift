@@ -5,11 +5,11 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
-import struct Smithy.URI
-import class SmithyStreams.StreamableHttpBody
-import class SmithyHTTPAPI.HTTPRequest
 import AwsCommonRuntimeKit
+import struct Smithy.URI
+import class SmithyHTTPAPI.HTTPRequest
 
+@_spi(SmithyHTTPClient)
 extension HTTPRequest {
 
     public func toHttpRequest() throws -> AwsCommonRuntimeKit.HTTPRequest {
@@ -40,6 +40,7 @@ extension HTTPRequest {
     }
 }
 
+@_spi(SmithyHTTPClient)
 extension HTTPRequest {
 
     public var isChunked: Bool {

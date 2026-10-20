@@ -3,6 +3,6 @@
  * SPDX-License-Identifier: Apache-2.0.
  */
 
-public protocol IdempotencyTokenGenerator {
+public protocol IdempotencyTokenGenerator: Sendable {
     func generateToken() -> String
 }

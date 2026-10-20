@@ -5,14 +5,14 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
-import enum Smithy.ClientError
-import struct Smithy.Attributes
 import struct Smithy.AttributeKey
+import struct Smithy.Attributes
+import enum Smithy.ClientError
 import class Smithy.Context
 import class SmithyHTTPAPI.HTTPRequestBuilder
-import struct SmithyHTTPAuthAPI.SelectedAuthScheme
+@_spi(SmithyHTTPAuth) import struct SmithyHTTPAuth.DefaultIdentityResolverConfiguration
 import protocol SmithyHTTPAuthAPI.AuthScheme
-import struct SmithyHTTPAuth.DefaultIdentityResolverConfiguration
+import struct SmithyHTTPAuthAPI.SelectedAuthScheme
 
 public struct AuthSchemeMiddleware<OperationStackOutput> {
     public let id: String = "AuthSchemeMiddleware"
@@ -73,7 +73,14 @@ extension AuthSchemeMiddleware: SelectAuthScheme {
                         context: attributes
                     )
                     // Resolve identity using the resolver from auth scheme
-                    let identity = try await identityResolver.getIdentity(identityProperties: option.identityProperties)
+                    var modifiedIdentityProperties = option.identityProperties
+                    modifiedIdentityProperties.set(
+                        key: IdentityPropertyKeys.clientConfigWrapper,
+                        value: ClientConfigurationWrapper(clientConfig: attributes.clientConfig)
+                    )
+                    let identity = try await identityResolver.getIdentity(
+                        identityProperties: modifiedIdentityProperties
+                    )
                     // Save selected auth scheme
                     selectedAuthScheme = SelectedAuthScheme(
                         schemeID: option.schemeID,

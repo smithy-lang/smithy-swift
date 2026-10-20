@@ -7,7 +7,7 @@
 
 import struct SmithyHTTPAPI.Endpoint
 
-public struct StaticEndpointResolver<Params: EndpointsRequestContextProviding> {
+public struct StaticEndpointResolver<Params: EndpointsRequestContextProviding>: Sendable {
 
     private let endpoint: SmithyHTTPAPI.Endpoint
 

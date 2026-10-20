@@ -7,7 +7,10 @@ package software.amazon.smithy.swift.codegen
 
 import software.amazon.smithy.codegen.core.Symbol
 
-abstract class Middleware(private val writer: SwiftWriter, shapeSymbol: Symbol) {
+abstract class Middleware(
+    private val writer: SwiftWriter,
+    shapeSymbol: Symbol,
+) {
     open val id: String get() = typeName
     open val typeName: String = "${shapeSymbol.name}Middleware"
     open val properties: MutableMap<String, Symbol> = mutableMapOf()

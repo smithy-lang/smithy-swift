@@ -12,7 +12,6 @@ import software.amazon.smithy.swift.codegen.integration.ProtocolGenerator
 import software.amazon.smithy.swift.codegen.integration.SwiftIntegration
 
 class DefaultClientConfigurationIntegration : SwiftIntegration {
-    override fun clientConfigurations(ctx: ProtocolGenerator.GenerationContext): List<ClientConfiguration> {
-        return listOf(DefaultClientConfiguration(), DefaultHttpClientConfiguration())
-    }
+    override fun clientConfigurations(ctx: ProtocolGenerator.GenerationContext): List<ClientConfiguration> =
+        listOf(DefaultClientConfiguration(), DefaultHttpClientConfiguration())
 }

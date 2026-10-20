@@ -13,7 +13,7 @@ class MapEncodeXMLGenerationTests {
     @Test
     fun `001 encode map`() {
         val context = setupTests("Isolated/Restxml/xml-maps.smithy", "aws.protocoltests.restxml#RestXml")
-        val contents = getFileContents(context.manifest, "Sources/RestXml/models/XmlMapsInput+Write.swift")
+        val contents = getFileContents(context.manifest, "RestXml/Sources/RestXml/models/XmlMapsInput+Write.swift")
         val expectedContents = """
 extension XmlMapsInput {
 
@@ -29,7 +29,7 @@ extension XmlMapsInput {
     @Test
     fun `002 encode map with name protocol`() {
         val context = setupTests("Isolated/Restxml/xml-maps.smithy", "aws.protocoltests.restxml#RestXml")
-        val contents = getFileContents(context.manifest, "Sources/RestXml/models/XmlMapsWithNameProtocolInput+Write.swift")
+        val contents = getFileContents(context.manifest, "RestXml/Sources/RestXml/models/XmlMapsWithNameProtocolInput+Write.swift")
         val expectedContents = """
 extension XmlMapsWithNameProtocolInput {
 
@@ -45,7 +45,7 @@ extension XmlMapsWithNameProtocolInput {
     @Test
     fun `003 encode nested wrapped map`() {
         val context = setupTests("Isolated/Restxml/xml-maps-nested.smithy", "aws.protocoltests.restxml#RestXml")
-        val contents = getFileContents(context.manifest, "Sources/RestXml/models/XmlMapsNestedInput+Write.swift")
+        val contents = getFileContents(context.manifest, "RestXml/Sources/RestXml/models/XmlMapsNestedInput+Write.swift")
         val expectedContents = """
 extension XmlMapsNestedInput {
 
@@ -61,7 +61,7 @@ extension XmlMapsNestedInput {
     @Test
     fun `004 encode nested nested wrapped map`() {
         val context = setupTests("Isolated/Restxml/xml-maps-nestednested.smithy", "aws.protocoltests.restxml#RestXml")
-        val contents = getFileContents(context.manifest, "Sources/RestXml/models/XmlMapsNestedNestedInput+Write.swift")
+        val contents = getFileContents(context.manifest, "RestXml/Sources/RestXml/models/XmlMapsNestedNestedInput+Write.swift")
         val expectedContents = """
 extension XmlMapsNestedNestedInput {
 
@@ -77,7 +77,7 @@ extension XmlMapsNestedNestedInput {
     @Test
     fun `005 encode flattened map`() {
         val context = setupTests("Isolated/Restxml/xml-maps-flattened.smithy", "aws.protocoltests.restxml#RestXml")
-        val contents = getFileContents(context.manifest, "Sources/RestXml/models/XmlFlattenedMapsInput+Write.swift")
+        val contents = getFileContents(context.manifest, "RestXml/Sources/RestXml/models/XmlFlattenedMapsInput+Write.swift")
         val expectedContents = """
 extension XmlFlattenedMapsInput {
 
@@ -93,7 +93,7 @@ extension XmlFlattenedMapsInput {
     @Test
     fun `006 encode flattened nested map`() {
         val context = setupTests("Isolated/Restxml/xml-maps-flattened-nested.smithy", "aws.protocoltests.restxml#RestXml")
-        val contents = getFileContents(context.manifest, "Sources/RestXml/models/XmlMapsFlattenedNestedInput+Write.swift")
+        val contents = getFileContents(context.manifest, "RestXml/Sources/RestXml/models/XmlMapsFlattenedNestedInput+Write.swift")
         val expectedContents = """
 extension XmlMapsFlattenedNestedInput {
 
@@ -109,7 +109,7 @@ extension XmlMapsFlattenedNestedInput {
     @Test
     fun `007 encode map with xmlname`() {
         val context = setupTests("Isolated/Restxml/xml-maps-xmlname.smithy", "aws.protocoltests.restxml#RestXml")
-        val contents = getFileContents(context.manifest, "Sources/RestXml/models/XmlMapsXmlNameInput+Write.swift")
+        val contents = getFileContents(context.manifest, "RestXml/Sources/RestXml/models/XmlMapsXmlNameInput+Write.swift")
         val expectedContents = """
 extension XmlMapsXmlNameInput {
 
@@ -125,7 +125,7 @@ extension XmlMapsXmlNameInput {
     @Test
     fun `008 encode map with xmlname flattened`() {
         val context = setupTests("Isolated/Restxml/xml-maps-xmlname-flattened.smithy", "aws.protocoltests.restxml#RestXml")
-        val contents = getFileContents(context.manifest, "Sources/RestXml/models/XmlMapsXmlNameFlattenedInput+Write.swift")
+        val contents = getFileContents(context.manifest, "RestXml/Sources/RestXml/models/XmlMapsXmlNameFlattenedInput+Write.swift")
         val expectedContents = """
 extension XmlMapsXmlNameFlattenedInput {
 
@@ -141,7 +141,7 @@ extension XmlMapsXmlNameFlattenedInput {
     @Test
     fun `009 encode map with xmlname nested`() {
         val context = setupTests("Isolated/Restxml/xml-maps-xmlname-nested.smithy", "aws.protocoltests.restxml#RestXml")
-        val contents = getFileContents(context.manifest, "Sources/RestXml/models/XmlMapsXmlNameNestedInput+Write.swift")
+        val contents = getFileContents(context.manifest, "RestXml/Sources/RestXml/models/XmlMapsXmlNameNestedInput+Write.swift")
         val expectedContents = """
 extension XmlMapsXmlNameNestedInput {
 
@@ -157,7 +157,7 @@ extension XmlMapsXmlNameNestedInput {
     @Test
     fun `010 encode flattened nested map with xmlname`() {
         val context = setupTests("Isolated/Restxml/xml-maps-flattened-nested-xmlname.smithy", "aws.protocoltests.restxml#RestXml")
-        val contents = getFileContents(context.manifest, "Sources/RestXml/models/XmlMapsFlattenedNestedXmlNameInput+Write.swift")
+        val contents = getFileContents(context.manifest, "RestXml/Sources/RestXml/models/XmlMapsFlattenedNestedXmlNameInput+Write.swift")
         val expectedContents = """
 extension XmlMapsFlattenedNestedXmlNameInput {
 
@@ -173,7 +173,7 @@ extension XmlMapsFlattenedNestedXmlNameInput {
     @Test
     fun `011 encode map with xmlnamespace`() {
         val context = setupTests("Isolated/Restxml/xml-maps-namespace.smithy", "aws.protocoltests.restxml#RestXml")
-        val contents = getFileContents(context.manifest, "Sources/RestXml/models/XmlMapsXmlNamespaceInput+Write.swift")
+        val contents = getFileContents(context.manifest, "RestXml/Sources/RestXml/models/XmlMapsXmlNamespaceInput+Write.swift")
         val expectedContents = """
 extension XmlMapsXmlNamespaceInput {
 
@@ -185,10 +185,11 @@ extension XmlMapsXmlNamespaceInput {
 """
         contents.shouldContainOnlyOnce(expectedContents)
     }
+
     @Test
     fun `012 encode flattened map xmlnamespace`() {
         val context = setupTests("Isolated/Restxml/xml-maps-flattened-namespace.smithy", "aws.protocoltests.restxml#RestXml")
-        val contents = getFileContents(context.manifest, "Sources/RestXml/models/XmlMapsFlattenedXmlNamespaceInput+Write.swift")
+        val contents = getFileContents(context.manifest, "RestXml/Sources/RestXml/models/XmlMapsFlattenedXmlNamespaceInput+Write.swift")
         val expectedContents = """
 extension XmlMapsFlattenedXmlNamespaceInput {
 
@@ -204,7 +205,7 @@ extension XmlMapsFlattenedXmlNamespaceInput {
     @Test
     fun `013 encode nested map with xmlnamespace`() {
         val context = setupTests("Isolated/Restxml/xml-maps-nested-namespace.smithy", "aws.protocoltests.restxml#RestXml")
-        val contents = getFileContents(context.manifest, "Sources/RestXml/models/XmlMapsNestedXmlNamespaceInput+Write.swift")
+        val contents = getFileContents(context.manifest, "RestXml/Sources/RestXml/models/XmlMapsNestedXmlNamespaceInput+Write.swift")
         val expectedContents = """
 extension XmlMapsNestedXmlNamespaceInput {
 
@@ -216,10 +217,12 @@ extension XmlMapsNestedXmlNamespaceInput {
 """
         contents.shouldContainOnlyOnce(expectedContents)
     }
+
     @Test
     fun `014 encode nested flattened map with xmlnamespace`() {
         val context = setupTests("Isolated/Restxml/xml-maps-flattened-nested-namespace.smithy", "aws.protocoltests.restxml#RestXml")
-        val contents = getFileContents(context.manifest, "Sources/RestXml/models/XmlMapsFlattenedNestedXmlNamespaceInput+Write.swift")
+        val contents =
+            getFileContents(context.manifest, "RestXml/Sources/RestXml/models/XmlMapsFlattenedNestedXmlNamespaceInput+Write.swift")
         val expectedContents = """
 extension XmlMapsFlattenedNestedXmlNamespaceInput {
 
@@ -231,10 +234,11 @@ extension XmlMapsFlattenedNestedXmlNamespaceInput {
 """
         contents.shouldContainOnlyOnce(expectedContents)
     }
+
     @Test
     fun `015 encode map containing list`() {
         val context = setupTests("Isolated/Restxml/xml-maps-contain-list.smithy", "aws.protocoltests.restxml#RestXml")
-        val contents = getFileContents(context.manifest, "Sources/RestXml/models/XmlMapsContainListInput+Write.swift")
+        val contents = getFileContents(context.manifest, "RestXml/Sources/RestXml/models/XmlMapsContainListInput+Write.swift")
         val expectedContents = """
 extension XmlMapsContainListInput {
 
@@ -246,10 +250,11 @@ extension XmlMapsContainListInput {
 """
         contents.shouldContainOnlyOnce(expectedContents)
     }
+
     @Test
     fun `016 encode flattened map containing list`() {
         val context = setupTests("Isolated/Restxml/xml-maps-flattened-contain-list.smithy", "aws.protocoltests.restxml#RestXml")
-        val contents = getFileContents(context.manifest, "Sources/RestXml/models/XmlMapsFlattenedContainListInput+Write.swift")
+        val contents = getFileContents(context.manifest, "RestXml/Sources/RestXml/models/XmlMapsFlattenedContainListInput+Write.swift")
         val expectedContents = """
 extension XmlMapsFlattenedContainListInput {
 
@@ -261,10 +266,11 @@ extension XmlMapsFlattenedContainListInput {
 """
         contents.shouldContainOnlyOnce(expectedContents)
     }
+
     @Test
     fun `017 encode map containing timestamp`() {
         val context = setupTests("Isolated/Restxml/xml-maps-timestamp.smithy", "aws.protocoltests.restxml#RestXml")
-        val contents = getFileContents(context.manifest, "Sources/RestXml/models/XmlMapsTimestampsInput+Write.swift")
+        val contents = getFileContents(context.manifest, "RestXml/Sources/RestXml/models/XmlMapsTimestampsInput+Write.swift")
         val expectedContents = """
 extension XmlMapsTimestampsInput {
 
@@ -280,7 +286,7 @@ extension XmlMapsTimestampsInput {
     @Test
     fun `017 encode flattened map containing timestamp`() {
         val context = setupTests("Isolated/Restxml/xml-maps-flattened-timestamp.smithy", "aws.protocoltests.restxml#RestXml")
-        val contents = getFileContents(context.manifest, "Sources/RestXml/models/XmlMapsFlattenedTimestampsInput+Write.swift")
+        val contents = getFileContents(context.manifest, "RestXml/Sources/RestXml/models/XmlMapsFlattenedTimestampsInput+Write.swift")
         val expectedContents = """
 extension XmlMapsFlattenedTimestampsInput {
 
@@ -296,7 +302,7 @@ extension XmlMapsFlattenedTimestampsInput {
     @Test
     fun `018 encode fooenumMap`() {
         val context = setupTests("Isolated/Restxml/xml-maps-nested-fooenum.smithy", "aws.protocoltests.restxml#RestXml")
-        val contents = getFileContents(context.manifest, "Sources/RestXml/models/NestedXmlMapsInput+Write.swift")
+        val contents = getFileContents(context.manifest, "RestXml/Sources/RestXml/models/NestedXmlMapsInput+Write.swift")
         val expectedContents = """
 extension NestedXmlMapsInput {
 

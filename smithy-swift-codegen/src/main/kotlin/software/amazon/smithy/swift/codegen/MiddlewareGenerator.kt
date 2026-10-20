@@ -22,7 +22,7 @@ public struct {name}Middleware {
  */
 class MiddlewareGenerator(
     private val writer: SwiftWriter,
-    private val middleware: Middleware
+    private val middleware: Middleware,
 ) {
     fun generate() {
         writer.openBlock("public struct \$L {", "}", middleware.typeName) {

@@ -5,13 +5,14 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
+import struct Foundation.Data
 import Smithy
 import SmithyEventStreamsAPI
 import SmithyEventStreamsAuthAPI
-import struct Foundation.Data
 
 /// Stream adapter that decodes input data into `EventStream.Message` objects.
-public struct DefaultMessageDecoderStream<Event>: MessageDecoderStream {
+@_spi(SmithyEventStreams)
+public struct DefaultMessageDecoderStream<Event: Sendable>: MessageDecoderStream, Sendable {
     public typealias Element = Event
 
     let stream: ReadableStream

@@ -7,6 +7,7 @@ package software.amazon.smithy.swift.codegen
 import software.amazon.smithy.aws.traits.protocols.AwsJson1_0Trait
 import software.amazon.smithy.aws.traits.protocols.AwsJson1_1Trait
 import software.amazon.smithy.model.shapes.ShapeId
+import software.amazon.smithy.protocol.traits.Rpcv2CborTrait
 import software.amazon.smithy.swift.codegen.lang.reservedWords
 import software.amazon.smithy.utils.CaseUtils
 
@@ -17,7 +18,11 @@ fun String.removeSurroundingBackticks() = removeSurrounding("`", "`")
  * Uses either name or value attributes of EnumDefinition in that order and formats
  * them to camelCase after removing chars except alphanumeric, space and underscore.
  */
-fun swiftEnumCaseName(name: String?, value: String, shouldBeEscaped: Boolean = true): String {
+fun swiftEnumCaseName(
+    name: String?,
+    value: String,
+    shouldBeEscaped: Boolean = true,
+): String {
     val resolvedName = name ?: value
     var enumCaseName = CaseUtils.toCamelCase(resolvedName.replace(Regex("[^a-zA-Z0-9_ -]"), ""))
     if (!SwiftSymbolProvider.isValidSwiftIdentifier(enumCaseName)) {
@@ -31,6 +36,9 @@ fun swiftEnumCaseName(name: String?, value: String, shouldBeEscaped: Boolean = t
     return enumCaseName
 }
 
-fun supportsStreamingAndIsRPC(protocolID: ShapeId): Boolean {
-    return arrayOf(AwsJson1_0Trait.ID, AwsJson1_1Trait.ID).contains(protocolID)
-}
+fun supportsStreamingAndIsRPC(protocolID: ShapeId): Boolean =
+    arrayOf(
+        AwsJson1_0Trait.ID,
+        AwsJson1_1Trait.ID,
+        Rpcv2CborTrait.ID,
+    ).contains(protocolID)

@@ -15,11 +15,12 @@ object SmithyTimestampsTypes {
 
 private fun runtimeSymbol(
     name: String,
-    declaration: SwiftDeclaration
-): Symbol = SwiftSymbol.make(
-    name,
-    declaration,
-    SwiftDependency.SMITHY_TIMESTAMPS,
-    emptyList(),
-    listOf("SmithyTimestamps"),
-)
+    declaration: SwiftDeclaration,
+): Symbol =
+    SwiftSymbol.make(
+        name,
+        declaration,
+        SwiftDependency.SMITHY_TIMESTAMPS,
+        emptyList(),
+        listOf("SmithyTimestamps"),
+    )

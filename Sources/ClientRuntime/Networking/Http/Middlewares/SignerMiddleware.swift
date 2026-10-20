@@ -5,12 +5,11 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
-import class Smithy.Context
+import struct Smithy.AttributeKey
 import enum Smithy.ClientError
-import Foundation
+import class Smithy.Context
 import SmithyHTTPAPI
 import SmithyHTTPAuthAPI
-import struct Smithy.AttributeKey
 
 public struct SignerMiddleware<OperationStackOutput> {
     public let id: String = "SignerMiddleware"
@@ -50,11 +49,22 @@ extension SignerMiddleware: ApplySigner {
             )
         }
 
-        // Check if CRT should be provided a pre-computed Sha256 SignedBodyValue
         var updatedSigningProperties = signingProperties
+
+        // Look up & apply any applicable clock skew for this request
+        if let clockSkew = await ClockSkewStore.shared.clockSkew(host: request.host) {
+            updatedSigningProperties.set(key: AttributeKey(name: "ClockSkew"), value: clockSkew)
+        }
+
+        // Check if CRT should be provided a pre-computed Sha256 SignedBodyValue
         let sha256: String? = attributes.get(key: AttributeKey(name: "X-Amz-Content-Sha256"))
         if let bodyValue = sha256 {
             updatedSigningProperties.set(key: AttributeKey(name: "SignedBodyValue"), value: bodyValue)
+        }
+
+        if case .stream(let stream) = request.body, stream.isEligibleForChunkedStreaming {
+            // Pass in context object via signing properties to reuse final checksum value in chunked streaming.
+            updatedSigningProperties.set(key: AttributeKey(name: "Context"), value: attributes)
         }
 
         let signed = try await signer.signRequest(

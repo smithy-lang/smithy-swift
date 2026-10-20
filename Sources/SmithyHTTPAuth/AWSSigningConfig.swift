@@ -5,19 +5,19 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
-import class SmithyIdentity.CRTAWSCredentialIdentity
-import enum SmithyHTTPAuthAPI.SigningAlgorithm
-import enum SmithyHTTPAuthAPI.AWSSignedBodyHeader
-import enum SmithyHTTPAuthAPI.AWSSignedBodyValue
-import enum SmithyHTTPAuthAPI.AWSSignatureType
-import protocol SmithyIdentity.AWSCredentialIdentityResolver
 import struct Foundation.Date
 import struct Foundation.Locale
 import struct Foundation.TimeInterval
+import enum SmithyHTTPAuthAPI.AWSSignatureType
+import enum SmithyHTTPAuthAPI.AWSSignedBodyHeader
+import enum SmithyHTTPAuthAPI.AWSSignedBodyValue
+import enum SmithyHTTPAuthAPI.SigningAlgorithm
 import struct SmithyHTTPAuthAPI.SigningFlags
 import struct SmithyIdentity.AWSCredentialIdentity
+import protocol SmithyIdentity.AWSCredentialIdentityResolver
+@_spi(SmithyIdentity) import class SmithyIdentity.CRTAWSCredentialIdentity
 
-public struct AWSSigningConfig {
+public struct AWSSigningConfig: Sendable {
     public let credentials: AWSCredentialIdentity?
     public let awsCredentialIdentityResolver: (any AWSCredentialIdentityResolver)?
     public let expiration: TimeInterval
@@ -27,7 +27,7 @@ public struct AWSSigningConfig {
     public let date: Date
     public let service: String
     public let region: String
-    public let shouldSignHeader: ((String) -> Bool)?
+    public let shouldSignHeader: (@Sendable (String) -> Bool)?
     public let signatureType: AWSSignatureType
     public let signingAlgorithm: SigningAlgorithm
 
@@ -41,7 +41,7 @@ public struct AWSSigningConfig {
         date: Date,
         service: String,
         region: String,
-        shouldSignHeader: ((String) -> Bool)? = nil,
+        shouldSignHeader: (@Sendable (String) -> Bool)? = nil,
         signatureType: AWSSignatureType,
         signingAlgorithm: SigningAlgorithm
     ) {

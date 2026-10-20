@@ -16,6 +16,6 @@ interface HttpProtocolClientGeneratorFactory {
         serviceName: String,
         defaultContentType: String,
         httpProtocolCustomizable: HTTPProtocolCustomizable,
-        operationMiddleware: OperationMiddleware
+        operationMiddleware: OperationMiddleware,
     ): HttpProtocolClientGenerator
 }

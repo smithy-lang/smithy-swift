@@ -5,12 +5,13 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
+import struct Foundation.Data
 import Smithy
 import SmithyEventStreamsAPI
 import SmithyEventStreamsAuthAPI
-import struct Foundation.Data
 
 /// Stream adapter that encodes input into `Data` objects.
+@_spi(SmithyEventStreams)
 public class DefaultMessageEncoderStream<Event>: MessageEncoderStream, Stream, @unchecked Sendable {
 
     let stream: AsyncThrowingStream<Event, Error>

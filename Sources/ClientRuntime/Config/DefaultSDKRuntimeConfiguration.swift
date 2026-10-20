@@ -5,17 +5,18 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
+import enum Smithy.ClientError
 import class Smithy.Context
 import protocol SmithyHTTPAPI.HTTPClient
-import enum Smithy.ClientError
 import struct SmithyHTTPAuthAPI.AuthOption
 import protocol SmithyHTTPAuthAPI.AuthSchemeResolver
 import protocol SmithyHTTPAuthAPI.AuthSchemeResolverParameters
-import protocol SmithyRetriesAPI.RetryStrategy
-import protocol SmithyRetriesAPI.RetryErrorInfoProvider
-import struct SmithyRetriesAPI.RetryStrategyOptions
 import struct SmithyRetries.DefaultRetryStrategy
 import struct SmithyRetries.ExponentialBackoffStrategy
+import protocol SmithyRetriesAPI.RetryErrorInfoProvider
+import protocol SmithyRetriesAPI.RetryStrategy
+import struct SmithyRetriesAPI.RetryStrategyOptions
+import SmithyTelemetryAPI
 
 public struct DefaultSDKRuntimeConfiguration<DefaultSDKRuntimeRetryStrategy: RetryStrategy,
     DefaultSDKRuntimeRetryErrorInfoProvider: RetryErrorInfoProvider> {
@@ -28,7 +29,8 @@ public struct DefaultSDKRuntimeConfiguration<DefaultSDKRuntimeRetryStrategy: Ret
 
     /// The HTTP client to use for HTTP connections.
     ///
-    /// By default, Swift SDK will set this to `CRTClientEngine` client on Linux platforms, and `URLSessionHttpClient` on Apple platforms.
+    /// By default, Swift SDK will set this to `CRTClientEngine` client on Linux platforms, and
+    /// `URLSessionHttpClient` on Apple platforms.
     public var httpClientEngine: HTTPClient
 
     /// The HTTP client configuration.
@@ -97,10 +99,11 @@ public extension DefaultSDKRuntimeConfiguration {
         let connectTimeoutMs = httpClientConfiguration.connectTimeout.map { UInt32($0 * 1000) }
         let socketTimeout = UInt32(httpClientConfiguration.socketTimeout)
         let config = CRTClientEngineConfig(
+            maxConnectionsPerEndpoint: httpClientConfiguration.maxConnections,
             telemetry: httpClientConfiguration.telemetry ?? CRTClientEngine.noOpCrtClientEngineTelemetry,
-          connectTimeoutMs: connectTimeoutMs,
-          crtTlsOptions: httpClientConfiguration.tlsConfiguration as? CRTClientTLSOptions,
-          socketTimeout: socketTimeout
+            connectTimeoutMs: connectTimeoutMs,
+            crtTlsOptions: httpClientConfiguration.tlsConfiguration as? CRTClientTLSOptions,
+            socketTimeout: socketTimeout
         )
         return CRTClientEngine(config: config)
         #endif
@@ -112,7 +115,8 @@ public extension DefaultSDKRuntimeConfiguration {
     /// The default idempotency token generator that returns UUIDs.
     static var defaultIdempotencyTokenGenerator: IdempotencyTokenGenerator { DefaultIdempotencyTokenGenerator() }
 
-    /// The default retry strategy options with the exponential backoff strategy & other defaults defined in `RetryStrategyOptions`.
+    /// The default retry strategy options with the exponential backoff strategy & other defaults
+    /// defined in `RetryStrategyOptions`.
     static var defaultRetryStrategyOptions: RetryStrategyOptions {
         RetryStrategyOptions(backoffStrategy: ExponentialBackoffStrategy())
     }
@@ -130,7 +134,7 @@ public class DefaultAuthSchemeResolverParameters: AuthSchemeResolverParameters {
     }
 }
 
-public class DefaultAuthSchemeResolver: AuthSchemeResolver {
+public final class DefaultAuthSchemeResolver: AuthSchemeResolver, Sendable {
     public func resolveAuthScheme(params: AuthSchemeResolverParameters) throws -> [AuthOption] {
         return []
     }

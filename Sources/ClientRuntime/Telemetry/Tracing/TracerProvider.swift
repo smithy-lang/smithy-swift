@@ -5,15 +5,8 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
-import struct Smithy.Attributes
+import SmithyTelemetryAPI
 
-/// A Tracer Provider provides implementations of Tracers.
-public protocol TracerProvider: Sendable {
-
-    /// Gets a scoped Tracer.
-    ///
-    /// - Parameter scope: the unique scope of the Tracer
-    /// - Parameter attributes: instrumentation scope attributes
-    /// - Returns: a Tracer
-    func getTracer(scope: String, attributes: Attributes?) -> Tracer
-}
+/// Typealias for backward compatibility.
+/// The actual implementation is now in SmithyTelemetryAPI.
+public typealias TracerProvider = SmithyTelemetryAPI.TracerProvider

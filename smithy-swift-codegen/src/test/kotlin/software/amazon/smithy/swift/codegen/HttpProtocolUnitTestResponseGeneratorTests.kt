@@ -11,6 +11,7 @@ import software.amazon.smithy.swift.codegen.model.AddOperationShapes
 
 open class HttpProtocolUnitTestResponseGeneratorTests {
     var model = javaClass.classLoader.getResource("http-binding-protocol-generator-test.smithy").asSmithy()
+
     private fun newTestContext(): TestContext {
         val settings = model.defaultSettings()
         model = AddOperationShapes.execute(model, settings.getService(model), settings.moduleName)
@@ -26,10 +27,10 @@ open class HttpProtocolUnitTestResponseGeneratorTests {
 
     @Test
     fun `it creates smoke test response test`() {
-        val contents = getTestFileContents("Tests/example", "SmokeTestResponseTest.swift", ctx.manifest)
+        val contents = getTestFileContents("example/Tests/example", "SmokeTestResponseTest.swift", ctx.manifest)
         contents.shouldSyntacticSanityCheck()
         val expectedContents = """
-    func testSmokeTest() async throws {
+    func test_SmokeTest() async throws {
         guard let httpResponse = buildHttpResponse(
             code: 200,
             headers: [
@@ -37,7 +38,7 @@ open class HttpProtocolUnitTestResponseGeneratorTests {
                 "X-Int": "1",
                 "X-String": "Hello"
             ],
-            content: .data(Data(""${'"'}
+            content: .data(Data(#""${'"'}
             {
               "payload1": "explicit string",
               "payload2": 1,
@@ -47,13 +48,28 @@ open class HttpProtocolUnitTestResponseGeneratorTests {
               }
             }
 
-            ""${'"'}.utf8))
+            ""${'"'}#.utf8))
         ) else {
             XCTFail("Something is wrong with the created http response")
             return
         }
 
-        let actual: SmokeTestOutput = try await SmokeTestOutput.httpOutput(from:)(httpResponse)
+        let config = try await ExampleClient.ExampleClientConfig(
+            awsCredentialIdentityResolver: try SmithyTestUtil.dummyIdentityResolver(),
+            region: "us-west-2",
+            signingRegion: "us-west-2",
+            endpointResolver: example.StaticEndpointResolver(endpoint: try SmithyHTTPAPI.Endpoint(
+                urlString: "https://example.com"
+            )),
+            retryStrategyOptions: SmithyTestUtil.ProtocolTestRetryStrategyOptions.make(),
+            httpClientEngine: ProtocolResponseTestClient(httpResponse: httpResponse)
+        )
+
+        let client = ExampleClient(config: config)
+
+        let input = SmokeTestInput(label1: "test")
+
+        let actual = try await client.smokeTest(input: input)
 
         let expected = SmokeTestOutput(
             boolHeader: false,
@@ -76,10 +92,10 @@ open class HttpProtocolUnitTestResponseGeneratorTests {
 
     @Test
     fun `it creates unit test with prefixHeader and empty body`() {
-        val contents = getTestFileContents("Tests/example", "HttpPrefixHeadersResponseTest.swift", ctx.manifest)
+        val contents = getTestFileContents("example/Tests/example", "HttpPrefixHeadersResponseTest.swift", ctx.manifest)
         contents.shouldSyntacticSanityCheck()
         val expectedContents = """
-    func testRestJsonHttpPrefixHeadersPresent() async throws {
+    func test_RestJsonHttpPrefixHeadersPresent() async throws {
         guard let httpResponse = buildHttpResponse(
             code: 200,
             headers: [
@@ -93,7 +109,22 @@ open class HttpProtocolUnitTestResponseGeneratorTests {
             return
         }
 
-        let actual: HttpPrefixHeadersOutput = try await HttpPrefixHeadersOutput.httpOutput(from:)(httpResponse)
+        let config = try await ExampleClient.ExampleClientConfig(
+            awsCredentialIdentityResolver: try SmithyTestUtil.dummyIdentityResolver(),
+            region: "us-west-2",
+            signingRegion: "us-west-2",
+            endpointResolver: example.StaticEndpointResolver(endpoint: try SmithyHTTPAPI.Endpoint(
+                urlString: "https://example.com"
+            )),
+            retryStrategyOptions: SmithyTestUtil.ProtocolTestRetryStrategyOptions.make(),
+            httpClientEngine: ProtocolResponseTestClient(httpResponse: httpResponse)
+        )
+
+        let client = ExampleClient(config: config)
+
+        let input = HttpPrefixHeadersInput()
+
+        let actual = try await client.httpPrefixHeaders(input: input)
 
         let expected = HttpPrefixHeadersOutput(
             foo: "Foo",
@@ -112,10 +143,10 @@ open class HttpProtocolUnitTestResponseGeneratorTests {
 
     @Test
     fun `it creates unit test with non-existent prefixHeader`() {
-        val contents = getTestFileContents("Tests/example", "HttpPrefixHeadersResponseTest.swift", ctx.manifest)
+        val contents = getTestFileContents("example/Tests/example", "HttpPrefixHeadersResponseTest.swift", ctx.manifest)
         contents.shouldSyntacticSanityCheck()
         val expectedContents = """
-    func testRestJsonHttpPrefixHeadersAreNotPresent() async throws {
+    func test_RestJsonHttpPrefixHeadersAreNotPresent() async throws {
         guard let httpResponse = buildHttpResponse(
             code: 200,
             headers: [
@@ -127,7 +158,22 @@ open class HttpProtocolUnitTestResponseGeneratorTests {
             return
         }
 
-        let actual: HttpPrefixHeadersOutput = try await HttpPrefixHeadersOutput.httpOutput(from:)(httpResponse)
+        let config = try await ExampleClient.ExampleClientConfig(
+            awsCredentialIdentityResolver: try SmithyTestUtil.dummyIdentityResolver(),
+            region: "us-west-2",
+            signingRegion: "us-west-2",
+            endpointResolver: example.StaticEndpointResolver(endpoint: try SmithyHTTPAPI.Endpoint(
+                urlString: "https://example.com"
+            )),
+            retryStrategyOptions: SmithyTestUtil.ProtocolTestRetryStrategyOptions.make(),
+            httpClientEngine: ProtocolResponseTestClient(httpResponse: httpResponse)
+        )
+
+        let client = ExampleClient(config: config)
+
+        let input = HttpPrefixHeadersInput()
+
+        let actual = try await client.httpPrefixHeaders(input: input)
 
         let expected = HttpPrefixHeadersOutput(
             foo: "Foo"
@@ -142,28 +188,43 @@ open class HttpProtocolUnitTestResponseGeneratorTests {
 
     @Test
     fun `it creates a unit test for union shapes`() {
-        val contents = getTestFileContents("Tests/example", "JsonUnionsResponseTest.swift", ctx.manifest)
+        val contents = getTestFileContents("example/Tests/example", "JsonUnionsResponseTest.swift", ctx.manifest)
         contents.shouldSyntacticSanityCheck()
         val expectedContents = """
-    func testRestJsonDeserializeStringUnionValue() async throws {
+    func test_RestJsonDeserializeStringUnionValue() async throws {
         guard let httpResponse = buildHttpResponse(
             code: 200,
             headers: [
                 "Content-Type": "application/json"
             ],
-            content: .data(Data(""${'"'}
+            content: .data(Data(#""${'"'}
             {
                 "contents": {
                     "stringValue": "foo"
                 }
             }
-            ""${'"'}.utf8))
+            ""${'"'}#.utf8))
         ) else {
             XCTFail("Something is wrong with the created http response")
             return
         }
 
-        let actual: JsonUnionsOutput = try await JsonUnionsOutput.httpOutput(from:)(httpResponse)
+        let config = try await ExampleClient.ExampleClientConfig(
+            awsCredentialIdentityResolver: try SmithyTestUtil.dummyIdentityResolver(),
+            region: "us-west-2",
+            signingRegion: "us-west-2",
+            endpointResolver: example.StaticEndpointResolver(endpoint: try SmithyHTTPAPI.Endpoint(
+                urlString: "https://example.com"
+            )),
+            retryStrategyOptions: SmithyTestUtil.ProtocolTestRetryStrategyOptions.make(),
+            httpClientEngine: ProtocolResponseTestClient(httpResponse: httpResponse)
+        )
+
+        let client = ExampleClient(config: config)
+
+        let input = JsonUnionsInput()
+
+        let actual = try await client.jsonUnions(input: input)
 
         let expected = JsonUnionsOutput(
             contents: MyUnion.stringvalue("foo")
@@ -179,16 +240,16 @@ open class HttpProtocolUnitTestResponseGeneratorTests {
 
     @Test
     fun `it creates a unit test for recursive shapes`() {
-        val contents = getTestFileContents("Tests/example", "RecursiveShapesResponseTest.swift", ctx.manifest)
+        val contents = getTestFileContents("example/Tests/example", "RecursiveShapesResponseTest.swift", ctx.manifest)
         contents.shouldSyntacticSanityCheck()
         val expectedContents = """
-    func testRestJsonRecursiveShapes() async throws {
+    func test_RestJsonRecursiveShapes() async throws {
         guard let httpResponse = buildHttpResponse(
             code: 200,
             headers: [
                 "Content-Type": "application/json"
             ],
-            content: .data(Data(""${'"'}
+            content: .data(Data(#""${'"'}
             {
                 "nested": {
                     "foo": "Foo1",
@@ -203,13 +264,28 @@ open class HttpProtocolUnitTestResponseGeneratorTests {
                     }
                 }
             }
-            ""${'"'}.utf8))
+            ""${'"'}#.utf8))
         ) else {
             XCTFail("Something is wrong with the created http response")
             return
         }
 
-        let actual: RecursiveShapesOutput = try await RecursiveShapesOutput.httpOutput(from:)(httpResponse)
+        let config = try await ExampleClient.ExampleClientConfig(
+            awsCredentialIdentityResolver: try SmithyTestUtil.dummyIdentityResolver(),
+            region: "us-west-2",
+            signingRegion: "us-west-2",
+            endpointResolver: example.StaticEndpointResolver(endpoint: try SmithyHTTPAPI.Endpoint(
+                urlString: "https://example.com"
+            )),
+            retryStrategyOptions: SmithyTestUtil.ProtocolTestRetryStrategyOptions.make(),
+            httpClientEngine: ProtocolResponseTestClient(httpResponse: httpResponse)
+        )
+
+        let client = ExampleClient(config: config)
+
+        let input = RecursiveShapesInput()
+
+        let actual = try await client.recursiveShapes(input: input)
 
         let expected = RecursiveShapesOutput(
             nested: RecursiveShapesInputOutputNested1(
@@ -235,29 +311,44 @@ open class HttpProtocolUnitTestResponseGeneratorTests {
 
     @Test
     fun `it creates a response unit test for inline document`() {
-        val contents = getTestFileContents("Tests/example", "InlineDocumentResponseTest.swift", ctx.manifest)
+        val contents = getTestFileContents("example/Tests/example", "InlineDocumentResponseTest.swift", ctx.manifest)
         contents.shouldSyntacticSanityCheck()
         val expectedContents = """
-    func testInlineDocumentOutput() async throws {
+    func test_InlineDocumentOutput() async throws {
         guard let httpResponse = buildHttpResponse(
             code: 200,
             headers: [
                 "Content-Type": "application/json"
             ],
-            content: .data(Data(""${'"'}
+            content: .data(Data(#""${'"'}
             {
                 "stringValue": "string",
                 "documentValue": {
                     "foo": "bar"
                 }
             }
-            ""${'"'}.utf8))
+            ""${'"'}#.utf8))
         ) else {
             XCTFail("Something is wrong with the created http response")
             return
         }
 
-        let actual: InlineDocumentOutput = try await InlineDocumentOutput.httpOutput(from:)(httpResponse)
+        let config = try await ExampleClient.ExampleClientConfig(
+            awsCredentialIdentityResolver: try SmithyTestUtil.dummyIdentityResolver(),
+            region: "us-west-2",
+            signingRegion: "us-west-2",
+            endpointResolver: example.StaticEndpointResolver(endpoint: try SmithyHTTPAPI.Endpoint(
+                urlString: "https://example.com"
+            )),
+            retryStrategyOptions: SmithyTestUtil.ProtocolTestRetryStrategyOptions.make(),
+            httpClientEngine: ProtocolResponseTestClient(httpResponse: httpResponse)
+        )
+
+        let client = ExampleClient(config: config)
+
+        let input = InlineDocumentInput()
+
+        let actual = try await client.inlineDocument(input: input)
 
         let expected = InlineDocumentOutput(
             documentValue: try Smithy.Document.make(from: Data(""${'"'}
@@ -278,26 +369,41 @@ open class HttpProtocolUnitTestResponseGeneratorTests {
 
     @Test
     fun `it creates a response unit test for inline document as payload`() {
-        val contents = getTestFileContents("Tests/example", "InlineDocumentAsPayloadResponseTest.swift", ctx.manifest)
+        val contents = getTestFileContents("example/Tests/example", "InlineDocumentAsPayloadResponseTest.swift", ctx.manifest)
         contents.shouldSyntacticSanityCheck()
         val expectedContents = """
-    func testInlineDocumentAsPayloadInputOutput() async throws {
+    func test_InlineDocumentAsPayloadInputOutput() async throws {
         guard let httpResponse = buildHttpResponse(
             code: 200,
             headers: [
                 "Content-Type": "application/json"
             ],
-            content: .data(Data(""${'"'}
+            content: .data(Data(#""${'"'}
             {
                 "foo": "bar"
             }
-            ""${'"'}.utf8))
+            ""${'"'}#.utf8))
         ) else {
             XCTFail("Something is wrong with the created http response")
             return
         }
 
-        let actual: InlineDocumentAsPayloadOutput = try await InlineDocumentAsPayloadOutput.httpOutput(from:)(httpResponse)
+        let config = try await ExampleClient.ExampleClientConfig(
+            awsCredentialIdentityResolver: try SmithyTestUtil.dummyIdentityResolver(),
+            region: "us-west-2",
+            signingRegion: "us-west-2",
+            endpointResolver: example.StaticEndpointResolver(endpoint: try SmithyHTTPAPI.Endpoint(
+                urlString: "https://example.com"
+            )),
+            retryStrategyOptions: SmithyTestUtil.ProtocolTestRetryStrategyOptions.make(),
+            httpClientEngine: ProtocolResponseTestClient(httpResponse: httpResponse)
+        )
+
+        let client = ExampleClient(config: config)
+
+        let input = InlineDocumentAsPayloadInput()
+
+        let actual = try await client.inlineDocumentAsPayload(input: input)
 
         let expected = InlineDocumentAsPayloadOutput(
             documentValue: try Smithy.Document.make(from: Data(""${'"'}

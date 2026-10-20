@@ -7,48 +7,65 @@ import software.amazon.smithy.aws.traits.protocols.Ec2QueryTrait
 import software.amazon.smithy.aws.traits.protocols.RestJson1Trait
 import software.amazon.smithy.aws.traits.protocols.RestXmlTrait
 import software.amazon.smithy.model.shapes.ServiceShape
+import software.amazon.smithy.protocol.traits.Rpcv2CborTrait
 import software.amazon.smithy.swift.codegen.model.hasTrait
 
-// An enum expressing the six defined AWS protocols used with Smithy.
+// An enum expressing the seven defined AWS protocols used with Smithy.
 enum class AWSProtocol {
-    REST_XML, AWS_QUERY, EC2_QUERY, REST_JSON_1, AWS_JSON_1_0, AWS_JSON_1_1
+    RPCV2_CBOR,
+    REST_XML,
+    AWS_QUERY,
+    EC2_QUERY,
+    REST_JSON_1,
+    AWS_JSON_1_0,
+    AWS_JSON_1_1,
 }
 
 // The AWS protocols that may be used with Smithy.
 val ServiceShape.awsProtocol: AWSProtocol
-    get() = when {
-        hasTrait<RestXmlTrait>() -> AWSProtocol.REST_XML
-        hasTrait<AwsQueryTrait>() -> AWSProtocol.AWS_QUERY
-        hasTrait<Ec2QueryTrait>() -> AWSProtocol.EC2_QUERY
-        hasTrait<RestJson1Trait>() -> AWSProtocol.REST_JSON_1
-        hasTrait<AwsJson1_0Trait>() -> AWSProtocol.AWS_JSON_1_0
-        hasTrait<AwsJson1_1Trait>() -> AWSProtocol.AWS_JSON_1_1
-        else -> throw Exception("Service does not use a supported protocol")
-    }
+    get() =
+        when {
+            hasTrait<Rpcv2CborTrait>() -> AWSProtocol.RPCV2_CBOR
+            hasTrait<RestXmlTrait>() -> AWSProtocol.REST_XML
+            hasTrait<AwsQueryTrait>() -> AWSProtocol.AWS_QUERY
+            hasTrait<Ec2QueryTrait>() -> AWSProtocol.EC2_QUERY
+            hasTrait<RestJson1Trait>() -> AWSProtocol.REST_JSON_1
+            hasTrait<AwsJson1_0Trait>() -> AWSProtocol.AWS_JSON_1_0
+            hasTrait<AwsJson1_1Trait>() -> AWSProtocol.AWS_JSON_1_1
+            else -> throw Exception("Service does not use a supported protocol")
+        }
 
 // The wire protocols that an AWS protocol may use over the wire for its requests or responses.
 enum class WireProtocol {
-    XML, FORM_URL, JSON
+    XML,
+    FORM_URL,
+    JSON,
+    CBOR,
 }
 
 // The wire protocol used for this service's requests.
 val ServiceShape.requestWireProtocol: WireProtocol
-    get() = when (awsProtocol) {
-        AWSProtocol.AWS_QUERY, AWSProtocol.EC2_QUERY -> WireProtocol.FORM_URL
-        AWSProtocol.REST_XML -> WireProtocol.XML
-        AWSProtocol.REST_JSON_1, AWSProtocol.AWS_JSON_1_0, AWSProtocol.AWS_JSON_1_1 -> WireProtocol.JSON
-    }
+    get() =
+        when (awsProtocol) {
+            AWSProtocol.AWS_QUERY, AWSProtocol.EC2_QUERY -> WireProtocol.FORM_URL
+            AWSProtocol.REST_XML -> WireProtocol.XML
+            AWSProtocol.REST_JSON_1, AWSProtocol.AWS_JSON_1_0, AWSProtocol.AWS_JSON_1_1 -> WireProtocol.JSON
+            AWSProtocol.RPCV2_CBOR -> WireProtocol.CBOR
+        }
 
 // The wire protocol used for this service's responses.
 val ServiceShape.responseWireProtocol: WireProtocol
-    get() = when (awsProtocol) {
-        AWSProtocol.REST_XML, AWSProtocol.AWS_QUERY, AWSProtocol.EC2_QUERY -> WireProtocol.XML
-        AWSProtocol.REST_JSON_1, AWSProtocol.AWS_JSON_1_0, AWSProtocol.AWS_JSON_1_1 -> WireProtocol.JSON
-    }
+    get() =
+        when (awsProtocol) {
+            AWSProtocol.REST_XML, AWSProtocol.AWS_QUERY, AWSProtocol.EC2_QUERY -> WireProtocol.XML
+            AWSProtocol.REST_JSON_1, AWSProtocol.AWS_JSON_1_0, AWSProtocol.AWS_JSON_1_1 -> WireProtocol.JSON
+            AWSProtocol.RPCV2_CBOR -> WireProtocol.CBOR
+        }
 
 // Whether this AWS protocol is RPC.
 val ServiceShape.isRPCBound: Boolean
-    get() = when (awsProtocol) {
-        AWSProtocol.AWS_JSON_1_0, AWSProtocol.AWS_JSON_1_1, AWSProtocol.AWS_QUERY, AWSProtocol.EC2_QUERY -> true
-        else -> false
-    }
+    get() =
+        when (awsProtocol) {
+            AWSProtocol.AWS_JSON_1_0, AWSProtocol.AWS_JSON_1_1, AWSProtocol.AWS_QUERY, AWSProtocol.EC2_QUERY, AWSProtocol.RPCV2_CBOR -> true
+            else -> false
+        }

@@ -1,0 +1,105 @@
+//
+// Copyright Amazon.com Inc. or its affiliates.
+// All Rights Reserved.
+//
+// SPDX-License-Identifier: Apache-2.0
+//
+
+import struct Foundation.Data
+import class Foundation.FileManager
+import class Foundation.JSONDecoder
+import struct Foundation.URL
+import PackagePlugin
+
+@main
+struct SmithyCodeGeneratorPlugin: BuildToolPlugin {
+
+    func createBuildCommands(context: PluginContext, target: Target) throws -> [Command] {
+        // This plugin only runs for package targets that can have source files.
+        guard let sourceFiles = target.sourceModule?.sourceFiles else { return [] }
+
+        // Retrieve the `SmithyCodegenCLI` tool from the plugin's tools.
+        let smithyCodegenCLITool = try context.tool(named: "SmithyCodegenCLI")
+
+        // Construct a build command for each source file with a particular suffix.
+        return try sourceFiles.map(\.path).compactMap {
+            try createBuildCommand(
+                name: target.name,
+                for: $0,
+                in: context.pluginWorkDirectory,
+                with: smithyCodegenCLITool.path
+            )
+        }
+    }
+
+    private func createBuildCommand(
+        name: String,
+        for inputPath: Path,
+        in outputDirectoryPath: Path,
+        with generatorToolPath: Path
+    ) throws -> Command? {
+        // Skip any file that isn't the swift-settings.json for this service.
+        guard inputPath.lastComponent == "swift-settings.json" else { return nil }
+
+        let currentWorkingDirectoryFileURL = URL(fileURLWithPath: FileManager.default.currentDirectoryPath)
+
+        // Get the swift-settings.json file path.
+        let swiftSettingsPath = inputPath.string
+
+        // Get the model path URL field from swift-settings.json.
+        let swiftSettingsData = try Data(contentsOf: URL(fileURLWithPath: inputPath.string))
+        let swiftSettingsModelInfo = try JSONDecoder().decode(SwiftSettingsModelInfo.self, from: swiftSettingsData)
+        let modelPathURL = if let modelPath = swiftSettingsModelInfo.modelPath {
+            currentWorkingDirectoryFileURL.appendingPathComponent(modelPath)
+        } else {
+            URL(fileURLWithPath: inputPath.removingLastComponent().appending(["model.json"]).string)
+        }
+        let modelPath = Path(modelPathURL.path)
+
+        // Construct the Schemas.swift path.
+        let schemasSwiftPath = outputDirectoryPath.appending("\(name)Schemas.swift")
+
+        // Construct the Serialize.swift path.
+        let serializeSwiftPath = outputDirectoryPath.appending("\(name)Serialize.swift")
+
+        // Construct the Deserialize.swift path.
+        let deserializeSwiftPath = outputDirectoryPath.appending("\(name)Deserialize.swift")
+
+        // Construct the TypeRegistry.swift path.
+        let typeRegistrySwiftPath = outputDirectoryPath.appending("\(name)TypeRegistry.swift")
+
+        // Construct the Operations.swift path.
+        let operationsSwiftPath = outputDirectoryPath.appending("\(name)Operations.swift")
+
+        let arguments: [any CustomStringConvertible] = [
+            "--swift-settings-path", swiftSettingsPath,
+            "--model-path", modelPath,
+            "--schemas-path", schemasSwiftPath,
+            "--serialize-path", serializeSwiftPath,
+            "--deserialize-path", deserializeSwiftPath,
+            "--type-registry-path", typeRegistrySwiftPath,
+            "--operations-path", operationsSwiftPath,
+        ]
+
+        // Construct the build command that invokes SmithyCodegenCLI.
+        return .buildCommand(
+            displayName: "Generating Swift source files from model file \(modelPath)",
+            executable: generatorToolPath,
+            arguments: arguments,
+            inputFiles: [inputPath, modelPath],
+            outputFiles: [
+                schemasSwiftPath,
+                serializeSwiftPath,
+                deserializeSwiftPath,
+                typeRegistrySwiftPath,
+                operationsSwiftPath,
+            ]
+        )
+    }
+}
+
+/// Decodable structure for reading the model path from `swift-settings.json`.
+private struct SwiftSettingsModelInfo: Decodable {
+    /// The path to the model, from the root of the target's project.
+    let modelPath: String?
+}

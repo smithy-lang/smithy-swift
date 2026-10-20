@@ -6,12 +6,13 @@
 //
 
 import class AwsCommonRuntimeKit.CredentialsProvider
-import protocol SmithyIdentityAPI.IdentityResolver
 import struct Smithy.Attributes
+import protocol SmithyIdentityAPI.IdentityResolver
 
 /// A type that can provide credentials for authenticating with an AWS service
-public protocol AWSCredentialIdentityResolver: IdentityResolver where IdentityT == AWSCredentialIdentity {}
+public protocol AWSCredentialIdentityResolver: IdentityResolver, Sendable where IdentityT == AWSCredentialIdentity {}
 
+@_spi(SmithyIdentity)
 public extension AWSCredentialIdentityResolver {
 
     /// Returns the underlying `AwsCommonRuntimeKit.CredentialsProvider`.
@@ -22,6 +23,9 @@ public extension AWSCredentialIdentityResolver {
         ?? CustomAWSCredentialIdentityResolver(self)
         return providerSourcedByCRT.crtAWSCredentialIdentityResolver
     }
+}
+
+public extension AWSCredentialIdentityResolver {
 
     func getIdentity(identityProperties: Attributes? = nil) async throws -> AWSCredentialIdentity {
         let crtAWSCredentialIdentity = try await self.getCRTAWSCredentialIdentityResolver().getCredentials()

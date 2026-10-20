@@ -5,9 +5,9 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
+import struct Foundation.Data
 import class Smithy.Context
 import protocol Smithy.RequestMessageSerializer
-import struct Foundation.Data
 import SmithyHTTPAPI
 
 public struct EnumBodyMiddleware<OperationStackInput,

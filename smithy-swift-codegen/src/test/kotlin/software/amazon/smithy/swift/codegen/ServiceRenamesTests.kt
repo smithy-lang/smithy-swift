@@ -11,15 +11,16 @@ import org.junit.jupiter.api.Test
 class ServiceRenamesTests {
     @Test
     fun `001 MyTestOperationInput uses renamed struct`() {
-        val context = setupTests(
-            listOf(
-                "service-renames.smithy",
-                "service-renames-namespace1.smithy",
-                "service-renames-namespace2.smithy"
-            ),
-            "aws.protocoltests.restjson#RestJson"
-        )
-        val contents = getFileContents(context.manifest, "Sources/RestJson/models/MyTestOperationInput.swift")
+        val context =
+            setupTests(
+                listOf(
+                    "service-renames.smithy",
+                    "service-renames-namespace1.smithy",
+                    "service-renames-namespace2.smithy",
+                ),
+                "aws.protocoltests.restjson#RestJson",
+            )
+        val contents = getFileContents(context.manifest, "RestJson/Sources/RestJson/models/MyTestOperationInput.swift")
         contents.shouldSyntacticSanityCheck()
         val expectedContents = """
 public struct MyTestOperationInput: Swift.Sendable {
@@ -27,8 +28,7 @@ public struct MyTestOperationInput: Swift.Sendable {
 
     public init(
         bar: ExampleClientTypes.RenamedGreeting? = nil
-    )
-    {
+    ) {
         self.bar = bar
     }
 }
@@ -38,15 +38,16 @@ public struct MyTestOperationInput: Swift.Sendable {
 
     @Test
     fun `002 MyTestOperationOutput uses non-renamed`() {
-        val context = setupTests(
-            listOf(
-                "service-renames.smithy",
-                "service-renames-namespace1.smithy",
-                "service-renames-namespace2.smithy"
-            ),
-            "aws.protocoltests.restjson#RestJson"
-        )
-        val contents = getFileContents(context.manifest, "Sources/RestJson/models/MyTestOperationOutput.swift")
+        val context =
+            setupTests(
+                listOf(
+                    "service-renames.smithy",
+                    "service-renames-namespace1.smithy",
+                    "service-renames-namespace2.smithy",
+                ),
+                "aws.protocoltests.restjson#RestJson",
+            )
+        val contents = getFileContents(context.manifest, "RestJson/Sources/RestJson/models/MyTestOperationOutput.swift")
         contents.shouldSyntacticSanityCheck()
         val expectedContents = """
 public struct MyTestOperationOutput: Swift.Sendable {
@@ -54,8 +55,7 @@ public struct MyTestOperationOutput: Swift.Sendable {
 
     public init(
         baz: ExampleClientTypes.GreetingStruct? = nil
-    )
-    {
+    ) {
         self.baz = baz
     }
 }
@@ -65,15 +65,16 @@ public struct MyTestOperationOutput: Swift.Sendable {
 
     @Test
     fun `003 Greeting Struct is not renamed`() {
-        val context = setupTests(
-            listOf(
-                "service-renames.smithy",
-                "service-renames-namespace1.smithy",
-                "service-renames-namespace2.smithy"
-            ),
-            "aws.protocoltests.restjson#RestJson"
-        )
-        val contents = getFileContents(context.manifest, "Sources/RestJson/models/GreetingStruct.swift")
+        val context =
+            setupTests(
+                listOf(
+                    "service-renames.smithy",
+                    "service-renames-namespace1.smithy",
+                    "service-renames-namespace2.smithy",
+                ),
+                "aws.protocoltests.restjson#RestJson",
+            )
+        val contents = getFileContents(context.manifest, "RestJson/Sources/RestJson/models/GreetingStruct.swift")
         contents.shouldSyntacticSanityCheck()
         val expectedContents = """
 extension ExampleClientTypes {
@@ -83,8 +84,7 @@ extension ExampleClientTypes {
 
         public init(
             hi: Swift.String? = nil
-        )
-        {
+        ) {
             self.hi = hi
         }
     }
@@ -95,15 +95,16 @@ extension ExampleClientTypes {
 
     @Test
     fun `004 nested GreetingStruct is renamed to RenamedGreeting`() {
-        val context = setupTests(
-            listOf(
-                "service-renames.smithy",
-                "service-renames-namespace1.smithy",
-                "service-renames-namespace2.smithy"
-            ),
-            "aws.protocoltests.restjson#RestJson"
-        )
-        val contents = getFileContents(context.manifest, "Sources/RestJson/models/RenamedGreeting.swift")
+        val context =
+            setupTests(
+                listOf(
+                    "service-renames.smithy",
+                    "service-renames-namespace1.smithy",
+                    "service-renames-namespace2.smithy",
+                ),
+                "aws.protocoltests.restjson#RestJson",
+            )
+        val contents = getFileContents(context.manifest, "RestJson/Sources/RestJson/models/RenamedGreeting.swift")
         contents.shouldSyntacticSanityCheck()
         val expectedContents = """
 extension ExampleClientTypes {
@@ -113,8 +114,7 @@ extension ExampleClientTypes {
 
         public init(
             salutation: Swift.String? = nil
-        )
-        {
+        ) {
             self.salutation = salutation
         }
     }
@@ -125,15 +125,16 @@ extension ExampleClientTypes {
 
     @Test
     fun `005 GreetingStruct codable`() {
-        val context = setupTests(
-            listOf(
-                "service-renames.smithy",
-                "service-renames-namespace1.smithy",
-                "service-renames-namespace2.smithy"
-            ),
-            "aws.protocoltests.restjson#RestJson"
-        )
-        val contents = getFileContents(context.manifest, "Sources/RestJson/models/RenamedGreeting+ReadWrite.swift")
+        val context =
+            setupTests(
+                listOf(
+                    "service-renames.smithy",
+                    "service-renames-namespace1.smithy",
+                    "service-renames-namespace2.smithy",
+                ),
+                "aws.protocoltests.restjson#RestJson",
+            )
+        val contents = getFileContents(context.manifest, "RestJson/Sources/RestJson/models/RenamedGreeting+ReadWrite.swift")
         contents.shouldSyntacticSanityCheck()
         val expectedContents = """
 extension RestJsonProtocolClientTypes.RenamedGreeting {
@@ -147,14 +148,18 @@ extension RestJsonProtocolClientTypes.RenamedGreeting {
         contents.shouldContainOnlyOnce(expectedContents)
     }
 
-    private fun setupTests(smithyFiles: List<String>, serviceShapeId: String): TestContext {
-        val context = TestContext.initContextFrom(
-            smithyFiles,
-            serviceShapeId,
-            null,
-            { model -> model.defaultSettings(serviceShapeId, "RestJson", "2019-12-16", "Rest Json Protocol") },
-            emptyList()
-        )
+    private fun setupTests(
+        smithyFiles: List<String>,
+        serviceShapeId: String,
+    ): TestContext {
+        val context =
+            TestContext.initContextFrom(
+                smithyFiles,
+                serviceShapeId,
+                null,
+                { model -> model.defaultSettings(serviceShapeId, "RestJson", "2019-12-16", "Rest Json Protocol") },
+                emptyList(),
+            )
         context.generator.generateProtocolClient(context.generationCtx)
         context.generator.generateSerializers(context.generationCtx)
         context.generator.generateCodableConformanceForNestedTypes(context.generationCtx)

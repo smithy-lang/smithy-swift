@@ -145,6 +145,10 @@ extension HTTPStatusCode: CustomStringConvertible {
 
 extension HTTPStatusCode {
 
+    public var isSuccess: Bool {
+        (200..<300).contains(rawValue)
+    }
+
     public var isRetryable: Bool {
         (502..<505).contains(rawValue) || rawValue == 500
     }

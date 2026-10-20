@@ -5,14 +5,14 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
-import class Smithy.Context
 import struct Smithy.AttributeKey
+import class Smithy.Context
 
 public extension Context {
 
     var checksum: ChecksumAlgorithm? {
-        get { attributes.get(key: checksumKey) }
-        set { attributes.set(key: checksumKey, value: newValue) }
+        get { get(key: checksumKey) }
+        set { set(key: checksumKey, value: newValue) }
     }
 
     var checksumString: String? { self.checksum?.toString() }

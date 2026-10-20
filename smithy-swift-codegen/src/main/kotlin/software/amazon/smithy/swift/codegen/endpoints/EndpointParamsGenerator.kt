@@ -18,7 +18,7 @@ import software.amazon.smithy.swift.codegen.model.defaultValue
 import software.amazon.smithy.swift.codegen.model.getTrait
 import software.amazon.smithy.swift.codegen.swiftmodules.ClientRuntimeTypes
 import software.amazon.smithy.swift.codegen.swiftmodules.SwiftTypes
-import software.amazon.smithy.swift.codegen.utils.clientName
+import software.amazon.smithy.swift.codegen.utils.SDKFileUtils
 import software.amazon.smithy.swift.codegen.utils.toLowerCamelCase
 
 /**
@@ -30,15 +30,19 @@ class EndpointParamsGenerator(
     fun render() {
         val ruleSetNode = ctx.service.getTrait<EndpointRuleSetTrait>()?.ruleSet
         val endpointRuleSet = ruleSetNode?.let { EndpointRuleSet.fromNode(it) }
-        ctx.delegator.useFileWriter("Sources/${ctx.settings.moduleName}/Endpoints.swift") { writer ->
+        val filename = SDKFileUtils(ctx.settings).sourcesDirFilePath("Endpoints")
+        ctx.delegator.useFileWriter(filename) { writer ->
             renderParams(writer, endpointRuleSet)
             writer.write("")
             renderContextExtension(writer, endpointRuleSet)
         }
     }
 
-    private fun renderParams(writer: SwiftWriter, endpointRuleSet: EndpointRuleSet?) {
-        writer.openBlock("public struct EndpointParams {", "}") {
+    private fun renderParams(
+        writer: SwiftWriter,
+        endpointRuleSet: EndpointRuleSet?,
+    ) {
+        writer.openBlock("${ctx.settings.visibility} struct EndpointParams: Sendable {", "}") {
             endpointRuleSet?.parameters?.toList()?.sortedBy { it.name.toString() }?.let { sortedParameters ->
                 renderMembers(writer, sortedParameters)
                 writer.write("")
@@ -51,7 +55,10 @@ class EndpointParamsGenerator(
         }
     }
 
-    private fun renderInit(writer: SwiftWriter, parameters: List<Parameter>) {
+    private fun renderInit(
+        writer: SwiftWriter,
+        parameters: List<Parameter>,
+    ) {
         writer.openBlock("public init(", ")") {
             for ((index, param) in parameters.withIndex()) {
                 val memberName = param.name.toString().toLowerCamelCase()
@@ -69,7 +76,10 @@ class EndpointParamsGenerator(
         }
     }
 
-    private fun renderMembers(writer: SwiftWriter, parameters: List<Parameter>) {
+    private fun renderMembers(
+        writer: SwiftWriter,
+        parameters: List<Parameter>,
+    ) {
         parameters.forEach { param ->
             val memberName = param.name.toString().toLowerCamelCase()
             val memberSymbol = param.toSymbol()
@@ -84,7 +94,7 @@ class EndpointParamsGenerator(
         parameters: List<Parameter>,
     ) {
         writer.apply {
-            val paramsType = ctx.settings.sdkId.clientName() + "AuthSchemeResolverParameters"
+            val paramsType = ctx.settings.clientBaseNamePreservingService + "AuthSchemeResolverParameters"
             openBlock("public init (authSchemeParams: \$L) {", "}", paramsType) {
                 parameters.forEach {
                     val memberName = it.name.toString().toLowerCamelCase()
@@ -94,7 +104,10 @@ class EndpointParamsGenerator(
         }
     }
 
-    private fun renderContextExtension(writer: SwiftWriter, endpointRuleSet: EndpointRuleSet?) {
+    private fun renderContextExtension(
+        writer: SwiftWriter,
+        endpointRuleSet: EndpointRuleSet?,
+    ) {
         writer.openBlock(
             "extension EndpointParams: \$N {",
             "}",
@@ -123,11 +136,12 @@ class EndpointParamsGenerator(
 }
 
 fun Parameter.toSymbol(): Symbol {
-    val swiftType = when (type) {
-        ParameterType.STRING -> SwiftTypes.String
-        ParameterType.BOOLEAN -> SwiftTypes.Bool
-        ParameterType.STRING_ARRAY -> SwiftTypes.StringArray
-    }
+    val swiftType =
+        when (type) {
+            ParameterType.STRING -> SwiftTypes.String
+            ParameterType.BOOLEAN -> SwiftTypes.Bool
+            ParameterType.STRING_ARRAY -> SwiftTypes.StringArray
+        }
     var builder = Symbol.builder().name(swiftType.fullName)
     if (!isRequired) {
         builder = builder.boxed()
@@ -137,10 +151,12 @@ fun Parameter.toSymbol(): Symbol {
         if (type.equals(ParameterType.STRING)) {
             builder.defaultValue("\"$defaultValue\"")
         } else if (type.equals(ParameterType.STRING_ARRAY)) {
-            val elementsWrappedWithEscapedQuotes = defaultValue.toString()
-                .removeSurrounding("[", "]")
-                .split(", ")
-                .joinToString(", ", "[", "]") { "\"$it\"" }
+            val elementsWrappedWithEscapedQuotes =
+                defaultValue
+                    .toString()
+                    .removeSurrounding("[", "]")
+                    .split(", ")
+                    .joinToString(", ", "[", "]") { "\"$it\"" }
             builder.defaultValue(elementsWrappedWithEscapedQuotes)
         } else {
             builder.defaultValue(defaultValue.toString())

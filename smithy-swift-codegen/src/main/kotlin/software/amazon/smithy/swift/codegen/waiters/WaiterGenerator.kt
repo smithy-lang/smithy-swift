@@ -11,6 +11,7 @@ import software.amazon.smithy.swift.codegen.SwiftDelegator
 import software.amazon.smithy.swift.codegen.core.SwiftCodegenContext
 import software.amazon.smithy.swift.codegen.integration.ProtocolGenerator
 import software.amazon.smithy.swift.codegen.model.expectShape
+import software.amazon.smithy.swift.codegen.utils.SDKFileUtils
 import software.amazon.smithy.waiters.WaitableTrait
 
 /**
@@ -20,23 +21,22 @@ import software.amazon.smithy.waiters.WaitableTrait
 class WaiterGenerator(
     val ctx: SwiftCodegenContext,
     val protoCtx: ProtocolGenerator.GenerationContext,
-    val delegator: SwiftDelegator
+    val delegator: SwiftDelegator,
 ) {
-
     fun render() {
         val service = ctx.model.expectShape<ServiceShape>(ctx.settings.service)
 
         // Open a new file Waiters.swift to hold the waiter definitions for this service
-        val waiterFilename = "Sources/${ctx.settings.moduleName}/Waiters.swift"
+        val waiterFilename = SDKFileUtils(ctx.settings).sourcesDirFilePath("Waiters")
         delegator.useFileWriter(waiterFilename) { writer ->
             val serviceSymbol = ctx.symbolProvider.toSymbol(service)
 
             // Render an extension on the service client, which will hold the waitUntil... methods
             writer.openBlock("extension \$L {", "}", serviceSymbol.name) {
-
                 // Get the operation shapes for this service
-                val operationShapes = service.allOperations
-                    .map { ctx.model.expectShape<OperationShape>(it) }
+                val operationShapes =
+                    service.allOperations
+                        .map { ctx.model.expectShape<OperationShape>(it) }
 
                 // On each operation shape, get only the waitable traits from the operation
                 operationShapes.forEach { waitedOperation ->

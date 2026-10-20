@@ -5,9 +5,8 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
-/// Delineates a Telemetry Scope that has a beginning and end, particularly for Telemetry Contexts.
-public protocol TelemetryScope: Sendable {
+import SmithyTelemetryAPI
 
-    /// Ends the scope.
-    func end()
-}
+/// Typealias for backward compatibility.
+/// The actual implementation is now in SmithyTelemetryAPI.
+public typealias TelemetryScope = SmithyTelemetryAPI.TelemetryScope

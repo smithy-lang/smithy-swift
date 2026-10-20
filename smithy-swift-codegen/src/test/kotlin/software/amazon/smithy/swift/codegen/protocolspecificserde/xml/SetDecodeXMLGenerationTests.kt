@@ -13,7 +13,7 @@ class SetDecodeXMLGenerationTests {
     @Test
     fun `XmlEnumSetOutputBody decodable`() {
         val context = setupTests("Isolated/Restxml/xml-sets.smithy", "aws.protocoltests.restxml#RestXml")
-        val contents = getFileContents(context.manifest, "Sources/RestXml/models/XmlEnumSetOutput+HttpResponseBinding.swift")
+        val contents = getFileContents(context.manifest, "RestXml/Sources/RestXml/models/XmlEnumSetOutput+HttpResponseBinding.swift")
         val expectedContents = """
 extension XmlEnumSetOutput {
 
@@ -33,7 +33,7 @@ extension XmlEnumSetOutput {
     @Test
     fun `XmlEnumNestedSetOutputBody nested decodable`() {
         val context = setupTests("Isolated/Restxml/xml-sets-nested.smithy", "aws.protocoltests.restxml#RestXml")
-        val contents = getFileContents(context.manifest, "Sources/RestXml/models/XmlEnumNestedSetOutput+HttpResponseBinding.swift")
+        val contents = getFileContents(context.manifest, "RestXml/Sources/RestXml/models/XmlEnumNestedSetOutput+HttpResponseBinding.swift")
         val expectedContents = """
 extension XmlEnumNestedSetOutput {
 

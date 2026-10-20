@@ -19,7 +19,11 @@ class HTTPResponseGenerator(
     val httpResponseBindingErrorGenerator = HTTPResponseBindingErrorGenerator(customizations)
     val httpResponseBindingErrorInitGenerator = HTTPResponseBindingErrorInitGenerator(customizations)
 
-    fun render(ctx: ProtocolGenerator.GenerationContext, httpOperations: List<OperationShape>, httpBindingResolver: HttpBindingResolver) {
+    fun render(
+        ctx: ProtocolGenerator.GenerationContext,
+        httpOperations: List<OperationShape>,
+        httpBindingResolver: HttpBindingResolver,
+    ) {
         val visitedOutputShapes: MutableSet<ShapeId> = mutableSetOf()
         for (operation in httpOperations) {
             if (operation.output.isPresent) {
@@ -39,14 +43,16 @@ class HTTPResponseGenerator(
             httpResponseBindingErrorGenerator.renderOperationError(ctx, it, customizations.unknownServiceErrorSymbol)
         }
 
-        val modeledOperationErrors = httpOperations
-            .flatMap { it.errors }
-            .map { ctx.model.expectShape(it) as StructureShape }
-            .toSet()
+        val modeledOperationErrors =
+            httpOperations
+                .flatMap { it.errors }
+                .map { ctx.model.expectShape(it) as StructureShape }
+                .toSet()
 
-        val modeledServiceErrors = ctx.service.errors
-            .map { ctx.model.expectShape(it) as StructureShape }
-            .toSet()
+        val modeledServiceErrors =
+            ctx.service.errors
+                .map { ctx.model.expectShape(it) as StructureShape }
+                .toSet()
 
         val modeledErrors = modeledOperationErrors + modeledServiceErrors
         modeledErrors.forEach {

@@ -17,7 +17,7 @@ class Ec2QueryNameTests {
     @Test
     fun `001 encode simple types`() {
         val context = setupTests("Isolated/ec2/query-simple.smithy", "aws.protocoltests.ec2#AwsEc2")
-        val contents = getFileContents(context.manifest, "Sources/Example/models/Ec2SimpleInputParamsInput+Write.swift")
+        val contents = getFileContents(context.manifest, "Example/Sources/Example/models/Ec2SimpleInputParamsInput+Write.swift")
         contents.shouldSyntacticSanityCheck()
         val expectedContents = """
 extension Ec2SimpleInputParamsInput {
@@ -40,10 +40,15 @@ extension Ec2SimpleInputParamsInput {
 """
         contents.shouldContainOnlyOnce(expectedContents)
     }
-    private fun setupTests(smithyFile: String, serviceShapeId: String): TestContext {
-        val context = TestContext.initContextFrom(smithyFile, serviceShapeId, MockHTTPEC2QueryProtocolGenerator()) { model ->
-            model.defaultSettings(serviceShapeId, "Example", "2020-01-08", "Ec2 query protocol")
-        }
+
+    private fun setupTests(
+        smithyFile: String,
+        serviceShapeId: String,
+    ): TestContext {
+        val context =
+            TestContext.initContextFrom(smithyFile, serviceShapeId, MockHTTPEC2QueryProtocolGenerator()) { model ->
+                model.defaultSettings(serviceShapeId, "Example", "2020-01-08", "Ec2 query protocol")
+            }
         context.generator.generateCodableConformanceForNestedTypes(context.generationCtx)
         context.generator.generateSerializers(context.generationCtx)
         context.generationCtx.delegator.flushWriters()

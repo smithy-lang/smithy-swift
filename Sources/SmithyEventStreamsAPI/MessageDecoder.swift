@@ -8,7 +8,7 @@
 import struct Foundation.Data
 
 /// Decodes a `Data` object into a `Message` object.
-public protocol MessageDecoder {
+public protocol MessageDecoder: Sendable {
 
     /// Feeds data into the decoder, which may or may not result in a message.
     /// - Parameter data: The data to feed into the decoder.

@@ -5,6 +5,7 @@
 
 package software.amazon.smithy.swift.codegen.integration.httpResponse
 
+import software.amazon.smithy.aws.traits.protocols.AwsQueryCompatibleTrait
 import software.amazon.smithy.aws.traits.protocols.RestXmlTrait
 import software.amazon.smithy.codegen.core.Symbol
 import software.amazon.smithy.model.shapes.OperationShape
@@ -14,21 +15,21 @@ import software.amazon.smithy.swift.codegen.integration.HTTPProtocolCustomizable
 import software.amazon.smithy.swift.codegen.integration.ProtocolGenerator
 import software.amazon.smithy.swift.codegen.integration.serde.struct.readerSymbol
 import software.amazon.smithy.swift.codegen.model.getTrait
+import software.amazon.smithy.swift.codegen.model.hasTrait
 import software.amazon.smithy.swift.codegen.model.toUpperCamelCase
 import software.amazon.smithy.swift.codegen.swiftmodules.SmithyHTTPAPITypes
 import software.amazon.smithy.swift.codegen.swiftmodules.SwiftSymbol
 import software.amazon.smithy.swift.codegen.swiftmodules.SwiftTypes
-import software.amazon.smithy.swift.codegen.utils.ModelFileUtils
+import software.amazon.smithy.swift.codegen.utils.SDKFileUtils
 import software.amazon.smithy.swift.codegen.utils.errorShapeName
 
 class HTTPResponseBindingErrorGenerator(
     val customizations: HTTPProtocolCustomizable,
 ) {
-
     fun renderServiceError(ctx: ProtocolGenerator.GenerationContext) {
         val serviceShape = ctx.service
         val serviceName = ctx.service.id.name
-        val filename = ModelFileUtils.filename(ctx.settings, "$serviceName+HTTPServiceError")
+        val filename = SDKFileUtils(ctx.settings).modelFilePath("$serviceName+HTTPServiceError")
 
         ctx.delegator.useFileWriter(filename) { writer ->
             with(writer) {
@@ -36,7 +37,7 @@ class HTTPResponseBindingErrorGenerator(
                     "func httpServiceError(baseError: \$N) throws -> \$N? {",
                     "}",
                     customizations.baseErrorSymbol,
-                    SwiftTypes.Error
+                    SwiftTypes.Error,
                 ) {
                     customizations.serviceErrorCustomRenderer(ctx)?.let { it.render(writer) }
                     val serviceErrorShapes =
@@ -52,7 +53,7 @@ class HTTPResponseBindingErrorGenerator(
                                 write(
                                     "case \$S: return try \$L.makeError(baseError: baseError)",
                                     errorShapeName,
-                                    errorShapeType
+                                    errorShapeType,
                                 )
                             }
                             write("default: return nil")
@@ -65,35 +66,55 @@ class HTTPResponseBindingErrorGenerator(
         }
     }
 
-    fun renderOperationError(ctx: ProtocolGenerator.GenerationContext, op: OperationShape, unknownServiceErrorSymbol: Symbol) {
+    fun renderOperationError(
+        ctx: ProtocolGenerator.GenerationContext,
+        op: OperationShape,
+        unknownServiceErrorSymbol: Symbol,
+    ) {
         val operationErrorName = "${op.toUpperCamelCase()}OutputError"
-        val filename = ModelFileUtils.filename(ctx.settings, "$operationErrorName+HttpResponseErrorBinding")
-        val httpBindingSymbol = Symbol.builder()
-            .definitionFile(filename)
-            .name(operationErrorName)
-            .build()
+        val filename = SDKFileUtils(ctx.settings).modelFilePath("$operationErrorName+HttpResponseErrorBinding")
+        val httpBindingSymbol =
+            Symbol
+                .builder()
+                .definitionFile(filename)
+                .name(operationErrorName)
+                .build()
 
         ctx.delegator.useShapeWriter(httpBindingSymbol) { writer ->
             writer.openBlock("enum \$L {", "}", operationErrorName) {
                 writer.write("")
                 writer.openBlock(
-                    "static func httpError(from httpResponse: \$N) async throws -> \$N {", "}",
+                    "static func httpError(from httpResponse: \$N) async throws -> \$N {",
+                    "}",
                     SmithyHTTPAPITypes.HTTPResponse,
                     SwiftTypes.Error,
                 ) {
-                    val errorShapes = op.errors
-                        .map { ctx.model.expectShape(it) as StructureShape }
-                        .toSet()
-                        .sorted()
-                    writer.addImport(SwiftSymbol.make("ClientRuntime", null, SwiftDependency.CLIENT_RUNTIME, emptyList(), listOf("SmithyReadWrite")))
+                    val errorShapes =
+                        op.errors
+                            .map { ctx.model.expectShape(it) as StructureShape }
+                            .toSet()
+                            .sorted()
+                    writer.addImport(
+                        SwiftSymbol.make("ClientRuntime", null, SwiftDependency.CLIENT_RUNTIME, emptyList(), listOf("SmithyReadWrite")),
+                    )
                     writer.write("let data = try await httpResponse.data()")
                     writer.write("let responseReader = try \$N.from(data: data)", ctx.service.readerSymbol)
                     val noErrorWrapping = ctx.service.getTrait<RestXmlTrait>()?.isNoErrorWrapping ?: false
-                    writer.write(
-                        "let baseError = try \$N(httpResponse: httpResponse, responseReader: responseReader, noErrorWrapping: \$L)",
-                        customizations.baseErrorSymbol,
-                        noErrorWrapping
-                    )
+                    if (ctx.service.hasTrait<AwsQueryCompatibleTrait>()) {
+                        writer.write("let errorDetails = httpResponse.headers.value(for: \"x-amzn-query-error\")")
+                        writer.write(
+                            "let baseError: \$N = try \$N.makeQueryCompatibleError(httpResponse: httpResponse, responseReader: responseReader, noErrorWrapping: \$L, errorDetails: errorDetails)",
+                            customizations.baseErrorSymbol,
+                            customizations.queryCompatibleUtilsSymbol,
+                            noErrorWrapping,
+                        )
+                    } else {
+                        writer.write(
+                            "let baseError = try \$N(httpResponse: httpResponse, responseReader: responseReader, noErrorWrapping: \$L)",
+                            customizations.baseErrorSymbol,
+                            noErrorWrapping,
+                        )
+                    }
                     writer.write("if let error = baseError.customError() { return error }")
                     if (ctx.service.errors.isNotEmpty() || customizations.serviceErrorCustomRenderer(ctx) != null) {
                         writer.write("if let error = try httpServiceError(baseError: baseError) { return error }")
@@ -105,12 +126,12 @@ class HTTPResponseBindingErrorGenerator(
                             writer.write(
                                 "case \$S: return try \$L.makeError(baseError: baseError)",
                                 errorShapeName,
-                                errorShapeType
+                                errorShapeType,
                             )
                         }
                         writer.write(
                             "default: return try \$N.makeError(baseError: baseError)",
-                            unknownServiceErrorSymbol
+                            unknownServiceErrorSymbol,
                         )
                     }
                 }

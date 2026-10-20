@@ -10,54 +10,80 @@ import io.kotest.matchers.string.shouldStartWith
 import org.junit.jupiter.api.Assertions.assertNotNull
 import org.junit.jupiter.api.Test
 import software.amazon.smithy.swift.codegen.PackageManifestGenerator
+import software.amazon.smithy.swift.codegen.SwiftDependency
 import software.amazon.smithy.swift.codegen.TestContext
 import software.amazon.smithy.swift.codegen.defaultSettings
 import software.amazon.smithy.swift.codegen.protocolgeneratormocks.MockHTTPAWSJson11ProtocolGenerator
+import kotlin.io.path.Path
 
 class PackageManifestGeneratorTests {
     private val testContext = setupTests("simple-service-with-operation-and-dependency.smithy", "smithy.example#Example")
 
     @Test
     fun `it starts with a swift-tools-version statement`() {
-        val packageManifest = testContext.manifest.getFileString("Package.swift.txt").get()
+        val packageManifest = testContext.manifest.getFileString(Path("MockSDK/Package.swift")).get()
         assertNotNull(packageManifest)
         packageManifest.shouldStartWith("// swift-tools-version: 5.5.0")
     }
 
+    @Test
     fun `it renders package manifest file with macOS and iOS platforms block`() {
-        val packageManifest = testContext.manifest.getFileString("Package.swift").get()
+        val packageManifest = testContext.manifest.getFileString("MockSDK/Package.swift").get()
         assertNotNull(packageManifest)
-        packageManifest.shouldContain(
-            "platforms: [\n" +
-                "        .macOS(.v10_15), .iOS(.v13)\n" +
-                "    ]"
-        )
+        val expected = """
+    platforms: [
+        .macOS(.v11),
+        .iOS(.v15),
+        .tvOS(.v15),
+        .watchOS(.v8),
+    ],
+"""
+        packageManifest.shouldContain(expected)
     }
 
     @Test
     fun `it renders package manifest file with single library in product block`() {
-        val packageManifest = testContext.manifest.getFileString("Package.swift.txt").get()
+        val packageManifest = testContext.manifest.getFileString("MockSDK/Package.swift").get()
         assertNotNull(packageManifest)
-        packageManifest.shouldContain(
-            "products: [\n" +
-                "        .library(name: \"MockSDK\", targets: [\"MockSDK\"])\n" +
-                "    ]"
-        )
+        val expected = """
+    products: [
+        .library(name: "MockSDK", targets: ["MockSDK"])
+    ],
+"""
+        packageManifest.shouldContain(expected)
+    }
+
+    @Test
+    fun `it renders package manifest file with dependencies`() {
+        val packageManifest = testContext.manifest.getFileString("MockSDK/Package.swift").get()
+        assertNotNull(packageManifest)
+        val expected = """
+    dependencies: [
+        .package(url: "https://github.com/smithy-lang/smithy-swift", exact: "0.0.1"),
+    ],
+"""
+        packageManifest.shouldContain(expected)
     }
 
     @Test
     fun `it renders package manifest file with target and test target`() {
-        println(testContext.manifest.files)
-        val packageManifest = testContext.manifest.getFileString("Package.swift.txt").get()
+        val packageManifest = testContext.manifest.getFileString("MockSDK/Package.swift").get()
         assertNotNull(packageManifest)
         val expected = """
     targets: [
         .target(
             name: "MockSDK",
             dependencies: [
+                .product(
+                    name: "ClientRuntime",
+                    package: "smithy-swift"
+                ),
             ],
-            resources: [
-                .process("Resources")
+            plugins: [
+                .plugin(
+                    name: "SmithyCodeGeneratorPlugin",
+                    package: "smithy-swift"
+                ),
             ]
         ),
         .testTarget(
@@ -75,13 +101,20 @@ class PackageManifestGeneratorTests {
         packageManifest.shouldContain(expected)
     }
 
-    private fun setupTests(smithyFile: String, serviceShapeId: String): TestContext {
-        val context =
+    private fun setupTests(
+        smithyFile: String,
+        serviceShapeId: String,
+    ): TestContext {
+        val testContext =
             TestContext.initContextFrom(smithyFile, serviceShapeId, MockHTTPAWSJson11ProtocolGenerator()) { model ->
                 model.defaultSettings(serviceShapeId, "MockSDK", "2019-12-16", "MockSDKID")
             }
-        PackageManifestGenerator(context.generationCtx).writePackageManifest(context.generationCtx.delegator.dependencies)
-        context.generationCtx.delegator.flushWriters()
-        return context
+        testContext.generationCtx.delegator.useFileWriter("xyz.swift") { writer ->
+            writer.addDependency(SwiftDependency.CLIENT_RUNTIME)
+            writer.addDependency(SwiftDependency.SMITHY_TEST_UTIL)
+        }
+        PackageManifestGenerator(testContext.context).writePackageManifest(testContext.generationCtx.delegator.dependencies)
+        testContext.generationCtx.delegator.flushWriters()
+        return testContext
     }
 }

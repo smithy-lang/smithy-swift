@@ -5,14 +5,8 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
-/// A Telemetry Context is a container that can be associated with Tracers and Metrics.
-///
-/// Context implementations may be containers for execution-scoped values across API boundaries (both in-process and
-/// distributed).
-public protocol TelemetryContext: Sendable {
+import SmithyTelemetryAPI
 
-    /// Make this context the currently active context.
-    ///
-    /// - Returns: the scope of the current context
-    func makeCurrent() -> TelemetryScope
-}
+/// Typealias for backward compatibility.
+/// The actual implementation is now in SmithyTelemetryAPI.
+public typealias TelemetryContext = SmithyTelemetryAPI.TelemetryContext

@@ -1,0 +1,214 @@
+//
+// Copyright Amazon.com Inc. or its affiliates.
+// All Rights Reserved.
+//
+// SPDX-License-Identifier: Apache-2.0
+//
+
+import Foundation
+import XCTest
+import SmithyRetriesAPI
+@testable import SmithyRetries
+@testable import ClientRuntime
+
+final class DefaultRetryStrategyTests: XCTestCase {
+    private let scope1 = "scope1"
+    private let scope2 = "scope2"
+
+    private let retryableInfo = RetryErrorInfo(errorType: .serverError, retryAfterHint: nil, isTimeout: false)
+
+    private let retryableThrottlingInfo = RetryErrorInfo(errorType: .throttling, retryAfterHint: nil, isTimeout: false)
+    private let retryableInfoWithHint = RetryErrorInfo(errorType: .serverError, retryAfterHint: 0.44, isTimeout: false)
+    private var quota1: RetryQuota { get async { await subject.quotaRepository.quota(partitionID: scope1) } }
+    private var quota2: RetryQuota { get async { await subject.quotaRepository.quota(partitionID: scope2) } }
+
+    private var options: RetryStrategyOptions!
+    private var subject: DefaultRetryStrategy!
+    private var mockSleeper: @Sendable (TimeInterval) async throws -> Void = { _ in }
+    private var backoffStrategy: ExponentialBackoffStrategy!
+
+    actor Delay {
+        var actual: TimeInterval = 0.0
+
+        func setActual(_ timeInterval: TimeInterval) {
+            self.actual = timeInterval
+        }
+    }
+
+    private let delay = Delay()
+
+    override func setUp() {
+        backoffStrategy = .init()
+        backoffStrategy.random = { @Sendable () -> Double in 1.0 }
+        options = RetryStrategyOptions(
+            backoffStrategy: backoffStrategy, maxRetriesBase: 2, useNewRetries2026: true
+        )
+        subject = DefaultRetryStrategy(options: options)
+        let delay = self.delay
+        mockSleeper = { @Sendable in await delay.setActual($0) }
+        subject.sleeper = mockSleeper
+    }
+
+    // MARK: - acquireInitialRetryToken(tokenScope:)
+
+    func test_acquire_acquiresANewTokenWithZeroRetryCount() async throws {
+        let newToken = try await subject.acquireInitialRetryToken(tokenScope: scope1)
+        XCTAssertEqual(newToken.retryCount, 0)
+    }
+
+    func test_acquire_acquiresANewTokenWithNilCapacityAmount() async throws {
+        let newToken = try await subject.acquireInitialRetryToken(tokenScope: scope1)
+        XCTAssertEqual(newToken.capacityAmount, nil)
+    }
+
+    func test_acquire_quotaCapacityIsUnchangedAfterAcquire() async throws {
+        let initialCapacity = await quota1.availableCapacity
+        _ = try await subject.acquireInitialRetryToken(tokenScope: scope1)
+        let finalCapacity = await quota1.availableCapacity
+        XCTAssertEqual(initialCapacity, finalCapacity)
+    }
+
+    func test_acquire_acquiresTokensInDifferentScopesAgainstDifferentQuotas() async throws {
+        let token1 = try await subject.acquireInitialRetryToken(tokenScope: scope1)
+        let token2 = try await subject.acquireInitialRetryToken(tokenScope: scope2)
+        XCTAssertFalse(token1.quota === token2.quota)
+    }
+
+    // MARK: - refreshRetryTokenForRetry(tokenToRenew:errorInfo:)
+
+    func test_refresh_setsCapacityAmountOnTokenToRetryCost() async throws {
+        let token1 = try await subject.acquireInitialRetryToken(tokenScope: scope1)
+        try await subject.refreshRetryTokenForRetry(tokenToRenew: token1, errorInfo: retryableInfo)
+        XCTAssertEqual(token1.capacityAmount, RetryQuota.retryCost)
+    }
+
+    func test_refresh_setsCapacityAmountOnTokenToThrottlingRetryCost() async throws {
+        let token1 = try await subject.acquireInitialRetryToken(tokenScope: scope1)
+        try await subject.refreshRetryTokenForRetry(tokenToRenew: token1, errorInfo: retryableThrottlingInfo)
+        XCTAssertEqual(token1.capacityAmount, RetryQuota.throttlingRetryCost)
+    }
+
+
+    func test_refresh_sleepsForExpectedPeriodOnNonThrottlingRetry() async throws {
+        let token1 = try await subject.acquireInitialRetryToken(tokenScope: scope1)
+        try await subject.refreshRetryTokenForRetry(tokenToRenew: token1, errorInfo: retryableInfo)
+        let actual1 = await delay.actual
+        XCTAssertEqual(actual1, 0.05)
+        try await subject.refreshRetryTokenForRetry(tokenToRenew: token1, errorInfo: retryableInfo)
+        let actual2 = await delay.actual
+        XCTAssertEqual(actual2, 0.1)
+    }
+
+
+    func test_refresh_sleepsForExpectedPeriodOnThrottlingRetry() async throws {
+        let token1 = try await subject.acquireInitialRetryToken(tokenScope: scope1)
+        try await subject.refreshRetryTokenForRetry(tokenToRenew: token1, errorInfo: retryableThrottlingInfo)
+        let actual1 = await delay.actual
+        XCTAssertEqual(actual1, 1.0)
+        try await subject.refreshRetryTokenForRetry(tokenToRenew: token1, errorInfo: retryableThrottlingInfo)
+        let actual2 = await delay.actual
+        XCTAssertEqual(actual2, 2.0)
+    }
+
+
+    func test_refresh_sleepsForTheRetryHintDelayWhenProvided() async throws {
+        let token1 = try await subject.acquireInitialRetryToken(tokenScope: scope1)
+        try await subject.refreshRetryTokenForRetry(tokenToRenew: token1, errorInfo: retryableInfoWithHint)
+        // retryAfterHint=0.44, t_i=0.05, so delay = max(0.44, 0.05) = 0.44
+        let actual = await delay.actual
+        XCTAssertEqual(actual, retryableInfoWithHint.retryAfterHint!)
+    }
+
+    func test_refresh_throwsMaxAttemptsReachedWhenMaxAttemptsReached() async throws {
+        let token1 = try await subject.acquireInitialRetryToken(tokenScope: scope1)
+        for _ in 0..<options.maxRetriesBase {
+            try await subject.refreshRetryTokenForRetry(tokenToRenew: token1, errorInfo: retryableInfo)
+        }
+        do {
+            try await subject.refreshRetryTokenForRetry(tokenToRenew: token1, errorInfo: retryableInfo)
+            XCTFail("Should have failed")
+        } catch RetryError.maxAttemptsReached {
+            // success
+        } catch {
+            XCTFail("Unexpected error thrown")
+        }
+    }
+
+    func test_refresh_throwsInsufficientQuotaWhenQuotaNotAvailable() async throws {
+        await quota1.setAvailableCapacity(RetryQuota.retryCost - 1)
+        let token1 = try await subject.acquireInitialRetryToken(tokenScope: scope1)
+        do {
+            try await subject.refreshRetryTokenForRetry(tokenToRenew: token1, errorInfo: retryableInfo)
+            XCTFail("Should have failed")
+        } catch DefaultRetryStrategy.Error.insufficientQuota {
+            // success
+        } catch {
+            XCTFail("Unexpected error thrown")
+        }
+    }
+
+    // MARK: - recordSuccess(token:)
+
+    func test_success_addsNoRetryIncrementToCapacityOnSuccessWithNoRetry() async throws {
+        let initialCapacity = RetryQuota.initialRetryTokens / 2
+        await quota1.setAvailableCapacity(initialCapacity)
+        let token = try await subject.acquireInitialRetryToken(tokenScope: scope1)
+        await subject.recordSuccess(token: token)
+        let finalCapacity = await quota1.availableCapacity
+        XCTAssertEqual(initialCapacity + RetryQuota.noRetryIncrement, finalCapacity)
+    }
+
+    func test_success_addsCapacityAmountBackToQuotaOnSuccessAfterRetry() async throws {
+        let initialCapacity = RetryQuota.initialRetryTokens / 2
+        await quota1.setAvailableCapacity(initialCapacity)
+        let token = try await subject.acquireInitialRetryToken(tokenScope: scope1)
+        try await subject.refreshRetryTokenForRetry(tokenToRenew: token, errorInfo: retryableInfo)
+        let tokenCapacityAmount = try XCTUnwrap(token.capacityAmount)
+        XCTAssertEqual(tokenCapacityAmount, RetryQuota.retryCost)
+        await subject.recordSuccess(token: token)
+        let finalCapacity = await quota1.availableCapacity
+        XCTAssertEqual(initialCapacity, finalCapacity)
+    }
+
+    func test_baseMultiplier_throttling_is1() {
+        let info = RetryErrorInfo(errorType: .throttling, retryAfterHint: nil, isTimeout: false)
+        XCTAssertEqual(DefaultRetryStrategy.baseMultiplier(for: info), 1.0)
+    }
+
+    func test_baseMultiplier_nonThrottling_is005() {
+        let info = RetryErrorInfo(errorType: .serverError, retryAfterHint: nil, isTimeout: false)
+        XCTAssertEqual(DefaultRetryStrategy.baseMultiplier(for: info), 0.05)
+    }
+
+    func test_baseMultiplier_dynamoDB_is0025() {
+        let info = RetryErrorInfo(errorType: .serverError, retryAfterHint: nil, isTimeout: false, backoffMultiplier: 0.025)
+        XCTAssertEqual(DefaultRetryStrategy.baseMultiplier(for: info), 0.025)
+    }
+
+    func test_retryAfterHint_bounded_byMinimum() async throws {
+        // retryAfterHint=0.01 < t_i=0.05, so delay should be 0.05
+        let info = RetryErrorInfo(errorType: .serverError, retryAfterHint: 0.01, isTimeout: false)
+        let token1 = try await subject.acquireInitialRetryToken(tokenScope: scope1)
+        try await subject.refreshRetryTokenForRetry(tokenToRenew: token1, errorInfo: info)
+        let actual = await delay.actual
+        XCTAssertEqual(actual, 0.05)
+    }
+
+    func test_retryAfterHint_bounded_byMaximum() async throws {
+        // retryAfterHint=10.0 > 5+t_i=5.05, so delay should be 5.05
+        let info = RetryErrorInfo(errorType: .serverError, retryAfterHint: 10.0, isTimeout: false)
+        let token1 = try await subject.acquireInitialRetryToken(tokenScope: scope1)
+        try await subject.refreshRetryTokenForRetry(tokenToRenew: token1, errorInfo: info)
+        let actual = await delay.actual
+        XCTAssertEqual(actual, 5.05)
+    }
+
+    func test_retryAfterHint_withinBounds_usedAsIs() async throws {
+        // retryAfterHint=1.5, t_i=0.05, 5+t_i=5.05, so delay should be 1.5
+        let info = RetryErrorInfo(errorType: .serverError, retryAfterHint: 1.5, isTimeout: false)
+        let token1 = try await subject.acquireInitialRetryToken(tokenScope: scope1)
+        try await subject.refreshRetryTokenForRetry(tokenToRenew: token1, errorInfo: info)
+        let actual = await delay.actual
+        XCTAssertEqual(actual, 1.5)
+    }
+}

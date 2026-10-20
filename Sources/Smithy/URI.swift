@@ -7,13 +7,13 @@ import Foundation
 
 /// A representation of the RFC 3986 Uniform Resource Identifier
 /// Note: URIBuilder returns an URI instance with all components percent encoded
-public struct URI: Hashable {
+public struct URI: Hashable, Sendable {
     public let scheme: URIScheme
     public let path: String
     public let host: String
-    public let port: Int16?
-    public var defaultPort: Int16 {
-        Int16(scheme.port)
+    public let port: UInt16?
+    public var defaultPort: UInt16 {
+        UInt16(scheme.port)
     }
     public let queryItems: [URIQueryItem]
     public let username: String?
@@ -29,7 +29,7 @@ public struct URI: Hashable {
     fileprivate init(scheme: URIScheme,
                      path: String,
                      host: String,
-                     port: Int16?,
+                     port: UInt16?,
                      queryItems: [URIQueryItem],
                      username: String? = nil,
                      password: String? = nil,
@@ -122,7 +122,7 @@ public final class URIBuilder {
     }
 
     @discardableResult
-    public func withPort(_ value: Int16?) -> URIBuilder {
+    public func withPort(_ value: UInt16?) -> URIBuilder {
         self.urlComponents.port = value.map { Int($0) }
         return self
     }
@@ -209,7 +209,7 @@ public final class URIBuilder {
         return URI(scheme: URIScheme(rawValue: self.urlComponents.scheme!)!,
                    path: self.urlComponents.percentEncodedPath,
                    host: self.urlComponents.percentEncodedHost!,
-                   port: self.urlComponents.port.map { Int16($0) },
+                   port: self.urlComponents.port.map { UInt16($0) },
                    queryItems: self.urlComponents.percentEncodedQueryItems?.map {
                         URIQueryItem(name: $0.name, value: $0.value)
                    } ?? [],
@@ -232,7 +232,7 @@ extension String {
         return decoded != nil && decoded != self
     }
 
-    public func percentEncodePathIncludingSemicolon() -> String {
+    func percentEncodePathIncludingSemicolon() -> String {
         let allowed =
         // swiftlint:disable force_cast
             (CharacterSet.urlPathAllowed as NSCharacterSet).mutableCopy() as! NSMutableCharacterSet
@@ -241,24 +241,25 @@ extension String {
         return self.addingPercentEncoding(withAllowedCharacters: allowed as CharacterSet)!
     }
 
-    public func percentEncodeQuery() -> String {
+    // swiftlint:disable:next unused_declaration
+    func percentEncodeQuery() -> String {
         return self.addingPercentEncoding(withAllowedCharacters: CharacterSet.urlQueryAllowed as CharacterSet)!
     }
 }
 
 extension Array where Element == URIQueryItem {
-    public var queryString: String? {
+    var queryString: String? {
         if self.isEmpty {
             return nil
         }
         return self.map { [$0.name, $0.value].compactMap { $0 }.joined(separator: "=") }.joined(separator: "&")
     }
 
-    public func toURLQueryItems() -> [URLQueryItem] {
+    func toURLQueryItems() -> [URLQueryItem] {
         return self.map { URLQueryItem(name: $0.name, value: $0.value) }
     }
 
-    public func containsPercentEncode() -> Bool {
+    func containsPercentEncode() -> Bool {
         return self.contains { item in
             return item.name.isPercentEncoded || (item.value?.isPercentEncoded ?? false)
         }
@@ -266,7 +267,7 @@ extension Array where Element == URIQueryItem {
 }
 
 extension Array where Element == URLQueryItem {
-    public func containsPercentEncode() -> Bool {
+    func containsPercentEncode() -> Bool {
         return self.contains { item in
             return item.name.isPercentEncoded || (item.value?.isPercentEncoded ?? false)
         }

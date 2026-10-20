@@ -5,11 +5,11 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
-import struct Foundation.TimeInterval
 import struct Foundation.Date
 import func Foundation.pow
+import struct Foundation.TimeInterval
 
-actor ClientSideRateLimiter: Sendable {
+actor ClientSideRateLimiter {
 
     // these are constants defined in Retry Behavior 2.0
     let minFillRate: Double = 0.5
@@ -58,17 +58,17 @@ actor ClientSideRateLimiter: Sendable {
 
     // The following functions are built exactly as described in Retry Behavior 2.0.
 
-    func tokenBucketAcquire(amount: Double) -> TimeInterval? {
+    /// Consumes a token and returns nil if capacity is available; otherwise
+    /// returns the wait time without consuming, so the caller can sleep and
+    /// retry. Keeps `currentCapacity` >= 0 under concurrent acquirers.
+    func tokenBucketTryAcquire(amount: Double) -> TimeInterval? {
         if !enabled { return nil }
         tokenBucketRefill()
         if amount <= currentCapacity {
             currentCapacity -= amount
             return nil
-        } else {
-            let delay = (amount - currentCapacity) / fillRate
-            currentCapacity -= amount
-            return delay
         }
+        return (amount - currentCapacity) / fillRate
     }
 
     private func tokenBucketRefill() {
@@ -147,9 +147,21 @@ actor ClientSideRateLimiter: Sendable {
     // The following functions are not described in Retry Behavior 2.0 but are
     // used to set test conditions.
 
+    // swiftlint:disable:next unused_declaration
     func setLastMaxRate(_ newValue: Double) { lastMaxRate = newValue }
 
+    // swiftlint:disable:next unused_declaration
     func setLastThrottleTime(_ newValue: Double) { lastThrottleTime = newValue }
 
+    // swiftlint:disable:next unused_declaration
     func setClock(_ newClock: @escaping () -> TimeInterval) { clock = newClock }
+
+    // swiftlint:disable:next unused_declaration
+    func setTokenBucketForTesting(fillRate: Double, capacity: Double) {
+        self.enabled = true
+        self.fillRate = fillRate
+        self.maxCapacity = fillRate
+        self.currentCapacity = capacity
+        self.lastTimestamp = clock()
+    }
 }
