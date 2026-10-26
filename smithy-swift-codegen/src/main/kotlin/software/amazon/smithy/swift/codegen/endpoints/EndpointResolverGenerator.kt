@@ -5,7 +5,6 @@
 
 package software.amazon.smithy.swift.codegen.endpoints
 
-import software.amazon.smithy.codegen.core.CodegenException
 import software.amazon.smithy.codegen.core.Symbol
 import software.amazon.smithy.model.node.Node
 import software.amazon.smithy.rulesengine.language.EndpointRuleSet
@@ -47,11 +46,7 @@ class EndpointResolverGenerator(
      */
     private fun bddBytecode(ctx: ProtocolGenerator.GenerationContext): ByteArray? {
         val trait = ctx.service.getTrait<EndpointBddTrait>() ?: return null
-        val bytecoderPath =
-            ctx.settings.bddBytecoderPath
-                ?: throw CodegenException("The endpointBdd trait requires the bddBytecoderPath setting")
         return BddBytecoder.compile(
-            bytecoderPath,
             Node.printJson(trait.toNode()),
             ctx.settings.sdkId,
         )
