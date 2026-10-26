@@ -59,7 +59,7 @@ class SwiftSettings(
     val modelPath: String?,
     val localDevelopment: Boolean,
     val forceSchemaBased: Boolean,
-    val bddBytecoderPath: String? = null,
+    val bddBytecoderPath: String?,
 ) {
     companion object {
         const val SERVICE = "service"

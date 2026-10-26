@@ -72,17 +72,22 @@ class EndpointResolverGeneratorBddTests {
     @Test
     fun `model with both traits generates bytecode resolver`() {
         val contents = render(bothTraitsModel, bddBytecoderPath = bytecoderPath)
-        contents.shouldContain("bytecode: Foundation.Data(base64Encoded: Self.bytecode)!)")
+        contents.shouldContain("private static let bytecode = Foundation.Data(base64Encoded: \"")
+        contents.shouldContain("try self.init(partitions: ClientRuntime.partitionJSON, bytecode: Self.bytecode)")
         contents.shouldNotContain("ruleSet")
     }
 
     @Test
     fun `BDD-only model generates bytecode resolver`() {
         val contents = render(model, bddBytecoderPath = bytecoderPath)
-        contents.shouldContain("bytecode: Foundation.Data(base64Encoded: Self.bytecode)!)")
+        contents.shouldContain("private static let bytecode = Foundation.Data(base64Encoded: \"")
+        contents.shouldContain("try self.init(partitions: ClientRuntime.partitionJSON, bytecode: Self.bytecode)")
         contents.shouldNotContain("ruleSet")
 
-        val base64 = Regex("private static let bytecode = \"([^\"]+)\"").find(contents)!!.groupValues[1]
+        val base64 =
+            Regex("private static let bytecode = Foundation\\.Data\\(base64Encoded: \"([^\"]+)\"\\)!")
+                .find(contents)!!
+                .groupValues[1]
         val magic =
             Base64
                 .getDecoder()

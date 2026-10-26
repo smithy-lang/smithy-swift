@@ -78,13 +78,16 @@ class EndpointResolverGenerator(
         writer.write("")
         writer.openBlock("extension DefaultEndpointResolver {", "}") {
             if (bytecode != null) {
-                writer.write("private static let bytecode = \$S", Base64.getEncoder().encodeToString(bytecode))
+                writer.write(
+                    "private static let bytecode = \$N(base64Encoded: \$S)!",
+                    FoundationTypes.Data,
+                    Base64.getEncoder().encodeToString(bytecode),
+                )
                 writer.write("")
                 writer.openBlock("init() throws {", "}") {
                     writer.write(
-                        "try self.init(partitions: \$N, bytecode: \$N(base64Encoded: Self.bytecode)!)",
+                        "try self.init(partitions: \$N, bytecode: Self.bytecode)",
                         partitionDefinition,
-                        FoundationTypes.Data,
                     )
                 }
             } else {
