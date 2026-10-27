@@ -6,6 +6,7 @@
 package software.amazon.smithy.swift.codegen.endpoints
 
 import software.amazon.smithy.codegen.core.CodegenException
+import java.io.IOException
 import java.nio.file.Files
 
 /**
@@ -18,6 +19,9 @@ import java.nio.file.Files
  */
 object BddBytecoder {
     private const val BYTECODER_RESOURCE = "bdd-bytecoder.py"
+
+    // Python 3 is usually `python3`, but only `python` on some platforms (e.g. Windows)
+    private val PYTHON_COMMANDS = listOf("python3", "python")
 
     /**
      * @param traitJson the endpointBdd trait serialized as JSON
@@ -38,10 +42,7 @@ object BddBytecoder {
                     ?: throw CodegenException("Missing bundled resource $BYTECODER_RESOURCE")
             script.use { Files.write(bytecoder, it.readBytes()) }
             Files.writeString(input, traitJson)
-            val process =
-                ProcessBuilder("python3", bytecoder.toString(), input.toString(), output.toString())
-                    .redirectErrorStream(true)
-                    .start()
+            val process = startPython(listOf(bytecoder.toString(), input.toString(), output.toString()))
             val consoleOutput = process.inputStream.bufferedReader().readText()
             val exitCode = process.waitFor()
             if (exitCode != 0) {
@@ -57,5 +58,23 @@ object BddBytecoder {
             Files.deleteIfExists(input)
             Files.deleteIfExists(output)
         }
+    }
+
+    /**
+     * Starts the first available Python command from [PYTHON_COMMANDS] with the given arguments.
+     */
+    private fun startPython(args: List<String>): Process {
+        var lastError: IOException? = null
+        for (python in PYTHON_COMMANDS) {
+            try {
+                return ProcessBuilder(listOf(python) + args).redirectErrorStream(true).start()
+            } catch (e: IOException) {
+                lastError = e
+            }
+        }
+        throw CodegenException(
+            "Python 3 is required to compile endpointBdd traits, but neither python3 nor python was found on the PATH",
+            lastError,
+        )
     }
 }
