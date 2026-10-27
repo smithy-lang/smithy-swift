@@ -56,8 +56,10 @@ public final class Deserializer: ShapeDeserializer {
                 deserializer = Deserializer(usesJSONNameTrait: usesJSONNameTrait, node: .list([]))
             case .string:
                 deserializer = Deserializer(usesJSONNameTrait: usesJSONNameTrait, node: .string(""))
-            case .byte, .short, .integer, .long, .bigInteger, .float, .double, .bigDecimal, .timestamp:
+            case .byte, .short, .integer, .long, .bigInteger, .float, .double, .bigDecimal:
                 deserializer = Deserializer(usesJSONNameTrait: usesJSONNameTrait, node: .number(0))
+            case .timestamp:
+                deserializer = Deserializer(usesJSONNameTrait: usesJSONNameTrait, node: Self.epochNode(for: member))
             case .boolean:
                 deserializer = Deserializer(usesJSONNameTrait: usesJSONNameTrait, node: .bool(false))
             case .blob:
@@ -264,6 +266,26 @@ public final class Deserializer: ShapeDeserializer {
     public var mediaType: String? { "application/json" }
 
     // MARK: - Private methods
+
+    /// A JSON node holding the Unix epoch, encoded in the timestamp format that `member` is read with.
+    ///
+    /// Used to pre-fill a required timestamp member; the node must be of the type that
+    /// ``readTimestamp(_:)`` expects for that member's format, or the pre-fill itself will throw.
+    private static func epochNode(for member: Schema) -> JSONValue {
+        switch member.getTrait(TimestampFormatTrait.self)?.format ?? .epochSeconds {
+        case .dateTime: return epochDateTime
+        case .httpDate: return epochHTTPDate
+        case .epochSeconds: return .number(0)
+        }
+    }
+
+    private static let epochDateTime = JSONValue.string(
+        TimestampFormatter(format: .dateTime).string(from: Date(timeIntervalSince1970: 0))
+    )
+
+    private static let epochHTTPDate = JSONValue.string(
+        TimestampFormatter(format: .httpDate).string(from: Date(timeIntervalSince1970: 0))
+    )
 
     private func match(key: String, memberSchemas: [Schema]) throws -> Schema? {
         memberSchemas.first { memberSchema in
