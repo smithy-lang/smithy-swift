@@ -51,6 +51,16 @@ public final class Schema: Sendable {
     /// an infinite loop when accessed.
     private let _target: @Sendable () -> Schema?
 
+    /// Returns the input schema, or `nil` if none.
+    ///
+    /// Only set on a schema of type `.operation`.
+    public let input: Schema?
+
+    /// Returns the output schema, or `nil` if none.
+    ///
+    /// Only set on a schema of type `.operation`.
+    public let output: Schema?
+
     /// The index of this schema, if it represents a Smithy member.
     ///
     /// For a member schema, index will be set to its index in the members array.
@@ -83,6 +93,8 @@ public final class Schema: Sendable {
         type: ShapeType,
         traits: TraitCollection = TraitCollection(),
         members: [Schema] = [],
+        input: Schema? = nil,
+        output: Schema? = nil,
         containerType: ShapeType? = nil,
         target: @Sendable @escaping @autoclosure () -> Schema? = nil,
         index: Int = -1
@@ -91,6 +103,8 @@ public final class Schema: Sendable {
         self.type = type
         self.traits = traits
         self._members = members
+        self.input = input
+        self.output = output
         self.containerType = containerType
         self._target = target
         self.index = index
