@@ -23,8 +23,7 @@ final class HTTPLabelSerializerTests: XCTestCase {
 
     func test_boolean_serializesBooleanIntoURI() throws {
         let operation = HTTPLabelClient.booleanHTTPLabelOperation
-        let uri = try XCTUnwrap(operation.schema.getTrait(HTTPTrait.self)?.uri)
-        let subject = HTTPLabelSerializer(uri: uri)
+        let subject = try HTTPLabelSerializer(operation: operation)
 
         let input = BooleanHTTPLabelInput(answer: true)
         try input.serializeMembers(operation.inputSchema, subject)
@@ -36,8 +35,7 @@ final class HTTPLabelSerializerTests: XCTestCase {
 
     func test_byte_serializesByteIntoURI() throws {
         let operation = HTTPLabelClient.byteHTTPLabelOperation
-        let uri = try XCTUnwrap(operation.schema.getTrait(HTTPTrait.self)?.uri)
-        let subject = HTTPLabelSerializer(uri: uri)
+        let subject = try HTTPLabelSerializer(operation: operation)
 
         let input = ByteHTTPLabelInput(quantity: -42)
         try input.serializeMembers(operation.inputSchema, subject)
@@ -47,8 +45,7 @@ final class HTTPLabelSerializerTests: XCTestCase {
 
     func test_short_serializesShortIntoURI() throws {
         let operation = HTTPLabelClient.shortHTTPLabelOperation
-        let uri = try XCTUnwrap(operation.schema.getTrait(HTTPTrait.self)?.uri)
-        let subject = HTTPLabelSerializer(uri: uri)
+        let subject = try HTTPLabelSerializer(operation: operation)
 
         let input = ShortHTTPLabelInput(quantity: 1234)
         try input.serializeMembers(operation.inputSchema, subject)
@@ -58,8 +55,7 @@ final class HTTPLabelSerializerTests: XCTestCase {
 
     func test_number_serializesNumberIntoURI() throws {
         let operation = HTTPLabelClient.integerHTTPLabelOperation
-        let uri = try XCTUnwrap(operation.schema.getTrait(HTTPTrait.self)?.uri)
-        let subject = HTTPLabelSerializer(uri: uri)
+        let subject = try HTTPLabelSerializer(operation: operation)
 
         let input = IntegerHTTPLabelInput(quantity: 8675309)
         try input.serializeMembers(operation.inputSchema, subject)
@@ -69,8 +65,7 @@ final class HTTPLabelSerializerTests: XCTestCase {
 
     func test_long_serializesLongIntoURI() throws {
         let operation = HTTPLabelClient.longHTTPLabelOperation
-        let uri = try XCTUnwrap(operation.schema.getTrait(HTTPTrait.self)?.uri)
-        let subject = HTTPLabelSerializer(uri: uri)
+        let subject = try HTTPLabelSerializer(operation: operation)
 
         let input = LongHTTPLabelInput(quantity: 9876543210)
         try input.serializeMembers(operation.inputSchema, subject)
@@ -80,8 +75,7 @@ final class HTTPLabelSerializerTests: XCTestCase {
 
     func test_float_serializesFloatIntoURI() throws {
         let operation = HTTPLabelClient.floatHTTPLabelOperation
-        let uri = try XCTUnwrap(operation.schema.getTrait(HTTPTrait.self)?.uri)
-        let subject = HTTPLabelSerializer(uri: uri)
+        let subject = try HTTPLabelSerializer(operation: operation)
 
         let input = FloatHTTPLabelInput(quantity: 3.5)
         try input.serializeMembers(operation.inputSchema, subject)
@@ -91,10 +85,9 @@ final class HTTPLabelSerializerTests: XCTestCase {
 
     func test_float_serializesNonFiniteFloatUsingSmithyTokens() throws {
         let operation = HTTPLabelClient.floatHTTPLabelOperation
-        let uri = try XCTUnwrap(operation.schema.getTrait(HTTPTrait.self)?.uri)
 
         for (value, expected) in [(Float.nan, "NaN"), (.infinity, "Infinity"), (-.infinity, "-Infinity")] {
-            let subject = HTTPLabelSerializer(uri: uri)
+            let subject = try HTTPLabelSerializer(operation: operation)
             let input = FloatHTTPLabelInput(quantity: value)
             try input.serializeMembers(operation.inputSchema, subject)
             XCTAssertEqual(subject.uri, "/float/\(expected)")
@@ -103,8 +96,7 @@ final class HTTPLabelSerializerTests: XCTestCase {
 
     func test_double_serializesDoubleIntoURI() throws {
         let operation = HTTPLabelClient.doubleHTTPLabelOperation
-        let uri = try XCTUnwrap(operation.schema.getTrait(HTTPTrait.self)?.uri)
-        let subject = HTTPLabelSerializer(uri: uri)
+        let subject = try HTTPLabelSerializer(operation: operation)
 
         let input = DoubleHTTPLabelInput(quantity: 2.25)
         try input.serializeMembers(operation.inputSchema, subject)
@@ -114,10 +106,9 @@ final class HTTPLabelSerializerTests: XCTestCase {
 
     func test_double_serializesNonFiniteDoubleUsingSmithyTokens() throws {
         let operation = HTTPLabelClient.doubleHTTPLabelOperation
-        let uri = try XCTUnwrap(operation.schema.getTrait(HTTPTrait.self)?.uri)
 
         for (value, expected) in [(Double.nan, "NaN"), (.infinity, "Infinity"), (-.infinity, "-Infinity")] {
-            let subject = HTTPLabelSerializer(uri: uri)
+            let subject = try HTTPLabelSerializer(operation: operation)
             let input = DoubleHTTPLabelInput(quantity: value)
             try input.serializeMembers(operation.inputSchema, subject)
             XCTAssertEqual(subject.uri, "/double/\(expected)")
@@ -128,8 +119,7 @@ final class HTTPLabelSerializerTests: XCTestCase {
 
     func test_string_serializesStringIntoURI() throws {
         let operation = HTTPLabelClient.stringHTTPLabelOperation
-        let uri = try XCTUnwrap(operation.schema.getTrait(HTTPTrait.self)?.uri)
-        let subject = HTTPLabelSerializer(uri: uri)
+        let subject = try HTTPLabelSerializer(operation: operation)
 
         let input = StringHTTPLabelInput(word: "abcdef")
         try input.serializeMembers(operation.inputSchema, subject)
@@ -139,8 +129,7 @@ final class HTTPLabelSerializerTests: XCTestCase {
 
     func test_string_serializesStringIntoURIEscapingSpecialCharactersIncludingSlash() throws {
         let operation = HTTPLabelClient.stringHTTPLabelOperation
-        let uri = try XCTUnwrap(operation.schema.getTrait(HTTPTrait.self)?.uri)
-        let subject = HTTPLabelSerializer(uri: uri)
+        let subject = try HTTPLabelSerializer(operation: operation)
 
         let input = StringHTTPLabelInput(word: "abc/*=")
         try input.serializeMembers(operation.inputSchema, subject)
@@ -150,8 +139,7 @@ final class HTTPLabelSerializerTests: XCTestCase {
 
     func test_greedyString_serializesStringIntoURIEscapingSpecialCharactersIncludingSlash() throws {
         let operation = HTTPLabelClient.greedyStringHTTPLabelOperation
-        let uri = try XCTUnwrap(operation.schema.getTrait(HTTPTrait.self)?.uri)
-        let subject = HTTPLabelSerializer(uri: uri)
+        let subject = try HTTPLabelSerializer(operation: operation)
 
         let input = GreedyStringHTTPLabelInput(word: "abc/*=")
         try input.serializeMembers(operation.inputSchema, subject)
@@ -163,10 +151,9 @@ final class HTTPLabelSerializerTests: XCTestCase {
 
     func test_timestamp_serializesTimestampIntoURIAsDateTimeByDefault() throws {
         let operation = HTTPLabelClient.timestampHTTPLabelOperation
-        let uri = try XCTUnwrap(operation.schema.getTrait(HTTPTrait.self)?.uri)
         let dateTimeString = "2026-07-09T21:43:14.762Z"
         let moment = TimestampFormatter(format: .dateTime).date(from: dateTimeString)
-        let subject = HTTPLabelSerializer(uri: uri)
+        let subject = try HTTPLabelSerializer(operation: operation)
 
         let input = TimestampHTTPLabelInput(moment: moment)
         try input.serializeMembers(operation.inputSchema, subject)
@@ -176,10 +163,9 @@ final class HTTPLabelSerializerTests: XCTestCase {
 
     func test_timestamp_serializesTimestampIntoURIUsingTimestampFormatTrait() throws {
         let operation = HTTPLabelClient.formattedTimestampHTTPLabelOperation
-        let uri = try XCTUnwrap(operation.schema.getTrait(HTTPTrait.self)?.uri)
         let dateTimeString = "2026-07-09T21:43:14.762Z"
         let moment = TimestampFormatter(format: .dateTime).date(from: dateTimeString)
-        let subject = HTTPLabelSerializer(uri: uri)
+        let subject = try HTTPLabelSerializer(operation: operation)
 
         let input = FormattedTimestampHTTPLabelInput(moment: moment)
         try input.serializeMembers(operation.inputSchema, subject)

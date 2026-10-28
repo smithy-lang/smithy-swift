@@ -35,6 +35,18 @@ public final class HTTPBindingsExtension: SchemaExtension {
 
     public let payloadType: ShapeType?
 
+    /// Whether any member of the schema is bound to each part of the HTTP request.
+    ///
+    /// A serializer is created only for a part that some member is bound to; one for any other part
+    /// would have nothing to serialize.  These are resolved once here, since testing them against
+    /// ``bindings`` on every request would search it repeatedly.
+    public let hasHeaderBinding: Bool
+    public let hasPrefixHeadersBinding: Bool
+    public let hasQueryBinding: Bool
+    public let hasQueryParamsBinding: Bool
+    public let hasPayloadBinding: Bool
+    public let hasBodyBinding: Bool
+
     public required init(schema: Schema) throws {
         var payloadType: ShapeType?
         self.bindings = schema.members.map { member in
@@ -59,6 +71,12 @@ public final class HTTPBindingsExtension: SchemaExtension {
             }
         }
         self.payloadType = payloadType
+        self.hasHeaderBinding = self.bindings.contains { $0 == .header }
+        self.hasPrefixHeadersBinding = self.bindings.contains { $0 == .prefixHeaders }
+        self.hasQueryBinding = self.bindings.contains { $0 == .query }
+        self.hasQueryParamsBinding = self.bindings.contains { $0 == .queryParams }
+        self.hasPayloadBinding = self.bindings.contains { $0 == .payload }
+        self.hasBodyBinding = self.bindings.contains { $0 == .body }
     }
 
 }

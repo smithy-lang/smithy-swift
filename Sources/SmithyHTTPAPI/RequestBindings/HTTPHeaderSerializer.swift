@@ -27,11 +27,31 @@ import struct SmithyTimestamps.TimestampFormatter
 /// and lists of those types.
 @_spi(SchemaBasedSerde)
 public final class HTTPHeaderSerializer: ShapeSerializer {
-    public private(set) var headers = Headers()
+
+    /// The headers serialized so far, in the order that their members were serialized.
+    ///
+    /// The `httpHeader` bindings of a structure are case-insensitively unique, which the model has
+    /// already been validated for, so a member's header is appended without first searching for an
+    /// existing header of the same name.  Searching would make serializing a structure with `n`
+    /// header bindings cost `O(n²)` name comparisons.
+    private var serialized = [Header]()
 
     /// The header name to use for the members of a list currently being serialized, or `nil`
     /// if a list is not being serialized.
     private var listName: String?
+
+    /// The position in `serialized` of the header that holds the list currently being serialized,
+    /// or `nil` if no element of that list has been serialized yet.
+    ///
+    /// Every element of a list is bound to the same single header, so the first element appends that
+    /// header and the rest append their values to it.
+    private var listHeaderIndex: Int?
+
+    public var headers: Headers {
+        var headers = Headers()
+        headers.headers = serialized
+        return headers
+    }
 
     public init() {}
 
@@ -47,14 +67,19 @@ public final class HTTPHeaderSerializer: ShapeSerializer {
         guard let name = schema.getTrait(HTTPHeaderTrait.self)?.name else { return }
         // An empty list still serializes to a header, present with an empty value.
         guard !value.isEmpty else {
-            headers.add(name: name, value: "")
+            serialized.append(Header(name: name, value: ""))
             return
         }
         // Each list element is appended to the header that shares the list's header name.
         // The element schema does not carry the httpHeader trait, so the list's name is held
         // here for the scalar writers to use while the elements are being serialized.
+        // A header binding may not nest lists, so a single list needs tracking at a time.
         self.listName = name
-        defer { self.listName = nil }
+        self.listHeaderIndex = nil
+        defer {
+            self.listName = nil
+            self.listHeaderIndex = nil
+        }
         try value.forEach { try consumer($0, self) }
     }
 
@@ -116,13 +141,13 @@ public final class HTTPHeaderSerializer: ShapeSerializer {
         let timestampFormat = schema.getTrait(TimestampFormatTrait.self)?.format ?? .httpDate
         let timestamp = TimestampFormatter(format: timestampFormat).string(from: value)
         // Timestamps are never quoted, even as list elements, so they are added directly.
-        headers.add(name: name, value: timestamp)
+        append(name: name, value: timestamp)
     }
 
     public func writeNull(_ schema: Schema) throws {
         // Will only ever be called in the context of a null member of a sparse list
         guard let listName else { return }
-        headers.add(name: listName, value: "null")
+        append(name: listName, value: "null")
     }
 
     public var data: Data? { nil } // not used for this serializer
@@ -149,10 +174,25 @@ public final class HTTPHeaderSerializer: ShapeSerializer {
         guard let name = headerName(for: schema) else { return }
         if schema.hasTrait(MediaTypeTrait.self) {
             // Any string with a media type trait gets Base64-encoded
-            headers.add(name: name, value: Data(value.utf8).base64EncodedString())
+            append(name: name, value: Data(value.utf8).base64EncodedString())
         } else {
-            headers.add(name: name, value: listName != nil ? Self.quoteHeaderValue(value) : value)
+            append(name: name, value: listName != nil ? Self.quoteHeaderValue(value) : value)
         }
+    }
+
+    /// Adds a value to the header named `name`.
+    ///
+    /// While a list is being serialized every value joins the one header bound to that list.  Outside
+    /// of a list the name belongs to a single member, so its header is appended directly.
+    private func append(name: String, value: String) {
+        if let listHeaderIndex {
+            serialized[listHeaderIndex].value.append(value)
+            return
+        }
+        if listName != nil {
+            listHeaderIndex = serialized.count
+        }
+        serialized.append(Header(name: name, value: value))
     }
 
     private static let quotableHeaderValueChars = "\",()"
