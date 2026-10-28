@@ -14,6 +14,8 @@ import class Foundation.NSNumber
 @_spi(SchemaBasedSerde)
 import struct SmithySerialization.DecodedNull
 @_spi(SchemaBasedSerde)
+import class SmithySerialization.DefaultValueDeserializer
+@_spi(SchemaBasedSerde)
 import protocol SmithySerialization.DeserializableStruct
 import struct SmithySerialization.SerializerError
 @_spi(SchemaBasedSerde)
@@ -48,26 +50,7 @@ public final class Deserializer: ShapeDeserializer {
 
         // Pre-fill members that have the required trait but no default with a zero/false/empty value.
         for member in memberSchemas where member.hasTrait(RequiredTrait.self) && !member.hasTrait(DefaultTrait.self) {
-            let deserializer: Deserializer
-            switch member.target!.type {
-            case .structure, .union, .map:
-                deserializer = Deserializer(usesJSONNameTrait: usesJSONNameTrait, node: .object([:]))
-            case .list, .set:
-                deserializer = Deserializer(usesJSONNameTrait: usesJSONNameTrait, node: .list([]))
-            case .string:
-                deserializer = Deserializer(usesJSONNameTrait: usesJSONNameTrait, node: .string(""))
-            case .byte, .short, .integer, .long, .bigInteger, .float, .double, .bigDecimal:
-                deserializer = Deserializer(usesJSONNameTrait: usesJSONNameTrait, node: .number(0))
-            case .timestamp:
-                deserializer = Deserializer(usesJSONNameTrait: usesJSONNameTrait, node: Self.epochNode(for: member))
-            case .boolean:
-                deserializer = Deserializer(usesJSONNameTrait: usesJSONNameTrait, node: .bool(false))
-            case .blob:
-                deserializer = Deserializer(usesJSONNameTrait: usesJSONNameTrait, node: .string(""))
-            default:
-                continue
-            }
-            try value.deserializeMember(member, deserializer)
+            try value.deserializeMember(member, Self.defaultValueDeserializer)
         }
 
         // Iterate over JSON elements of object & call consumer with the appropriate member.
@@ -267,25 +250,8 @@ public final class Deserializer: ShapeDeserializer {
 
     // MARK: - Private methods
 
-    /// A JSON node holding the Unix epoch, encoded in the timestamp format that `member` is read with.
-    ///
-    /// Used to pre-fill a required timestamp member; the node must be of the type that
-    /// ``readTimestamp(_:)`` expects for that member's format, or the pre-fill itself will throw.
-    private static func epochNode(for member: Schema) -> JSONValue {
-        switch member.getTrait(TimestampFormatTrait.self)?.format ?? .epochSeconds {
-        case .dateTime: return epochDateTime
-        case .httpDate: return epochHTTPDate
-        case .epochSeconds: return .number(0)
-        }
-    }
-
-    private static let epochDateTime = JSONValue.string(
-        TimestampFormatter(format: .dateTime).string(from: Date(timeIntervalSince1970: 0))
-    )
-
-    private static let epochHTTPDate = JSONValue.string(
-        TimestampFormatter(format: .httpDate).string(from: Date(timeIntervalSince1970: 0))
-    )
+    /// Supplies zero/false/empty values for `@required` members that have no `@default`.
+    private static let defaultValueDeserializer = DefaultValueDeserializer()
 
     private func match(key: String, memberSchemas: [Schema]) throws -> Schema? {
         memberSchemas.first { memberSchema in
