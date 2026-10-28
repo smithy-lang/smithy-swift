@@ -14,6 +14,7 @@ import software.amazon.smithy.rulesengine.language.EndpointRuleSet
 import software.amazon.smithy.rulesengine.language.syntax.parameters.Parameter
 import software.amazon.smithy.rulesengine.language.syntax.parameters.ParameterType
 import software.amazon.smithy.rulesengine.traits.EndpointRuleSetTrait
+import software.amazon.smithy.swift.codegen.endpoints.EndpointTypes
 import software.amazon.smithy.swift.codegen.integration.ProtocolGenerator
 import software.amazon.smithy.swift.codegen.model.boxed
 import software.amazon.smithy.swift.codegen.model.buildSymbol
@@ -60,6 +61,10 @@ class AuthSchemeResolverGenerator {
                     //   1-to-1 mapping of endpoint parameters, since rules based auth scheme resolvers rely on
                     //   endpoint resolver's auth scheme resolution to resolve an auth scheme.
                     renderEndpointParamFields(ctx, this)
+                    // Carries the client's endpoint resolver so auth scheme resolution reuses it
+                    //   instead of constructing a new endpoint rules engine on every request.
+                    write("/// The client's configured endpoint resolver, used to resolve auth schemes from endpoint rules.")
+                    write("public let endpointResolver: (any \$N)?", EndpointTypes.EndpointResolver)
                 } else {
                     // If service supports SigV4/SigV4a auth scheme, it's a special-case for now - change once
                     // it becomes possible at model level to notate custom members for a given auth scheme.

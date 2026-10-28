@@ -37,6 +37,56 @@ final class DeserializerTests: XCTestCase {
         XCTAssertEqual(actual.dateTimeTimestamp, expected)
     }
 
+    func test_requiredTimestamps_itDeserializesRequiredTimestampsOfEveryFormat() throws {
+        let json = """
+        {"requiredTimestamps":{\
+        "dateTime":"2025-07-10T01:14:19Z",\
+        "httpDate":"Thu, 10 Jul 2025 01:14:19 GMT",\
+        "epochSeconds":1752110059\
+        }}
+        """
+        let expected = Date(timeIntervalSince1970: 1752110059)
+
+        let subject = try Deserializer(usesJSONNameTrait: false, data: Data(json.utf8))
+        let actual = try SerdeOperationOutput.deserialize(subject)
+
+        XCTAssertEqual(actual.requiredTimestamps?.dateTime, expected)
+        XCTAssertEqual(actual.requiredTimestamps?.httpDate, expected)
+        XCTAssertEqual(actual.requiredTimestamps?.epochSeconds, expected)
+    }
+
+    func test_requiredTimestamps_itDefaultsOmittedRequiredTimestampsToEpochZero() throws {
+        let data = Data("{\"requiredTimestamps\":{}}".utf8)
+        let expected = Date(timeIntervalSince1970: 0)
+
+        let subject = try Deserializer(usesJSONNameTrait: false, data: data)
+        let actual = try SerdeOperationOutput.deserialize(subject)
+
+        XCTAssertEqual(actual.requiredTimestamps?.dateTime, expected)
+        XCTAssertEqual(actual.requiredTimestamps?.httpDate, expected)
+        XCTAssertEqual(actual.requiredTimestamps?.epochSeconds, expected)
+    }
+
+    func test_requiredEnums_itDeserializesRequiredEnums() throws {
+        let data = Data("{\"requiredEnums\":{\"enum\":\"a\",\"intEnum\":1}}".utf8)
+
+        let subject = try Deserializer(usesJSONNameTrait: false, data: data)
+        let actual = try SerdeOperationOutput.deserialize(subject)
+
+        XCTAssertEqual(actual.requiredEnums?.`enum`, .a)
+        XCTAssertEqual(actual.requiredEnums?.intEnum, .one)
+    }
+
+    func test_requiredEnums_itDefaultsOmittedRequiredEnumsToUnknown() throws {
+        let data = Data("{\"requiredEnums\":{}}".utf8)
+
+        let subject = try Deserializer(usesJSONNameTrait: false, data: data)
+        let actual = try SerdeOperationOutput.deserialize(subject)
+
+        XCTAssertEqual(actual.requiredEnums?.`enum`, .sdkUnknown(""))
+        XCTAssertEqual(actual.requiredEnums?.intEnum, .sdkUnknown(0))
+    }
+
     func test_epochSeconds_itDeserializesEpochSeconds() throws {
         let epochSecondsTimestamp = 1783618892.951
         let expected = TimestampFormatter(format: .epochSeconds).date(from: "\(epochSecondsTimestamp)")

@@ -100,6 +100,48 @@ structure SerdeOperationOutput {
 
     @timestampFormat("epoch-seconds")
     epochSecondsTimestamp: Timestamp
+
+    requiredTimestamps: RequiredTimestampsStructure
+
+    requiredEnums: RequiredEnumsStructure
+}
+
+// Timestamp format is placed on these target shapes, not on the members that
+// target them, to match the modeling used by the service in awslabs/aws-sdk-swift#2220.
+@timestampFormat("date-time")
+timestamp DateTimeTimestamp
+
+@timestampFormat("http-date")
+timestamp HTTPDateTimestamp
+
+@timestampFormat("epoch-seconds")
+timestamp EpochSecondsTimestamp
+
+structure RequiredTimestampsStructure {
+    @required
+    dateTime: DateTimeTimestamp
+
+    @required
+    httpDate: HTTPDateTimestamp
+
+    @required
+    epochSeconds: EpochSecondsTimestamp
+}
+
+enum RequiredEnum {
+    A = "a"
+}
+
+intEnum RequiredIntEnum {
+    ONE = 1
+}
+
+structure RequiredEnumsStructure {
+    @required
+    enum: RequiredEnum
+
+    @required
+    intEnum: RequiredIntEnum
 }
 
 structure SerdeOperationStructure {
