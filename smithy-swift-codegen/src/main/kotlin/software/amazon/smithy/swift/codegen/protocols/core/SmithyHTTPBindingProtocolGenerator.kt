@@ -6,8 +6,6 @@ package software.amazon.smithy.swift.codegen.protocols.core
 
 import software.amazon.smithy.codegen.core.Symbol
 import software.amazon.smithy.model.shapes.OperationShape
-import software.amazon.smithy.rulesengine.language.EndpointRuleSet
-import software.amazon.smithy.rulesengine.traits.EndpointRuleSetTrait
 import software.amazon.smithy.rulesengine.traits.EndpointTestsTrait
 import software.amazon.smithy.swift.codegen.EndpointTestGenerator
 import software.amazon.smithy.swift.codegen.integration.HTTPBindingProtocolGenerator
@@ -20,6 +18,7 @@ import software.amazon.smithy.swift.codegen.integration.ProtocolGenerator
 import software.amazon.smithy.swift.codegen.integration.SmithyHttpProtocolClientGeneratorFactory
 import software.amazon.smithy.swift.codegen.integration.middlewares.OperationEndpointResolverMiddleware
 import software.amazon.smithy.swift.codegen.middleware.MiddlewareRenderable
+import software.amazon.smithy.swift.codegen.model.endpointParameters
 import software.amazon.smithy.swift.codegen.model.getTrait
 import software.amazon.smithy.swift.codegen.utils.SDKFileUtils
 
@@ -64,8 +63,6 @@ abstract class SmithyHTTPBindingProtocolGenerator(
         ).generateProtocolTests() + renderEndpointsTests(ctx)
 
     fun renderEndpointsTests(ctx: ProtocolGenerator.GenerationContext): Int {
-        val ruleSetNode = ctx.service.getTrait<EndpointRuleSetTrait>()?.ruleSet
-        val ruleSet = if (ruleSetNode != null) EndpointRuleSet.fromNode(ruleSetNode) else null
         var testCount = 0
 
         ctx.service.getTrait<EndpointTestsTrait>()?.let { testsTrait ->
@@ -75,7 +72,7 @@ abstract class SmithyHTTPBindingProtocolGenerator(
 
             val filename = SDKFileUtils(ctx.settings).testsDirFilePath("EndpointResolverTest")
             ctx.delegator.useFileWriter(filename) { swiftWriter ->
-                testCount = +EndpointTestGenerator(testsTrait, ruleSet, ctx).render(swiftWriter)
+                testCount = +EndpointTestGenerator(testsTrait, ctx.service.endpointParameters(), ctx).render(swiftWriter)
             }
         }
 
