@@ -211,4 +211,22 @@ final class DefaultRetryStrategyTests: XCTestCase {
         let actual = await delay.actual
         XCTAssertEqual(actual, 1.5)
     }
+
+    // MARK: - Defaults
+
+    func test_defaultOptions_useNewRetries2026() {
+        let defaultOptions = RetryStrategyOptions(backoffStrategy: ExponentialBackoffStrategy())
+        XCTAssertTrue(defaultOptions.useNewRetries2026)
+    }
+
+    func test_defaultOptions_clampRetryAfterHint() async throws {
+        // With default options, retryAfterHint=10.0 > 5+t_i=5.05, so delay should be 5.05
+        var defaultSubject = DefaultRetryStrategy(options: RetryStrategyOptions(backoffStrategy: backoffStrategy))
+        defaultSubject.sleeper = mockSleeper
+        let info = RetryErrorInfo(errorType: .serverError, retryAfterHint: 10.0, isTimeout: false)
+        let token1 = try await defaultSubject.acquireInitialRetryToken(tokenScope: scope1)
+        try await defaultSubject.refreshRetryTokenForRetry(tokenToRenew: token1, errorInfo: info)
+        let actual = await delay.actual
+        XCTAssertEqual(actual, 5.05)
+    }
 }
