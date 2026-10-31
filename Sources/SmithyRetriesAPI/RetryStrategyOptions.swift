@@ -36,8 +36,14 @@ public struct RetryStrategyOptions: Sendable {
     /// Sets the maximum capacity for this retry strategy's quotas.
     public let maxCapacity: Int
 
-    /// Set from the `AWS_NEW_RETRIES_2026` env var.
-    /// See `AWSRetryFeatures.isNewRetries2026Enabled` for what it enables.
+    /// Selects the retry behavior.
+    ///
+    /// `true` (default): Retry Behavior 2.1. Retries use full-jitter exponential backoff, a retry-after
+    /// hint is clamped to the computed backoff, and retries cost 14 tokens (5 for throttling).
+    ///
+    /// `false`: the pre-2.1 behavior, used by `AWSRetryMode.legacy`. Retries cost 5 tokens (10 for timeouts).
+    ///
+    /// The name is kept for source compatibility.
     public let useNewRetries2026: Bool
 
     public init(
@@ -46,7 +52,7 @@ public struct RetryStrategyOptions: Sendable {
         availableCapacity: Int = 500,
         maxCapacity: Int = 500,
         rateLimitingMode: RateLimitingMode = .standard,
-        useNewRetries2026: Bool = false
+        useNewRetries2026: Bool = true
     ) {
         self.backoffStrategy = backoffStrategy
         self.maxRetriesBase = maxRetriesBase
