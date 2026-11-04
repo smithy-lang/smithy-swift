@@ -5,8 +5,6 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
-import class AwsCommonRuntimeKit.BigDecimal
-import class AwsCommonRuntimeKit.BigInteger
 import struct Foundation.Data
 import struct Foundation.Date
 import class Foundation.ISO8601DateFormatter

@@ -183,8 +183,7 @@ var runtimeTargets: [PackageDescription.Target] {
             dependencies: [
                 "SmithySerialization",
                 "SmithyReadWrite",
-                "SmithyTimestamps",
-                .product(name: "AwsCommonRuntimeKit", package: "aws-crt-swift"),
+                "SmithyTimestamps"
             ]
         ),
         .target(
@@ -221,7 +220,6 @@ var runtimeTargets: [PackageDescription.Target] {
                 "SmithyStreams",
                 "SmithySerialization",
                 "SmithyTimestamps",
-                .product(name: "AwsCommonRuntimeKit", package: "aws-crt-swift"),
             ]
         ),
         .target(

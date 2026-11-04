@@ -164,8 +164,8 @@ class SwiftSymbolProvider(
             .putProperty("shape", shape)
             .putProperty("decl", SwiftDeclaration.CLASS.keyword)
             .name(typeName)
-            .namespace(SwiftDependency.CRT.target, ".")
-            .addDependency(SwiftDependency.CRT)
+            .namespace(SwiftDependency.SMITHY_SERIALIZATION.target, ".")
+            .addDependency(SwiftDependency.SMITHY_SERIALIZATION)
 
     override fun stringShape(shape: StringShape): Symbol {
         val enumTrait = shape.getTrait(EnumTrait::class.java)
@@ -414,8 +414,8 @@ class SwiftSymbolProvider(
                 if (!useArbitraryPrecision) return builder.defaultValue(defaultValueLiteral)
                 val typeName = if (targetShape is BigIntegerShape) "BigInteger" else "BigDecimal"
                 val plainLiteral = java.math.BigDecimal(defaultValueLiteral).toPlainString()
-                val crtSymbol = arbitraryPrecisionSymbolBuilder(targetShape, typeName).build()
-                builder.defaultValueClosure { writer -> writer.format("try! \$N(\$S)", crtSymbol, plainLiteral) }
+                val bigNumberSymbol = arbitraryPrecisionSymbolBuilder(targetShape, typeName).build()
+                builder.defaultValueClosure { writer -> writer.format("try! \$N(\$S)", bigNumberSymbol, plainLiteral) }
             }
             // For: boolean, byte, short, integer, long, bigInteger, bigDecimal,
             //      just take the literal string value from the trait.

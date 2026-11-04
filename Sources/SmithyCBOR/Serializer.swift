@@ -5,11 +5,11 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
-import class AwsCommonRuntimeKit.BigDecimal
-import class AwsCommonRuntimeKit.BigInteger
 import class AwsCommonRuntimeKit.CBOREncoder
 import struct Foundation.Data
 import struct Foundation.Date
+import class SmithySerialization.BigDecimal
+import class SmithySerialization.BigInteger
 @_spi(SchemaBasedSerde)
 import class Smithy.Schema
 import protocol Smithy.SmithyDocument
@@ -92,12 +92,12 @@ public final class Serializer: ShapeSerializer {
 
     public func writeBigInteger(_ schema: Schema, _ value: BigInteger) throws {
         writeMember(schema: schema)
-        encoder.encode(.bigInteger(value))
+        encoder.encode(.bigInteger(value.crt))
     }
 
     public func writeBigDecimal(_ schema: Schema, _ value: BigDecimal) throws {
         writeMember(schema: schema)
-        encoder.encode(.bigDecimal(value))
+        encoder.encode(.bigDecimal(value.crt))
     }
 
     public func writeString(_ schema: Schema, _ value: String) throws {

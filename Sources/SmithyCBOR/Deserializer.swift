@@ -5,11 +5,11 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
-import class AwsCommonRuntimeKit.BigDecimal
-import class AwsCommonRuntimeKit.BigInteger
 import class AwsCommonRuntimeKit.CBORDecoder
 import struct Foundation.Data
 import struct Foundation.Date
+import class SmithySerialization.BigDecimal
+import class SmithySerialization.BigInteger
 @_spi(SchemaBasedSerde)
 import class Smithy.Schema
 import protocol Smithy.SmithyDocument
@@ -175,7 +175,7 @@ public class Deserializer: ShapeDeserializer {
         try nullCheck()
         // Accepts an int, a uint, or a bignum (tag 2 or 3).  The decoder is left unmoved on failure.
         do {
-            return try decoder.popNextBigInteger()
+            return BigInteger(crt: try decoder.popNextBigInteger())
         } catch {
             throw CBORDecoderError("member \(schema.id) expected an integer or bignum: \(error)")
         }
@@ -189,13 +189,13 @@ public class Deserializer: ShapeDeserializer {
         // A decimal fraction (tag 4) is the expected encoding.  The decoder is left unmoved on failure,
         // so fall back to accepting any other CBOR number.
         if let decimal = try? decoder.popNextBigDecimal() {
-            return decimal
+            return BigDecimal(crt: decimal)
         }
         let next = try decoder.popNext()
         do {
             switch next {
             case .bigDecimal(let value):
-                return value
+                return BigDecimal(crt: value)
             case .bigInteger(let value):
                 return try BigDecimal(value.toString())
             case .int(let value):

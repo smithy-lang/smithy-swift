@@ -77,10 +77,10 @@ class SwiftSymbolProviderTest {
     }
 
     @Test
-    fun `it maps bigInteger and bigDecimal to CRT types when schema-based`() {
-        assertEquals("AwsCommonRuntimeKit.BigInteger", symbolFor("bigInteger", true).fullName)
-        assertEquals("AwsCommonRuntimeKit.BigDecimal", symbolFor("bigDecimal", true).fullName)
-        assertEquals("AwsCommonRuntimeKit.BigInteger", symbolFor("custom", true).fullName)
+    fun `it maps bigInteger and bigDecimal to arbitrary-precision types when schema-based`() {
+        assertEquals("SmithySerialization.BigInteger", symbolFor("bigInteger", true).fullName)
+        assertEquals("SmithySerialization.BigDecimal", symbolFor("bigDecimal", true).fullName)
+        assertEquals("SmithySerialization.BigInteger", symbolFor("custom", true).fullName)
     }
 
     @Test
@@ -93,15 +93,15 @@ class SwiftSymbolProviderTest {
     fun `it renders bigInteger and bigDecimal defaults as constructor calls when schema-based`() {
         val writer = SwiftWriter("test", moduleName = "TestModule")
         assertEquals(
-            "try! AwsCommonRuntimeKit.BigInteger(\"0\")",
+            "try! SmithySerialization.BigInteger(\"0\")",
             symbolFor("zeroInteger", true).defaultValueFromClosure(writer),
         )
         assertEquals(
-            "try! AwsCommonRuntimeKit.BigDecimal(\"1.5\")",
+            "try! SmithySerialization.BigDecimal(\"1.5\")",
             symbolFor("decimalWithDefault", true).defaultValueFromClosure(writer),
         )
         assertEquals(
-            "try! AwsCommonRuntimeKit.BigInteger(\"123456789012345678901234567890\")",
+            "try! SmithySerialization.BigInteger(\"123456789012345678901234567890\")",
             symbolFor("largeInteger", true).defaultValueFromClosure(writer),
         )
     }

@@ -69,13 +69,13 @@ public struct SymbolProvider {
         case .integer, .long:
             return "Swift.Int"
         case .bigInteger:
-            return "AwsCommonRuntimeKit.BigInteger"
+            return "SmithySerialization.BigInteger"
         case .float:
             return "Swift.Float"
         case .double:
             return "Swift.Double"
         case .bigDecimal:
-            return "AwsCommonRuntimeKit.BigDecimal"
+            return "SmithySerialization.BigDecimal"
         case .blob:
             if shape.hasTrait(StreamingTrait.self) {
                 return "Smithy.ByteStream"

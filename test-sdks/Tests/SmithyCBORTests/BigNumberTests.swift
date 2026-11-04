@@ -6,7 +6,9 @@
 //
 
 import XCTest
-import AwsCommonRuntimeKit
+import class AwsCommonRuntimeKit.CBORDecoder
+import class AwsCommonRuntimeKit.CBOREncoder
+import enum AwsCommonRuntimeKit.CBORType
 @_spi(SchemaBasedSerde) import Smithy
 @_spi(SchemaBasedSerde) import SmithyCBOR
 @_spi(SchemaBasedSerde) import SmithySerialization
@@ -21,25 +23,21 @@ final class BigNumberTests: XCTestCase {
     // MARK: - Serialization
 
     func test_writeBigInteger_writesBignumForValueBeyondUInt64() throws {
-        let expected = try BigInteger(bigInteger)
-
         let decoded = try serialize(BigNumBodyInput(bigInteger: BigInteger(bigInteger)))
 
-        XCTAssertEqual(decoded, .map(["bigInteger": .bigInteger(expected)]))
+        XCTAssertEqual(decoded, .map(["bigInteger": try cborBigInteger(bigInteger)]))
     }
 
     func test_writeBigDecimal_writesDecimalFraction() throws {
-        let expected = try BigDecimal("0.100000000000000000000001")
-
         let decoded = try serialize(BigNumBodyInput(bigDecimal: BigDecimal("0.100000000000000000000001")))
 
-        XCTAssertEqual(decoded, .map(["bigDecimal": .bigDecimal(expected)]))
+        XCTAssertEqual(decoded, .map(["bigDecimal": try cborBigDecimal("0.100000000000000000000001")]))
     }
 
     // MARK: - Deserialization
 
     func test_readBigInteger_readsBignumBeyondUInt64() throws {
-        let output = try deserialize(memberName: "bigInteger", .bigInteger(BigInteger(bigInteger)))
+        let output = try deserialize(memberName: "bigInteger", try cborBigInteger(bigInteger))
 
         XCTAssertEqual(output.bigInteger, try BigInteger(bigInteger))
     }
@@ -67,7 +65,7 @@ final class BigNumberTests: XCTestCase {
     func test_readBigDecimal_readsDecimalFractionWithMoreDigitsThanDoubleCanHold() throws {
         let output = try deserialize(
             memberName: "bigDecimal",
-            .bigDecimal(BigDecimal("100000000000000000000001.0"))
+            try cborBigDecimal("100000000000000000000001.0")
         )
 
         XCTAssertEqual(output.bigDecimal, try BigDecimal("100000000000000000000001.0"))
@@ -85,7 +83,7 @@ final class BigNumberTests: XCTestCase {
     }
 
     func test_readBigDecimal_readsBignum() throws {
-        let output = try deserialize(memberName: "bigDecimal", .bigInteger(BigInteger(bigInteger)))
+        let output = try deserialize(memberName: "bigDecimal", try cborBigInteger(bigInteger))
 
         XCTAssertEqual(output.bigDecimal, try BigDecimal(bigInteger))
     }
@@ -133,7 +131,7 @@ final class BigNumberTests: XCTestCase {
         let encoder = try CBOREncoder()
         encoder.encode(.map_start(2))
         encoder.encode(.text("unknownBignum"))
-        encoder.encode(.bigInteger(try BigInteger(bigInteger)))
+        encoder.encode(try cborBigInteger(bigInteger))
         encoder.encode(.text("bigInteger"))
         encoder.encode(.uint(5))
 

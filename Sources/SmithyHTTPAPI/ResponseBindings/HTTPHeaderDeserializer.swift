@@ -5,9 +5,9 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
-import class AwsCommonRuntimeKit.BigDecimal
-import class AwsCommonRuntimeKit.BigInteger
 import Foundation
+import class SmithySerialization.BigDecimal
+import class SmithySerialization.BigInteger
 @_spi(SchemaBasedSerde)
 import class Smithy.HTTPHeaderTrait
 @_spi(SchemaBasedSerde)

@@ -6,7 +6,6 @@
 //
 
 import XCTest
-import AwsCommonRuntimeKit
 @_spi(SchemaBasedSerde) import Smithy
 @_spi(SchemaBasedSerde) import SmithyHTTPAPI
 @_spi(SchemaBasedSerde) import SmithySerialization

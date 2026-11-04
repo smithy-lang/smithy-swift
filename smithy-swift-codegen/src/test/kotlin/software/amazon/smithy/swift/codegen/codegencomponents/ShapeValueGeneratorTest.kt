@@ -693,7 +693,7 @@ MyStruct(
     }
 
     @Test
-    fun `it renders struct with BigInteger and BigDecimal as CRT types when schema-based`() {
+    fun `it renders struct with BigInteger and BigDecimal as arbitrary-precision types when schema-based`() {
         val member1 =
             MemberShape
                 .builder()
@@ -746,9 +746,9 @@ MyStruct(
 
         val expected = """
 MyStruct(
-    bigDecimalMember: try! AwsCommonRuntimeKit.BigDecimal("25613525352378.523"),
-    bigIntMember: try! AwsCommonRuntimeKit.BigInteger("31825352653626"),
-    bigIntMemberNegative: try! AwsCommonRuntimeKit.BigInteger("-31825352653626")
+    bigDecimalMember: try! SmithySerialization.BigDecimal("25613525352378.523"),
+    bigIntMember: try! SmithySerialization.BigInteger("31825352653626"),
+    bigIntMemberNegative: try! SmithySerialization.BigInteger("-31825352653626")
 )
 """
         contents.shouldContainOnlyOnce(expected)
