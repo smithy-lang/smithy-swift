@@ -7,11 +7,11 @@
 
 import struct Foundation.Data
 import struct Foundation.Date
-import class SmithySerialization.BigDecimal
-import class SmithySerialization.BigInteger
 @_spi(SchemaBasedSerde)
 import class Smithy.Schema
 import protocol Smithy.SmithyDocument
+import class SmithySerialization.BigDecimal
+import class SmithySerialization.BigInteger
 @_spi(SchemaBasedSerde)
 import protocol SmithySerialization.DeserializableStruct
 import struct SmithySerialization.SerializerError

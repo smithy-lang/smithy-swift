@@ -8,12 +8,12 @@
 import struct Foundation.Data
 import struct Foundation.Date
 import enum Smithy.ClientError
-import class SmithySerialization.BigDecimal
-import class SmithySerialization.BigInteger
 @_spi(SchemaBasedSerde)
 import class Smithy.Schema
 import protocol Smithy.SmithyDocument
 import struct SmithyEventStreamsAPI.Message
+import class SmithySerialization.BigDecimal
+import class SmithySerialization.BigInteger
 @_spi(SchemaBasedSerde)
 import protocol SmithySerialization.Codec
 @_spi(SchemaBasedSerde)

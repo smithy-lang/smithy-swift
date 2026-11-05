@@ -10,10 +10,10 @@ import struct Foundation.Date
 import class Foundation.JSONSerialization
 import class Foundation.NSNumber
 import class Foundation.NSString
-import class SmithySerialization.BigDecimal
-import class SmithySerialization.BigInteger
 @_spi(SchemaBasedSerde)
 @_spi(SmithyDocumentImpl) import Smithy
+import class SmithySerialization.BigDecimal
+import class SmithySerialization.BigInteger
 @_spi(SchemaBasedSerde)
 import struct SmithySerialization.DecodedNull
 @_spi(SchemaBasedSerde)

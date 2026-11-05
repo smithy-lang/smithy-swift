@@ -7,8 +7,6 @@
 
 import struct Foundation.Data
 import struct Foundation.Date
-import class SmithySerialization.BigDecimal
-import class SmithySerialization.BigInteger
 @_spi(SchemaBasedSerde)
 import class Smithy.EventHeaderTrait
 @_spi(SchemaBasedSerde)
@@ -16,6 +14,8 @@ import class Smithy.Schema
 import protocol Smithy.SmithyDocument
 import struct SmithyEventStreamsAPI.Header
 import enum SmithyEventStreamsAPI.HeaderValue
+import class SmithySerialization.BigDecimal
+import class SmithySerialization.BigInteger
 @_spi(SchemaBasedSerde)
 import protocol SmithySerialization.SerializableStruct
 import struct SmithySerialization.SerializerError

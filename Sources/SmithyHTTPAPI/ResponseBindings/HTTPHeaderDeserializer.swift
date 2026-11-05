@@ -6,8 +6,6 @@
 //
 
 import Foundation
-import class SmithySerialization.BigDecimal
-import class SmithySerialization.BigInteger
 @_spi(SchemaBasedSerde)
 import class Smithy.HTTPHeaderTrait
 @_spi(SchemaBasedSerde)
@@ -20,6 +18,8 @@ import class Smithy.SparseTrait
 import enum Smithy.TimestampFormat
 @_spi(SchemaBasedSerde)
 import class Smithy.TimestampFormatTrait
+import class SmithySerialization.BigDecimal
+import class SmithySerialization.BigInteger
 @_spi(SchemaBasedSerde)
 import struct SmithySerialization.DecodedNull
 @_spi(SchemaBasedSerde)

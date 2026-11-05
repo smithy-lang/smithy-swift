@@ -7,14 +7,14 @@
 
 import struct Foundation.Data
 import struct Foundation.Date
-import class SmithySerialization.BigDecimal
-import class SmithySerialization.BigInteger
 @_spi(SchemaBasedSerde)
 import class Smithy.EventPayloadTrait
 @_spi(SchemaBasedSerde)
 import class Smithy.Schema
 import protocol Smithy.SmithyDocument
 import struct SmithyEventStreamsAPI.Header
+import class SmithySerialization.BigDecimal
+import class SmithySerialization.BigInteger
 @_spi(SchemaBasedSerde)
 import protocol SmithySerialization.Codec
 @_spi(SchemaBasedSerde)

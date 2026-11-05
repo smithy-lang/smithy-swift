@@ -6,8 +6,6 @@
 //
 
 import Foundation
-import class SmithySerialization.BigDecimal
-import class SmithySerialization.BigInteger
 @_spi(SchemaBasedSerde)
 import class Smithy.HTTPQueryParamsTrait
 @_spi(SchemaBasedSerde)
@@ -16,6 +14,8 @@ import class Smithy.Schema
 import class Smithy.TimestampFormatTrait
 @_spi(SchemaBasedSerde)
 import struct Smithy.URIQueryItem
+import class SmithySerialization.BigDecimal
+import class SmithySerialization.BigInteger
 @_spi(SchemaBasedSerde)
 import protocol SmithySerialization.SerializableStruct
 @_spi(SchemaBasedSerde)

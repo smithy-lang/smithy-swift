@@ -6,8 +6,6 @@
 //
 
 import Foundation
-import class SmithySerialization.BigDecimal
-import class SmithySerialization.BigInteger
 @_spi(SchemaBasedSerde)
 import class Smithy.HTTPLabelTrait
 @_spi(SchemaBasedSerde)
