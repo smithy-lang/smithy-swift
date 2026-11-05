@@ -99,7 +99,10 @@ var runtimeTargets: [PackageDescription.Target] {
         ),
         .target(
             name: "SmithySerialization",
-            dependencies: ["Smithy"]
+            dependencies: [
+                "Smithy",
+                .product(name: "AwsCommonRuntimeKit", package: "aws-crt-swift"),
+            ]
         ),
         .target(
             name: "SmithyTelemetryAPI",
@@ -309,7 +312,6 @@ var runtimeTargets: [PackageDescription.Target] {
             name: "SmithyCodegenCore",
             dependencies: [
                 "Smithy",
-                "SmithySerialization",
             ],
             resources: [ .process("Resources") ]
         ),

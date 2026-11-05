@@ -67,12 +67,12 @@ public final class DefaultValueDeserializer: ShapeDeserializer, Sendable {
         0.0
     }
 
-    public func readBigInteger(_ schema: Schema) throws -> Int64 {
-        0
+    public func readBigInteger(_ schema: Schema) throws -> BigInteger {
+        try BigInteger("0")
     }
 
-    public func readBigDecimal(_ schema: Schema) throws -> Double {
-        0.0
+    public func readBigDecimal(_ schema: Schema) throws -> BigDecimal {
+        try BigDecimal("0")
     }
 
     public func readString(_ schema: Schema) throws -> String {

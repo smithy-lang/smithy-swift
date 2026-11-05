@@ -18,6 +18,8 @@ import class Smithy.SparseTrait
 import enum Smithy.TimestampFormat
 @_spi(SchemaBasedSerde)
 import class Smithy.TimestampFormatTrait
+import class SmithySerialization.BigDecimal
+import class SmithySerialization.BigInteger
 @_spi(SchemaBasedSerde)
 import struct SmithySerialization.DecodedNull
 @_spi(SchemaBasedSerde)
@@ -136,12 +138,16 @@ public final class HTTPHeaderDeserializer: ShapeDeserializer {
         try floatingPoint(schema)
     }
 
-    public func readBigInteger(_ schema: Schema) throws -> Int64 {
-        try integer(schema)
+    public func readBigInteger(_ schema: Schema) throws -> BigInteger {
+        let string = try string()
+        guard let bigInteger = try? BigInteger(string) else { throw Self.notA("BigInteger", string, schema) }
+        return bigInteger
     }
 
-    public func readBigDecimal(_ schema: Schema) throws -> Double {
-        try floatingPoint(schema)
+    public func readBigDecimal(_ schema: Schema) throws -> BigDecimal {
+        let string = try string()
+        guard let bigDecimal = try? BigDecimal(string) else { throw Self.notA("BigDecimal", string, schema) }
+        return bigDecimal
     }
 
     public func readString(_ schema: Schema) throws -> String {

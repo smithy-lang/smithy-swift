@@ -12,6 +12,8 @@ import enum Smithy.ClientError
 import class Smithy.Schema
 import protocol Smithy.SmithyDocument
 import struct SmithyEventStreamsAPI.Message
+import class SmithySerialization.BigDecimal
+import class SmithySerialization.BigInteger
 @_spi(SchemaBasedSerde)
 import protocol SmithySerialization.Codec
 @_spi(SchemaBasedSerde)
@@ -113,11 +115,11 @@ struct EventUnionDeserializer: ShapeDeserializer {
         throw notImplemented
     }
 
-    func readBigInteger(_ schema: Schema) throws -> Int64 {
+    func readBigInteger(_ schema: Schema) throws -> BigInteger {
         throw notImplemented
     }
 
-    func readBigDecimal(_ schema: Schema) throws -> Double {
+    func readBigDecimal(_ schema: Schema) throws -> BigDecimal {
         throw notImplemented
     }
 

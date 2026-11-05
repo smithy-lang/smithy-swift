@@ -19,7 +19,7 @@ class SerdeUtils {
             model: Model,
         ) = useSchemaBased(settings, model.expectShape<ServiceShape>(settings.service))
 
-        private fun useSchemaBased(
+        fun useSchemaBased(
             settings: SwiftSettings,
             service: ServiceShape,
         ) = // This fun is temporary; it will be eliminated when all services/protocols are moved to schema-based

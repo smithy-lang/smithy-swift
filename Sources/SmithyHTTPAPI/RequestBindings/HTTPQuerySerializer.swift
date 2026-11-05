@@ -14,6 +14,8 @@ import class Smithy.Schema
 import class Smithy.TimestampFormatTrait
 @_spi(SchemaBasedSerde)
 import struct Smithy.URIQueryItem
+import class SmithySerialization.BigDecimal
+import class SmithySerialization.BigInteger
 @_spi(SchemaBasedSerde)
 import protocol SmithySerialization.SerializableStruct
 @_spi(SchemaBasedSerde)
@@ -96,14 +98,14 @@ public final class HTTPQuerySerializer: ShapeSerializer {
         addToQueryString(name: name, value: encoded(value))
     }
 
-    public func writeBigInteger(_ schema: Schema, _ value: Int64) throws {
+    public func writeBigInteger(_ schema: Schema, _ value: BigInteger) throws {
         guard let name = queryName(for: schema) else { return }
-        addToQueryString(name: name, value: "\(value)")
+        addToQueryString(name: name, value: try value.toString())
     }
 
-    public func writeBigDecimal(_ schema: Schema, _ value: Double) throws {
+    public func writeBigDecimal(_ schema: Schema, _ value: BigDecimal) throws {
         guard let name = queryName(for: schema) else { return }
-        addToQueryString(name: name, value: encoded(value))
+        addToQueryString(name: name, value: try value.toString())
     }
 
     public func writeString(_ schema: Schema, _ value: String) throws {
