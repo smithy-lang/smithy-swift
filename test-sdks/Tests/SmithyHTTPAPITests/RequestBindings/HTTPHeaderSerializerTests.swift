@@ -265,6 +265,20 @@ final class HTTPHeaderSerializerTests: XCTestCase {
         XCTAssertNil(subject.headers.values(for: "X-Count"))
     }
 
+    func test_multipleMembers_listValuesStayInTheListsOwnHeader() throws {
+        let operation = HTTPHeaderClient.mixedHTTPHeaderOperation
+        let subject = HTTPHeaderSerializer()
+
+        // The list is bound between two scalars, so serializing it must not leave the following
+        // scalar appending to the list's header.
+        let input = MixedHTTPHeaderInput(alpha: "a", beta: ["b1", "b2"], gamma: "c")
+        try input.serializeMembers(operation.inputSchema, subject)
+
+        XCTAssertEqual(subject.headers.values(for: "X-Alpha"), ["a"])
+        XCTAssertEqual(subject.headers.values(for: "X-Beta"), ["b1", "b2"])
+        XCTAssertEqual(subject.headers.values(for: "X-Gamma"), ["c"])
+    }
+
     func test_allMembersOmittedProducesNoHeaders() throws {
         let operation = HTTPHeaderClient.multipleHTTPHeaderOperation
         let subject = HTTPHeaderSerializer()

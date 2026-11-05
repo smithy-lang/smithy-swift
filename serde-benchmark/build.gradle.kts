@@ -49,6 +49,12 @@ fun makeProjections(): String {
             "SerdeBenchmarkAWSRestJSON",
             forceSchemaBased = true
         ),
+        // The same service as above, generated onto the legacy serde instead, so that the
+        // schema-based restJson1 serde can be A/B compared against it on identical models.
+        CodegenTest(
+            "com.amazonaws.sdk.benchmark#AwsRestJsonDataPlane",
+            "SerdeBenchmarkAWSRestJSONLegacy"
+        ),
         CodegenTest(
             "com.amazonaws.sdk.benchmark#AwsRestXmlDataPlane",
             "SerdeBenchmarkAWSRestXML"
