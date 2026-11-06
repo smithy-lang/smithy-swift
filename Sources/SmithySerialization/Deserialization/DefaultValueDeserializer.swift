@@ -19,7 +19,7 @@ import struct Smithy.StringMapDocument
 ///
 /// Not all of these methods may actually be utilized.
 @_spi(SchemaBasedSerde)
-public class DefaultValueDeserializer: ShapeDeserializer {
+public final class DefaultValueDeserializer: ShapeDeserializer, Sendable {
 
     public init() {}
 

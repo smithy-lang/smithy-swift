@@ -16,7 +16,7 @@ let package = Package(
         .package(url: "https://github.com/awslabs/aws-crt-swift.git", branch: "main"),
 
         // ClientRuntime tests use swift-log.  Keep this spec same as in smithy-swift
-        .package(url: "https://github.com/apple/swift-log.git", from: "1.0.0"),
+        .package(url: "https://github.com/apple/swift-log.git", "1.0.0"..<"1.17.0"),
 
         // Generated test SDKs.  Models are in build/model.  Use them where Smithy generates them.
         // Run bash script ./scripts/codegen.sh from smithy-swift root to generate or regenerate these files
