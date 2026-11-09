@@ -14,6 +14,8 @@ import class Smithy.MediaTypeTrait
 import class Smithy.Schema
 @_spi(SchemaBasedSerde)
 import class Smithy.TimestampFormatTrait
+import class SmithySerialization.BigDecimal
+import class SmithySerialization.BigInteger
 @_spi(SchemaBasedSerde)
 import protocol SmithySerialization.SerializableStruct
 @_spi(SchemaBasedSerde)
@@ -94,12 +96,12 @@ public final class HTTPHeaderSerializer: ShapeSerializer {
         addToHeaders(schema: schema, value: encoded(value))
     }
 
-    public func writeBigInteger(_ schema: Schema, _ value: Int64) throws {
-        addToHeaders(schema: schema, value: "\(value)")
+    public func writeBigInteger(_ schema: Schema, _ value: BigInteger) throws {
+        addToHeaders(schema: schema, value: try value.toString())
     }
 
-    public func writeBigDecimal(_ schema: Schema, _ value: Double) throws {
-        addToHeaders(schema: schema, value: encoded(value))
+    public func writeBigDecimal(_ schema: Schema, _ value: BigDecimal) throws {
+        addToHeaders(schema: schema, value: try value.toString())
     }
 
     public func writeString(_ schema: Schema, _ value: String) throws {

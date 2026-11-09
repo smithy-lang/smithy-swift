@@ -11,6 +11,8 @@ import struct Foundation.Date
 @_spi(SchemaBasedSerde)
 import class Smithy.Schema
 import protocol Smithy.SmithyDocument
+import class SmithySerialization.BigDecimal
+import class SmithySerialization.BigInteger
 @_spi(SchemaBasedSerde)
 import protocol SmithySerialization.SerializableStruct
 import struct SmithySerialization.SerializerError
@@ -88,14 +90,14 @@ public final class Serializer: ShapeSerializer {
         encoder.encode(.double(value))
     }
 
-    public func writeBigInteger(_ schema: Schema, _ value: Int64) throws {
+    public func writeBigInteger(_ schema: Schema, _ value: BigInteger) throws {
         writeMember(schema: schema)
-        encoder.encode(.int(value))
+        encoder.encode(.bigInteger(value.crt))
     }
 
-    public func writeBigDecimal(_ schema: Schema, _ value: Double) throws {
+    public func writeBigDecimal(_ schema: Schema, _ value: BigDecimal) throws {
         writeMember(schema: schema)
-        encoder.encode(.double(value))
+        encoder.encode(.bigDecimal(value.crt))
     }
 
     public func writeString(_ schema: Schema, _ value: String) throws {

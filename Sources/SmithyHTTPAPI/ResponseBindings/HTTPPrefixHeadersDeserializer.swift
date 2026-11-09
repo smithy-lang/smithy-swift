@@ -12,6 +12,8 @@ import class Smithy.HTTPPrefixHeadersTrait
 @_spi(SchemaBasedSerde)
 import class Smithy.Schema
 import protocol Smithy.SmithyDocument
+import class SmithySerialization.BigDecimal
+import class SmithySerialization.BigInteger
 @_spi(SchemaBasedSerde)
 import protocol SmithySerialization.DeserializableStruct
 @_spi(SchemaBasedSerde)
@@ -109,11 +111,11 @@ public final class HTTPPrefixHeadersDeserializer: ShapeDeserializer {
         throw notBound("A double")
     }
 
-    public func readBigInteger(_ schema: Schema) throws -> Int64 {
+    public func readBigInteger(_ schema: Schema) throws -> BigInteger {
         throw notBound("A big integer")
     }
 
-    public func readBigDecimal(_ schema: Schema) throws -> Double {
+    public func readBigDecimal(_ schema: Schema) throws -> BigDecimal {
         throw notBound("A big decimal")
     }
 

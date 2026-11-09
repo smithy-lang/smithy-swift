@@ -95,12 +95,12 @@ public extension InterceptingSerializer {
         try after(schema)
     }
 
-    func writeBigInteger(_ schema: Schema, _ value: Int64) throws {
+    func writeBigInteger(_ schema: Schema, _ value: BigInteger) throws {
         try before(schema).writeBigInteger(schema, value)
         try after(schema)
     }
 
-    func writeBigDecimal(_ schema: Schema, _ value: Double) throws {
+    func writeBigDecimal(_ schema: Schema, _ value: BigDecimal) throws {
         try before(schema).writeBigDecimal(schema, value)
         try after(schema)
     }

@@ -14,6 +14,8 @@ import class Smithy.Schema
 import protocol Smithy.SmithyDocument
 import struct SmithyEventStreamsAPI.Header
 import enum SmithyEventStreamsAPI.HeaderValue
+import class SmithySerialization.BigDecimal
+import class SmithySerialization.BigInteger
 @_spi(SchemaBasedSerde)
 import protocol SmithySerialization.SerializableStruct
 import struct SmithySerialization.SerializerError
@@ -74,11 +76,11 @@ final class EventHeaderSerializer: ShapeSerializer {
         try skipOrThrow(schema)
     }
 
-    func writeBigInteger(_ schema: Schema, _ value: Int64) throws {
+    func writeBigInteger(_ schema: Schema, _ value: BigInteger) throws {
         try skipOrThrow(schema)
     }
 
-    func writeBigDecimal(_ schema: Schema, _ value: Double) throws {
+    func writeBigDecimal(_ schema: Schema, _ value: BigDecimal) throws {
         try skipOrThrow(schema)
     }
 

@@ -101,12 +101,12 @@ public class StringSerializer: ShapeSerializer {
         string += "\(value)"
     }
 
-    public func writeBigInteger(_ schema: Schema, _ value: Int64) throws {
+    public func writeBigInteger(_ schema: Schema, _ value: BigInteger) throws {
         guard !isSensitive(schema) else { return }
         string += "\(value)"
     }
 
-    public func writeBigDecimal(_ schema: Schema, _ value: Double) throws {
+    public func writeBigDecimal(_ schema: Schema, _ value: BigDecimal) throws {
         guard !isSensitive(schema) else { return }
         string += "\(value)"
     }
