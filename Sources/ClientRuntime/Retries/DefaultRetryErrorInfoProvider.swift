@@ -31,6 +31,9 @@ public enum DefaultRetryErrorInfoProvider: RetryErrorInfoProvider, Sendable {
             guard type.isRetryable else { return nil }
             let errorType: RetryErrorType = type.isThrottling ? .throttling : type.fault.retryErrorType
             return .init(errorType: errorType, retryAfterHint: nil, isTimeout: false)
+        } else if let code = (error as? HTTPError)?.httpResponse.statusCode, code == .tooManyRequests {
+            // A 429 that is not a modeled error is treated as throttling.
+            return .init(errorType: .throttling, retryAfterHint: nil, isTimeout: false)
         } else if let code = (error as? HTTPError)?.httpResponse.statusCode, retryableStatusCodes.contains(code) {
             return .init(errorType: .serverError, retryAfterHint: nil, isTimeout: false)
         } else if (error as NSError).domain == NSURLErrorDomain, (error as NSError).code == -1005 {

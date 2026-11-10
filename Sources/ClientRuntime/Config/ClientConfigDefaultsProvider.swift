@@ -39,6 +39,8 @@ open class ClientConfigDefaultsProvider {
     }
 
     /// Returns default retry strategy options.
+    ///
+    /// The options use Retry Behavior 2.1, the `RetryStrategyOptions` default.
     public static func backoffRetryStrategyOptions(
         _ maxAttempts: Int? = nil
     ) throws -> RetryStrategyOptions {

@@ -47,7 +47,7 @@ final actor RetryQuota {
         availableCapacity: Int,
         maxCapacity: Int,
         rateLimitingMode: RetryStrategyOptions.RateLimitingMode = .standard,
-        useNewRetries2026: Bool = false
+        useNewRetries2026: Bool = true
     ) {
         self.availableCapacity = availableCapacity
         self.maxCapacity = max(maxCapacity, availableCapacity)
