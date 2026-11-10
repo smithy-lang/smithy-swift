@@ -128,15 +128,27 @@ final class RetryQuotaTests: XCTestCase {
         XCTAssertEqual(finalCapacity, 495)  // 500 - 5
     }
 
-    func test_legacyMode_subtractsRetryCostOnNonTimeout() async throws {
+    func test_defaultInit_usesNewRetryCosts() async throws {
         let subject = RetryQuota(availableCapacity: 500, maxCapacity: 500)
+        let nonThrottling = RetryErrorInfo(errorType: .transient, retryAfterHint: nil, isTimeout: true)
+        let throttling = RetryErrorInfo(errorType: .throttling, retryAfterHint: nil, isTimeout: false)
+        let nonThrottlingCost = await subject.hasRetryQuota(errorInfo: nonThrottling)
+        let throttlingCost = await subject.hasRetryQuota(errorInfo: throttling)
+        XCTAssertEqual(nonThrottlingCost, 14)
+        XCTAssertEqual(throttlingCost, 5)
+        let finalCapacity = await subject.availableCapacity
+        XCTAssertEqual(finalCapacity, 500 - 14 - 5)
+    }
+
+    func test_legacyMode_subtractsRetryCostOnNonTimeout() async throws {
+        let subject = RetryQuota(availableCapacity: 500, maxCapacity: 500, useNewRetries2026: false)
         _ = await subject.hasRetryQuota(isThrottling: false)
         let finalCapacity = await subject.availableCapacity
         XCTAssertEqual(finalCapacity, 500 - RetryQuota.retryCostLegacy)  // 500 - 5
     }
 
     func test_legacyMode_subtractsTimeoutRetryCostOnTimeout() async throws {
-        let subject = RetryQuota(availableCapacity: 500, maxCapacity: 500)
+        let subject = RetryQuota(availableCapacity: 500, maxCapacity: 500, useNewRetries2026: false)
         let timeoutInfo = RetryErrorInfo(errorType: .transient, retryAfterHint: nil, isTimeout: true)
         _ = await subject.hasRetryQuota(errorInfo: timeoutInfo)
         let finalCapacity = await subject.availableCapacity
