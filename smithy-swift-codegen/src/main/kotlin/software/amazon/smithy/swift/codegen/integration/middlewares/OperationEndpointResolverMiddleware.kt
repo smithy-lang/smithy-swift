@@ -8,13 +8,11 @@ import software.amazon.smithy.model.shapes.DoubleShape
 import software.amazon.smithy.model.shapes.MemberShape
 import software.amazon.smithy.model.shapes.OperationShape
 import software.amazon.smithy.model.shapes.StringShape
-import software.amazon.smithy.rulesengine.language.EndpointRuleSet
 import software.amazon.smithy.rulesengine.language.syntax.parameters.Parameter
 import software.amazon.smithy.rulesengine.language.syntax.parameters.ParameterType
 import software.amazon.smithy.rulesengine.traits.ClientContextParamDefinition
 import software.amazon.smithy.rulesengine.traits.ClientContextParamsTrait
 import software.amazon.smithy.rulesengine.traits.ContextParamTrait
-import software.amazon.smithy.rulesengine.traits.EndpointRuleSetTrait
 import software.amazon.smithy.rulesengine.traits.OperationContextParamDefinition
 import software.amazon.smithy.rulesengine.traits.OperationContextParamsTrait
 import software.amazon.smithy.rulesengine.traits.StaticContextParamDefinition
@@ -25,6 +23,7 @@ import software.amazon.smithy.swift.codegen.SwiftWriter
 import software.amazon.smithy.swift.codegen.integration.ProtocolGenerator
 import software.amazon.smithy.swift.codegen.integration.middlewares.handlers.MiddlewareShapeUtils
 import software.amazon.smithy.swift.codegen.middleware.MiddlewareRenderable
+import software.amazon.smithy.swift.codegen.model.endpointParameters
 import software.amazon.smithy.swift.codegen.model.getTrait
 import software.amazon.smithy.swift.codegen.swiftmodules.SmithyTypes
 import software.amazon.smithy.swift.codegen.utils.toLowerCamelCase
@@ -81,12 +80,11 @@ open class OperationEndpointResolverMiddleware(
     ) {
         val params = mutableListOf<String>()
         var shouldCaptureConfig = false
-        ctx.service.getTrait<EndpointRuleSetTrait>()?.ruleSet?.let { node ->
-            val ruleSet = EndpointRuleSet.fromNode(node)
+        ctx.service.endpointParameters()?.let { endpointParameters ->
             val staticContextParams = op.getTrait<StaticContextParamsTrait>()?.parameters ?: emptyMap()
             val operationContextParams = op.getTrait<OperationContextParamsTrait>()?.parameters ?: emptyMap()
             val clientContextParams = ctx.service.getTrait<ClientContextParamsTrait>()?.parameters ?: emptyMap()
-            val parameters = ruleSet.parameters.toList()
+            val parameters = endpointParameters.toList()
             val setToUseForUniqueVarNamesInOperationContextParamCodegen = mutableSetOf<String>()
             if (clientContextParams.isNotEmpty() || parameters.any { it.isBuiltIn }) {
                 shouldCaptureConfig = true

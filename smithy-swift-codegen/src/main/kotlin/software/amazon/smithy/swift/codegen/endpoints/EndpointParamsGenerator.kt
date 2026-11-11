@@ -6,16 +6,15 @@
 package software.amazon.smithy.swift.codegen.endpoints
 
 import software.amazon.smithy.codegen.core.Symbol
-import software.amazon.smithy.rulesengine.language.EndpointRuleSet
 import software.amazon.smithy.rulesengine.language.syntax.parameters.Parameter
 import software.amazon.smithy.rulesengine.language.syntax.parameters.ParameterType
-import software.amazon.smithy.rulesengine.traits.EndpointRuleSetTrait
+import software.amazon.smithy.rulesengine.language.syntax.parameters.Parameters
 import software.amazon.smithy.swift.codegen.AuthSchemeResolverGenerator
 import software.amazon.smithy.swift.codegen.SwiftWriter
 import software.amazon.smithy.swift.codegen.integration.ProtocolGenerator
 import software.amazon.smithy.swift.codegen.model.boxed
 import software.amazon.smithy.swift.codegen.model.defaultValue
-import software.amazon.smithy.swift.codegen.model.getTrait
+import software.amazon.smithy.swift.codegen.model.endpointParameters
 import software.amazon.smithy.swift.codegen.swiftmodules.ClientRuntimeTypes
 import software.amazon.smithy.swift.codegen.swiftmodules.SwiftTypes
 import software.amazon.smithy.swift.codegen.utils.SDKFileUtils
@@ -28,22 +27,21 @@ class EndpointParamsGenerator(
     val ctx: ProtocolGenerator.GenerationContext,
 ) {
     fun render() {
-        val ruleSetNode = ctx.service.getTrait<EndpointRuleSetTrait>()?.ruleSet
-        val endpointRuleSet = ruleSetNode?.let { EndpointRuleSet.fromNode(it) }
+        val parameters = ctx.service.endpointParameters()
         val filename = SDKFileUtils(ctx.settings).sourcesDirFilePath("Endpoints")
         ctx.delegator.useFileWriter(filename) { writer ->
-            renderParams(writer, endpointRuleSet)
+            renderParams(writer, parameters)
             writer.write("")
-            renderContextExtension(writer, endpointRuleSet)
+            renderContextExtension(writer, parameters)
         }
     }
 
     private fun renderParams(
         writer: SwiftWriter,
-        endpointRuleSet: EndpointRuleSet?,
+        parameters: Parameters?,
     ) {
         writer.openBlock("${ctx.settings.visibility} struct EndpointParams: Sendable {", "}") {
-            endpointRuleSet?.parameters?.toList()?.sortedBy { it.name.toString() }?.let { sortedParameters ->
+            parameters?.toList()?.sortedBy { it.name.toString() }?.let { sortedParameters ->
                 renderMembers(writer, sortedParameters)
                 writer.write("")
                 renderInit(writer, sortedParameters)
@@ -106,7 +104,7 @@ class EndpointParamsGenerator(
 
     private fun renderContextExtension(
         writer: SwiftWriter,
-        endpointRuleSet: EndpointRuleSet?,
+        parameters: Parameters?,
     ) {
         writer.openBlock(
             "extension EndpointParams: \$N {",
@@ -121,7 +119,7 @@ class EndpointParamsGenerator(
             ) {
                 writer.openBlock("get throws {", "}") {
                     writer.write("let context = try \$N()", ClientRuntimeTypes.Core.EndpointsRequestContext)
-                    endpointRuleSet?.parameters?.toList()?.sortedBy { it.name.toString() }?.let { sortedParameters ->
+                    parameters?.toList()?.sortedBy { it.name.toString() }?.let { sortedParameters ->
                         sortedParameters.forEach { param ->
                             val memberName = param.name.toString().toLowerCamelCase()
                             val paramName = param.name.toString()
