@@ -7,7 +7,6 @@ package software.amazon.smithy.swift.codegen
 
 import software.amazon.smithy.codegen.core.CodegenException
 import software.amazon.smithy.model.node.Node
-import software.amazon.smithy.rulesengine.language.EndpointRuleSet
 import software.amazon.smithy.rulesengine.language.evaluation.value.ArrayValue
 import software.amazon.smithy.rulesengine.language.evaluation.value.BooleanValue
 import software.amazon.smithy.rulesengine.language.evaluation.value.EmptyValue
@@ -15,6 +14,7 @@ import software.amazon.smithy.rulesengine.language.evaluation.value.IntegerValue
 import software.amazon.smithy.rulesengine.language.evaluation.value.RecordValue
 import software.amazon.smithy.rulesengine.language.evaluation.value.StringValue
 import software.amazon.smithy.rulesengine.language.evaluation.value.Value
+import software.amazon.smithy.rulesengine.language.syntax.parameters.Parameters
 import software.amazon.smithy.rulesengine.traits.EndpointTestsTrait
 import software.amazon.smithy.swift.codegen.endpoints.EndpointTypes
 import software.amazon.smithy.swift.codegen.integration.ProtocolGenerator
@@ -29,7 +29,7 @@ import software.amazon.smithy.swift.codegen.utils.toLowerCamelCase
  */
 class EndpointTestGenerator(
     private val endpointTest: EndpointTestsTrait,
-    private val endpointRuleSet: EndpointRuleSet?,
+    private val endpointParameters: Parameters?,
     private val ctx: ProtocolGenerator.GenerationContext,
 ) {
     fun render(writer: SwiftWriter): Int {
@@ -42,8 +42,7 @@ class EndpointTestGenerator(
 
         // used to filter out test params that are not valid
         val endpointParamsMembers =
-            endpointRuleSet
-                ?.parameters
+            endpointParameters
                 ?.toList()
                 ?.map { it.name.name.value }
                 ?.toSet() ?: emptySet()

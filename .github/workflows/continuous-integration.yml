@@ -208,12 +208,12 @@ jobs:
     steps:
       - name: Checkout smithy-swift
         uses: actions/checkout@v6
-      - name: Install openssl
+      - name: Install openssl and python3
         run: |
           if [ -x "$(command -v apt)" ]; then
-            apt-get update && apt-get install -y libssl-dev
+            apt-get update && apt-get install -y libssl-dev python3
           else
-            yum install -y openssl-devel which
+            yum install -y openssl-devel which python3
           fi
       - name: Setup common tools
         uses: ./.github/actions/setup-common-tools-composite-action
@@ -252,12 +252,12 @@ jobs:
     container:
       image: swift:${{ matrix.swift }}
     steps:
-      - name: Install openssl
+      - name: Install openssl and python3
         run: |
           if [ -x "$(command -v apt)" ]; then
-            apt-get update && apt-get install -y libssl-dev
+            apt-get update && apt-get install -y libssl-dev python3
           else
-            yum install -y openssl-devel which
+            yum install -y openssl-devel which python3
           fi
       - name: Checkout smithy-swift
         uses: actions/checkout@v6
