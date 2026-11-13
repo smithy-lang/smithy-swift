@@ -16,6 +16,7 @@ import software.amazon.smithy.swift.codegen.model.eventStreamErrors
 import software.amazon.smithy.swift.codegen.model.eventStreamEvents
 import software.amazon.smithy.swift.codegen.model.expectShape
 import software.amazon.smithy.swift.codegen.model.hasTrait
+import software.amazon.smithy.swift.codegen.swiftmodules.ClientRuntimeTypes
 import software.amazon.smithy.swift.codegen.swiftmodules.SmithyEventStreamsAPITypes
 import software.amazon.smithy.swift.codegen.swiftmodules.SmithyHTTPAPITypes
 import software.amazon.smithy.swift.codegen.swiftmodules.SmithyTypes
@@ -26,6 +27,11 @@ class MessageUnmarshallableGenerator(
     val ctx: ProtocolGenerator.GenerationContext,
     val customizations: HTTPProtocolCustomizable,
 ) {
+    // The smithy-swift unknown error has no request ID; other unknown error types, i.e. the AWS one,
+    // require one.
+    private val requestIDArg =
+        ", requestID: nil".takeIf { customizations.unknownServiceErrorSymbol != ClientRuntimeTypes.Http.UnknownHttpServiceError } ?: ""
+
     fun render(streamingMember: MemberShape) {
         val symbol: Symbol = ctx.symbolProvider.toSymbol(ctx.model.expectShape(streamingMember.target))
         val filename = SDKFileUtils(ctx.settings).modelFilePath("${symbol.name}+MessageUnmarshallable")
@@ -91,8 +97,9 @@ class MessageUnmarshallableGenerator(
                                         SmithyHTTPAPITypes.HTTPResponse,
                                     )
                                     writer.write(
-                                        "return \$N(httpResponse: httpResponse, message: \"error processing event stream, unrecognized ':exceptionType': \\(params.exceptionType); contentType: \\(params.contentType ?? \"nil\")\", requestID: nil, typeName: nil)",
+                                        "return \$N(httpResponse: httpResponse, message: \"error processing event stream, unrecognized ':exceptionType': \\(params.exceptionType); contentType: \\(params.contentType ?? \"nil\")\"\$L, typeName: nil)",
                                         customizations.unknownServiceErrorSymbol,
+                                        requestIDArg,
                                     )
                                 }
                                 writer.write("}")
@@ -109,8 +116,9 @@ class MessageUnmarshallableGenerator(
                                 SmithyHTTPAPITypes.HTTPResponse,
                             )
                             writer.write(
-                                "throw \$N(httpResponse: httpResponse, message: \"error processing event stream, unrecognized ':errorType': \\(params.errorCode); message: \\(params.message ?? \"nil\")\", requestID: nil, typeName: nil)",
+                                "throw \$N(httpResponse: httpResponse, message: \"error processing event stream, unrecognized ':errorType': \\(params.errorCode); message: \\(params.message ?? \"nil\")\"\$L, typeName: nil)",
                                 customizations.unknownServiceErrorSymbol,
+                                requestIDArg,
                             )
                         }
                         writer.write("case .unknown(messageType: let messageType):")
@@ -187,13 +195,13 @@ class MessageUnmarshallableGenerator(
                 renderDeserializeExplicitEventPayloadMember(ctx, eventPayloadBinding, writer)
             } else {
                 if (unbound.isNotEmpty()) {
-                    // all remaining members are bound to payload (but not explicitly bound via @eventPayload)
-                    // generate a payload deserializer specific to the unbound members (note this will be a deserializer
-                    // for the overall event shape but only payload members will be considered for deserialization),
-                    // and then assign each deserialized payload member to the current builder instance
+                    // All remaining members are bound to the payload (but not explicitly bound via @eventPayload).
+                    // The payload is a document for the overall event shape, containing only the unbound members.
+                    // Read the payload as the event shape, then assign each unbound member to the event.
+                    renderReadToValue(writer, member)
                     unbound.forEach {
-                        renderReadToValue(writer, it)
-                        writer.write("event.\$L = value", ctx.symbolProvider.toMemberName(it))
+                        val unboundMemberName = ctx.symbolProvider.toMemberName(it)
+                        writer.write("event.\$L = value.\$L", unboundMemberName, unboundMemberName)
                     }
                 }
             }

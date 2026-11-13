@@ -43,6 +43,15 @@ class SwiftDependency(
                 "",
                 "",
             )
+        val SWIFT_TESTING =
+            SwiftDependency(
+                "Testing",
+                null,
+                "",
+                "",
+                "",
+                "",
+            )
         val CLIENT_RUNTIME = smithySwiftDependency("ClientRuntime")
         val SMITHY = smithySwiftDependency("Smithy")
         val SMITHY_SERIALIZATION = smithySwiftDependency("SmithySerialization")

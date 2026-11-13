@@ -22,17 +22,20 @@ public struct EventStreamBodyMiddleware<OperationStackInput,
     let keyPath: KeyPath<OperationStackInput, AsyncThrowingStream<OperationStackInputPayload, Swift.Error>?>
     let defaultBody: String?
     let marshalClosure: MarshalClosure<OperationStackInputPayload>
+    let errorMarshalClosure: ((any Swift.Error) throws -> Message?)?
     let initialRequestMessage: Message?
 
     public init(
         keyPath: KeyPath<OperationStackInput, AsyncThrowingStream<OperationStackInputPayload, Swift.Error>?>,
         defaultBody: String? = nil,
         marshalClosure: @escaping MarshalClosure<OperationStackInputPayload>,
+        errorMarshalClosure: ((any Swift.Error) throws -> Message?)? = nil,
         initialRequestMessage: Message? = nil
     ) {
         self.keyPath = keyPath
         self.defaultBody = defaultBody
         self.marshalClosure = marshalClosure
+        self.errorMarshalClosure = errorMarshalClosure
         self.initialRequestMessage = initialRequestMessage
     }
 }
@@ -53,6 +56,7 @@ extension EventStreamBodyMiddleware: RequestMessageSerializer {
               stream: eventStream,
               messageEncoder: messageEncoder,
               marshalClosure: marshalClosure,
+              errorMarshalClosure: errorMarshalClosure,
               messageSigner: messageSigner,
               initialRequestMessage: initialRequestMessage
             )

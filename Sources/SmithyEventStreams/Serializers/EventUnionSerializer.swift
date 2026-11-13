@@ -97,3 +97,42 @@ private final class EventSerializer: NoOpByDefaultShapeSerializer {
 
     var mediaType: String? { nil }
 }
+
+/// Serializes a modeled error to an event stream exception message.
+///
+/// The error is serialized only if it is the target of a member of the event stream union.
+final class EventErrorSerializer: NoOpByDefaultShapeSerializer {
+    let codec: any Codec
+    let contentType: String
+    let unionSchema: Schema
+
+    /// The exception message that the error was serialized to, or `nil` if the error is not
+    /// modeled on the event stream.  Available after serialization completes.
+    private(set) var message: Message?
+
+    init(codec: any Codec, contentType: String, unionSchema: Schema) {
+        self.codec = codec
+        self.contentType = contentType
+        self.unionSchema = unionSchema
+    }
+
+    func writeStruct<S: SerializableStruct>(_ schema: Schema, _ value: S) throws {
+
+        // Find the union member that targets this error; its name is the exception type.
+        guard let member = unionSchema.members.first(where: { $0.target?.id == schema.id }),
+              let exceptionType = member.memberName else { return }
+
+        // Serialize the error's members to the message headers & payload.
+        let contentSerializer = EventContentSerializer(codec: codec, contentType: contentType)
+        try contentSerializer.writeStruct(member, value)
+
+        var headers = [
+            Header(name: ":message-type", value: .string("exception")),
+            Header(name: ":exception-type", value: .string(exceptionType)),
+        ]
+        headers.append(contentsOf: contentSerializer.headers)
+        message = Message(headers: headers, payload: contentSerializer.payload)
+    }
+
+    var mediaType: String? { nil }
+}

@@ -197,7 +197,17 @@ var runtimeTargets: [PackageDescription.Target] {
         ),
         .target(
             name: "SmithyTestUtil",
-            dependencies: ["ClientRuntime", "SmithyHTTPAPI", "SmithyIdentity", "SmithyCBOR", "SmithyTelemetryAPI"]
+            dependencies: [
+                "ClientRuntime",
+                "SmithyHTTPAPI",
+                "SmithyIdentity",
+                "SmithyCBOR",
+                "SmithyTelemetryAPI",
+                "SmithyEventStreams",
+                "SmithyEventStreamsAPI",
+                "SmithyEventStreamsAuthAPI",
+                "SmithyStreams",
+            ]
         ),
         .target(
             name: "SmithyIdentity",
