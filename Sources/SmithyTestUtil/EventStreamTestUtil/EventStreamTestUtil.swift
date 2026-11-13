@@ -137,11 +137,15 @@ public enum EventStreamTestUtil {
     ///   - headers: The HTTP headers for the response.
     ///   - body: The binary data to be streamed as the body of the response.
     /// - Returns: The HTTP response.
-    public static func httpResponse(statusCode: Int, headers: [String: String], body: Data) -> HTTPResponse {
-        HTTPResponse(
+    /// - Throws: `SmithyTestUtilError` if the status code is not one that `HTTPStatusCode` defines.
+    public static func httpResponse(statusCode: Int, headers: [String: String], body: Data) throws -> HTTPResponse {
+        guard let httpStatusCode = HTTPStatusCode(rawValue: statusCode) else {
+            throw SmithyTestUtilError("HTTP status code \(statusCode) is not defined by HTTPStatusCode")
+        }
+        return HTTPResponse(
             headers: Headers(headers),
             body: .stream(BufferedStream(data: body, isClosed: true)),
-            statusCode: HTTPStatusCode(rawValue: statusCode) ?? .badRequest
+            statusCode: httpStatusCode
         )
     }
 

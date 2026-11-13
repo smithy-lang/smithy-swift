@@ -16,6 +16,7 @@ import software.amazon.smithy.swift.codegen.model.eventStreamErrors
 import software.amazon.smithy.swift.codegen.model.eventStreamEvents
 import software.amazon.smithy.swift.codegen.model.expectShape
 import software.amazon.smithy.swift.codegen.model.hasTrait
+import software.amazon.smithy.swift.codegen.model.isEnum
 import software.amazon.smithy.swift.codegen.swiftmodules.ClientRuntimeTypes
 import software.amazon.smithy.swift.codegen.swiftmodules.SmithyEventStreamsAPITypes
 import software.amazon.smithy.swift.codegen.swiftmodules.SmithyHTTPAPITypes
@@ -216,6 +217,15 @@ class MessageUnmarshallableGenerator(
     ) {
         val target = ctx.model.expectShape(member.target)
         val memberName = ctx.symbolProvider.toMemberName(member)
+        // An enum payload is the raw value of the enum, as text.
+        if (target.isEnumShape || target.isEnum) {
+            writer.write(
+                "event.\$L = String(data: message.payload, encoding: .utf8).flatMap { \$N(rawValue: \$\$0) }",
+                memberName,
+                ctx.symbolProvider.toSymbol(target),
+            )
+            return
+        }
         when (target.type) {
             ShapeType.BLOB -> writer.write("event.\$L = message.payload", memberName)
             ShapeType.STRING -> writer.write("event.\$L = String(data: message.payload, encoding: .utf8)", memberName)

@@ -102,6 +102,20 @@ struct EventStreamTestUtilTests {
         }
     }
 
+    @Test
+    func httpResponse_usesTheGivenStatusCode() throws {
+        let response = try EventStreamTestUtil.httpResponse(statusCode: 500, headers: [:], body: Data())
+
+        #expect(response.statusCode == .internalServerError)
+    }
+
+    @Test
+    func httpResponse_throwsForAnUndefinedStatusCode() {
+        #expect(throws: SmithyTestUtilError.self) {
+            _ = try EventStreamTestUtil.httpResponse(statusCode: 299, headers: [:], body: Data())
+        }
+    }
+
     private func signedMessage(_ payload: Data) -> Message {
         Message(
             headers: [

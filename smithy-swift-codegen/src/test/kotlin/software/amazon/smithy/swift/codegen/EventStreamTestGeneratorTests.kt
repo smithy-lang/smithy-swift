@@ -151,7 +151,7 @@ class EventStreamTestGeneratorTests {
         var body = Foundation.Data()
         body.append(Foundation.Data(base64Encoded: "AAAAAA==")!)
         body.append(try SmithyTestUtil.EventStreamTestUtil.encode([SmithyEventStreamsAPI.Message(headers: [SmithyEventStreamsAPI.Header(name: ":event-type", value: .string("payloadEvent")), SmithyEventStreamsAPI.Header(name: ":message-type", value: .string("event")), SmithyEventStreamsAPI.Header(name: "header", value: .string("qux"))], payload: Foundation.Data())]))
-        let httpResponse = SmithyTestUtil.EventStreamTestUtil.httpResponse(
+        let httpResponse = try SmithyTestUtil.EventStreamTestUtil.httpResponse(
             statusCode: 200,
             headers: [
                 "Content-Type": "application/vnd.amazon.eventstream",
@@ -202,7 +202,7 @@ class EventStreamTestGeneratorTests {
         val expectedResponse = """
         var body = Foundation.Data()
         body.append(Foundation.Data("{\"message\": \"foo\"}".utf8))
-        let httpResponse = SmithyTestUtil.EventStreamTestUtil.httpResponse(
+        let httpResponse = try SmithyTestUtil.EventStreamTestUtil.httpResponse(
             statusCode: 500,
             headers: [
                 "X-Amzn-Errortype": "ServiceError",
@@ -218,7 +218,7 @@ class EventStreamTestGeneratorTests {
     fun `it verifies initial response members`() {
         val expected = """
         let body = Foundation.Data()
-        let httpResponse = SmithyTestUtil.EventStreamTestUtil.httpResponse(
+        let httpResponse = try SmithyTestUtil.EventStreamTestUtil.httpResponse(
             statusCode: 200,
             headers: [
                 "initial-member": "foo",

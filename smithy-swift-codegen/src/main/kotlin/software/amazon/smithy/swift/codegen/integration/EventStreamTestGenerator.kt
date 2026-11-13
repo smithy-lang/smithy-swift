@@ -226,6 +226,23 @@ class EventStreamTestGenerator(
             initialRequest.getStringMember("uri").ifPresent {
                 writer.write("#expect(request.path == \$L)", swiftString(it.value))
             }
+            initialRequest.getStringMember("resolvedHost").ifPresent {
+                writer.write("#expect(request.host == \$L)", swiftString(it.value))
+            }
+            // When the input has an event stream, the request body is the event stream & is verified as events.
+            // Otherwise the initial request's body, if given, is the request body.
+            if (inputShape.findStreamingMember(model) == null) {
+                initialRequest.getStringMember("body").ifPresent { body ->
+                    val mediaType = initialRequest.getStringMember("bodyMediaType").map { it.value }.orElse(null)
+                    writer.write(
+                        "#expect(try await \$N.payload(request.body.readData() ?? \$N(), matches: \$L, mediaType: \$L))",
+                        SmithyTestUtilTypes.EventStreamTestUtil,
+                        FoundationTypes.Data,
+                        bodyData(body.value, mediaType),
+                        mediaType?.let { swiftString(it) } ?: "nil",
+                    )
+                }
+            }
             initialRequest.getObjectMember("headers").ifPresent { headers ->
                 headers.stringMap.forEach { (name, value) ->
                     writer.write(
@@ -374,7 +391,7 @@ class EventStreamTestGenerator(
                 writer.write("var body = \$N()", FoundationTypes.Data)
                 bodyParts.forEach { writer.write("body.append(\$L)", it) }
             }
-            writer.openBlock("let httpResponse = \$N.httpResponse(", ")", SmithyTestUtilTypes.EventStreamTestUtil) {
+            writer.openBlock("let httpResponse = try \$N.httpResponse(", ")", SmithyTestUtilTypes.EventStreamTestUtil) {
                 writer.write("statusCode: \$L,", statusCode)
                 if (headers.isEmpty()) {
                     writer.write("headers: [:],")
@@ -573,11 +590,18 @@ class EventStreamTestGenerator(
                 writer.write("region: \$S,", region)
                 writer.write("signingRegion: \$S,", region)
                 if (!ctx.service.hasTrait<EndpointRuleSetTrait>()) {
+                    // The initial request's host, if given, is the host the client is configured with.
+                    val host =
+                        initialRequest
+                            ?.getStringMember("host")
+                            ?.map { it.value }
+                            ?.orElse(null)
+                            ?.takeIf { it.isNotEmpty() } ?: "example.com"
                     writer.write(
-                        "endpointResolver: \$L.StaticEndpointResolver(endpoint: try \$N(urlString: \$S)),",
+                        "endpointResolver: \$L.StaticEndpointResolver(endpoint: try \$N(urlString: \$L)),",
                         ctx.settings.moduleName,
                         SmithyHTTPAPITypes.Endpoint,
-                        "https://example.com",
+                        swiftString("https://$host"),
                     )
                 }
                 if (isResponse) {

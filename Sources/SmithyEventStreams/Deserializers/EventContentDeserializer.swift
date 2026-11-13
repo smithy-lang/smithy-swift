@@ -36,8 +36,8 @@ class EventContentDeserializer: ThrowByDefaultShapeDeserializer {
         // Use a deserializer for the protocol in use, by making it from the codec.
         let payloadMember = schema.members.first(where: { $0.hasTrait(EventPayloadTrait.self) })
         switch payloadMember?.type {
-        case .blob, .string:
-            // A blob or string payload is the raw bytes of the payload, not a document in the protocol's format.
+        case .blob, .string, .enum:
+            // A blob, string, or enum payload is the raw bytes of the payload, not a document in the protocol's format.
             let payloadDeserializer = RawPayloadDeserializer(payload: message.payload)
             try value.deserializeMember(payloadMember!, payloadDeserializer)
         default:
@@ -61,7 +61,9 @@ class EventContentDeserializer: ThrowByDefaultShapeDeserializer {
     var mediaType: String?
 }
 
-/// Deserializes an `@eventPayload` member that targets a blob or string from the raw bytes of the event payload.
+/// Deserializes an `@eventPayload` member that targets a blob, string, or enum from the raw bytes of the event payload.
+///
+/// An enum is read as a string by the default implementation of `readEnum`.
 private struct RawPayloadDeserializer: ThrowByDefaultShapeDeserializer {
     let payload: Data
 

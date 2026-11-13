@@ -17,5 +17,7 @@ service RestJSONEventStream {
         aws.protocoltests.restjson#InputStreamWithInitialRequest
         aws.protocoltests.restjson#OutputStreamWithInitialResponse
         aws.protocoltests.restjson#DuplexStreamWithInitialMessages
+        smithy.swift.tests.EventStreamExtras#EnumPayloadStream
+        smithy.swift.tests.EventStreamExtras#InitialRequestFields
     ]
 }
