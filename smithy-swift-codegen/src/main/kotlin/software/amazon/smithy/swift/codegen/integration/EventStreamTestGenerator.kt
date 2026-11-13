@@ -194,9 +194,12 @@ class EventStreamTestGenerator(
             renderInput(test.initialRequestParams.orElse(Node.objectNode()), requestEvents.filter { it.params.isPresent })
             writer.write("")
             if (expectFailure) {
-                writer.openBlock("await #expect(throws: (any Swift.Error).self) {", "}") {
+                // The SDK fails while sending the request or while encoding its events, which happens as the
+                // body is read.  The body is read as raw data, so that the test's own decoding of the events
+                // cannot be mistaken for the expected failure.
+                renderExpectFailure(expectedErrorShape()) {
                     renderCaptureRequest()
-                    writer.write("_ = try await \$N.messages(in: request)", SmithyTestUtilTypes.EventStreamTestUtil)
+                    writer.write("_ = try await request.body.readData()")
                 }
                 return
             }
@@ -316,14 +319,7 @@ class EventStreamTestGenerator(
             // an error event expects that error to be thrown.
             val errorEventShape = responseEvents.firstNotNullOfOrNull { errorShape(outputShape, it) }
             if (test.expectation.isFailure || errorEventShape != null) {
-                val errorType =
-                    test.expectation.failure
-                        .flatMap { it.errorId }
-                        .map { model.expectShape(it) }
-                        .orElse(errorEventShape)
-                        ?.let { writer.format("\$N", ctx.symbolProvider.toSymbol(it)) }
-                        ?: "(any Swift.Error)"
-                writer.openBlock("await #expect(throws: \$L.self) {", "}", errorType) {
+                renderExpectFailure(expectedErrorShape() ?: errorEventShape) {
                     writer.write("let output = try await client.\$L(input: input)", operation.toLowerCamelCase())
                     if (outputStreamMember != null) {
                         writer.write(
@@ -456,6 +452,34 @@ class EventStreamTestGenerator(
         }
 
         // MARK: - Shared
+
+        /**
+         * The error shape that the test expects to be thrown, if the test expects failure with a specific error.
+         */
+        private fun expectedErrorShape(): Shape? =
+            test.expectation.failure
+                .flatMap { it.errorId }
+                .map { model.expectShape(it) }
+                .orElse(null)
+
+        /**
+         * Renders code that expects the code rendered by [body] to throw.
+         *
+         * If an error shape is given, the error thrown must be of that type.  Otherwise any error thrown by the SDK
+         * is accepted, but an error thrown by the test harness itself fails the test.
+         */
+        private fun renderExpectFailure(
+            errorShape: Shape?,
+            body: () -> Unit,
+        ) {
+            if (errorShape != null) {
+                val errorSymbol = ctx.symbolProvider.toSymbol(errorShape)
+                writer.openBlock("await #expect(throws: \$N.self) {", "}", errorSymbol) { body() }
+            } else {
+                writer.openBlock("let error = try await \$N.sdkError {", "}", SmithyTestUtilTypes.EventStreamTestUtil) { body() }
+                writer.write("#expect(error != nil, \"Expected the SDK to throw an error\")")
+            }
+        }
 
         /**
          * Headers that the test's protocol requires on every HTTP response.

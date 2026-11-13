@@ -117,6 +117,35 @@ class EventStreamTestGeneratorTests {
     }
 
     @Test
+    fun `it expects any error from the SDK when a failing request test has no errorId`() {
+        val expected = """
+        let error = try await SmithyTestUtil.EventStreamTestUtil.sdkError {
+            let request = try await SmithyTestUtil.EventStreamTestUtil.captureRequest {
+                _ = try await client.inputStream(input: input)
+            }
+            _ = try await request.body.readData()
+        }
+        #expect(error != nil, "Expected the SDK to throw an error")
+    }
+"""
+        inputContents.shouldContainOnlyOnce(expected)
+    }
+
+    @Test
+    fun `it expects the errorId type when a failing request test has one`() {
+        val expected = """
+        await #expect(throws: ErrorEvent.self) {
+            let request = try await SmithyTestUtil.EventStreamTestUtil.captureRequest {
+                _ = try await client.inputStream(input: input)
+            }
+            _ = try await request.body.readData()
+        }
+    }
+"""
+        inputContents.shouldContainOnlyOnce(expected)
+    }
+
+    @Test
     fun `it renders a response test from event bytes, or from headers & body when bytes are absent`() {
         val expectedBody = """
         var body = Foundation.Data()

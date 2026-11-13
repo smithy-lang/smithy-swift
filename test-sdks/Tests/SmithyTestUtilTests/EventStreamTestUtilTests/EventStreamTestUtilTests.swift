@@ -79,6 +79,29 @@ struct EventStreamTestUtilTests {
         #expect(try await EventStreamTestUtil.events(nil as AsyncThrowingStream<Int, any Error>?) == [])
     }
 
+    @Test
+    func sdkError_returnsTheErrorThrownByTheSDK() async throws {
+        struct SDKError: Error {}
+
+        let error = try await EventStreamTestUtil.sdkError { throw SDKError() }
+
+        #expect(error is SDKError)
+    }
+
+    @Test
+    func sdkError_returnsNilWhenNothingIsThrown() async throws {
+        let error = try await EventStreamTestUtil.sdkError {}
+
+        #expect(error == nil)
+    }
+
+    @Test
+    func sdkError_rethrowsAnErrorThrownByTheTestHarness() async throws {
+        await #expect(throws: SmithyTestUtilError.self) {
+            _ = try await EventStreamTestUtil.sdkError { throw SmithyTestUtilError("harness failure") }
+        }
+    }
+
     private func signedMessage(_ payload: Data) -> Message {
         Message(
             headers: [

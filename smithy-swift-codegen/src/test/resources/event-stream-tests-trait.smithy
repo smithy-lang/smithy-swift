@@ -61,6 +61,34 @@ service Example {
         ]
     }
     {
+        id: "FailingInput"
+        documentation: "Expects any error from the SDK."
+        protocol: restJson1
+        events: [
+            {
+                type: "request"
+                params: { payloadEvent: { header: "bar" } }
+            }
+        ]
+        expectation: {
+            failure: {}
+        }
+    }
+    {
+        id: "FailingWithErrorIdInput"
+        documentation: "Expects a specific error from the SDK."
+        protocol: restJson1
+        events: [
+            {
+                type: "request"
+                params: { payloadEvent: { header: "bar" } }
+            }
+        ]
+        expectation: {
+            failure: { errorId: ErrorEvent }
+        }
+    }
+    {
         id: "ServerOnlyInput"
         protocol: restJson1
         events: [

@@ -159,6 +159,26 @@ public enum EventStreamTestUtil {
         return events
     }
 
+    // MARK: - Expected failures
+
+    /// Runs code that is expected to fail with an error thrown by the SDK, and returns that error.
+    ///
+    /// Errors thrown by the test harness itself, i.e. when the operation did not send a request to the
+    /// protocol test client, are rethrown so that the test fails, rather than being mistaken for the
+    /// expected failure.
+    /// - Parameter body: The code that is expected to throw.
+    /// - Returns: The error thrown by `body`, or `nil` if `body` did not throw.
+    public static func sdkError(from body: () async throws -> Void) async throws -> (any Error)? {
+        do {
+            try await body()
+            return nil
+        } catch let error as SmithyTestUtilError {
+            throw error
+        } catch {
+            return error
+        }
+    }
+
     // MARK: - Payload comparison
 
     /// Compares an event payload to the expected payload, using the passed media type to determine how
