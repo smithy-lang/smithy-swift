@@ -161,7 +161,7 @@ package struct DeserializeCodegen {
         case .integer:
             let methodName = try target.deserializeMethodName
             writer.write("let value: \(propertySwiftType) = try Int(deserializer.\(methodName)(\(schemaVarName)))")
-        case .long:
+        case .long, .bigInteger:
             let methodName = try target.deserializeMethodName
             writer.write("let value: \(propertySwiftType) = " +
                          "try SmithySerialization.Numerics.int(deserializer.\(methodName)(\(schemaVarName)))")

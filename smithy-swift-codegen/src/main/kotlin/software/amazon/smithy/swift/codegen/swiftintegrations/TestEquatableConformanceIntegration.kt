@@ -14,6 +14,7 @@ import software.amazon.smithy.swift.codegen.customtraits.EquatableConformanceTra
 import software.amazon.smithy.swift.codegen.customtraits.TestEquatableConformanceTrait
 import software.amazon.smithy.swift.codegen.integration.ProtocolGenerator
 import software.amazon.smithy.swift.codegen.integration.SwiftIntegration
+import software.amazon.smithy.swift.codegen.model.eventStreamEvents
 import software.amazon.smithy.swift.codegen.model.hasTrait
 import software.amazon.smithy.swift.codegen.swiftmodules.SwiftTypes
 import software.amazon.smithy.swift.codegen.utils.SDKFileUtils
@@ -76,7 +77,8 @@ class TestEquatableConformanceIntegration : SwiftIntegration {
                         }
                         is UnionShape -> {
                             writer.openBlock("switch (lhs, rhs) {", "}") {
-                                shape.members().forEach { member ->
+                                // Error members of event streams are not rendered as union cases
+                                shape.eventStreamEvents(ctx.model).forEach { member ->
                                     val enumCaseName = ctx.symbolProvider.toMemberName(member)
                                     writer.write("case (.\$L(let lhs), .\$L(let rhs)):", enumCaseName, enumCaseName)
                                     writer.indent {

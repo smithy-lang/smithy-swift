@@ -38,6 +38,11 @@ open class RestJson1ProtocolGenerator(
         setOf(
             "SDKAppliedContentEncoding_restJson1",
             "SDKAppendedGzipAfterProvidedEncoding_restJson1",
+            // These tests expect the client to fail when a required member of an event stream's initial
+            // response is absent.  The SDK instead fills in the default value for the member's type, which
+            // is the client error correction behavior it applies to every required member.
+            "MissingRequiredInitialResponseOutput",
+            "DuplexMissingRequiredInitialResponseOutput",
         )
 
     override fun httpBodyMembers(

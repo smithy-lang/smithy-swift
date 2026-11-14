@@ -209,7 +209,83 @@ final class EventStreamSerializerTests: XCTestCase {
         }
     }
 
+    // MARK: - modeled errors
+
+    func test_marshal_writesAModeledErrorThrownByTheStreamAsAnExceptionMessage() async throws {
+        let error = EventStreamOperationError(message: "abc")
+
+        let messages = try await marshal(events: [.messagewithstring(.init(data: "abcdefg"))], error: error)
+
+        XCTAssertEqual(messages.count, 2)
+        XCTAssertEqual(headers(of: messages[1]), [
+            ":message-type": .string("exception"),
+            ":exception-type": .string("EventStreamOperationError"),
+            ":content-type": .string("application/json"),
+        ])
+        XCTAssertEqual(try json(messages[1]), #"{"message":"abc"}"#)
+    }
+
+    func test_marshal_rethrowsAnErrorThatIsNotModeledOnTheStream() async throws {
+        do {
+            _ = try await marshal(events: [], error: TestError("not modeled"))
+            XCTFail("Expected the unmodeled error to be rethrown")
+        } catch let error as TestError {
+            XCTAssertEqual(error.message, "not modeled")
+        }
+    }
+
+    // MARK: - synchronous access
+
+    func test_body_throwsInsteadOfCrashingOnASynchronousRead() async throws {
+        let input = EventStreamOperationInput(eventStream: stream(of: .messagewithstring(.init(data: "abc"))))
+        let subject = EventStreamSerializer(
+            codec: SmithyAWSJSON.HTTPClientProtocol(version: .v1_0).codec,
+            contentType: "application/json",
+            messageEncoder: DefaultMessageEncoder(),
+            messageSigner: NoOpMessageSigner()
+        )
+        try input.serialize(subject)
+        guard case .stream(let body) = subject.body else {
+            throw TestError("Expected the serialized body to be a stream")
+        }
+
+        XCTAssertThrowsError(try body.read(upToCount: 1))
+        XCTAssertThrowsError(try body.readToEnd())
+        XCTAssertThrowsError(try body.write(contentsOf: Data()))
+    }
+
     // MARK: - Test helpers
+
+    /// Serializes an input carrying a stream of events that finishes with the passed error, then decodes
+    /// the request body back into the messages that were sent, omitting the empty terminating message.
+    private func marshal(events: [TestStream], error: any Error) async throws -> [Message] {
+        let stream = AsyncThrowingStream<TestStream, any Error> { continuation in
+            events.forEach { continuation.yield($0) }
+            continuation.finish(throwing: error)
+        }
+        let input = EventStreamOperationInput(eventStream: stream)
+        let subject = EventStreamSerializer(
+            codec: SmithyAWSJSON.HTTPClientProtocol(version: .v1_0).codec,
+            contentType: "application/json",
+            messageEncoder: DefaultMessageEncoder(),
+            messageSigner: NoOpMessageSigner()
+        )
+
+        try input.serialize(subject)
+
+        guard case .stream(let body) = subject.body else {
+            throw TestError("Expected the serialized body to be a stream")
+        }
+        let data = try await body.readToEndAsync() ?? Data()
+
+        let decoder = DefaultMessageDecoder()
+        try decoder.feed(data: data)
+        var messages = [Message]()
+        while let message = try decoder.message() {
+            messages.append(message)
+        }
+        return messages.filter { $0 != Message() }
+    }
 
     /// Serializes an input carrying a single-event stream, then decodes the request body
     /// back into the message that was sent for that event.

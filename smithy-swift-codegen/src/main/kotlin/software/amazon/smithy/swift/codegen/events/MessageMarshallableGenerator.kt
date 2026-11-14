@@ -14,11 +14,14 @@ import software.amazon.smithy.swift.codegen.integration.serde.readwrite.WritingC
 import software.amazon.smithy.swift.codegen.integration.serde.readwrite.requestWireProtocol
 import software.amazon.smithy.swift.codegen.integration.serde.readwrite.responseWireProtocol
 import software.amazon.smithy.swift.codegen.integration.serde.struct.writerSymbol
+import software.amazon.smithy.swift.codegen.model.eventStreamErrors
 import software.amazon.smithy.swift.codegen.model.eventStreamEvents
 import software.amazon.smithy.swift.codegen.model.hasTrait
+import software.amazon.smithy.swift.codegen.model.isEnum
 import software.amazon.smithy.swift.codegen.swiftmodules.FoundationTypes
 import software.amazon.smithy.swift.codegen.swiftmodules.SmithyEventStreamsAPITypes
 import software.amazon.smithy.swift.codegen.swiftmodules.SmithyTypes
+import software.amazon.smithy.swift.codegen.swiftmodules.SwiftTypes
 import software.amazon.smithy.swift.codegen.utils.SDKFileUtils
 
 class MessageMarshallableGenerator(
@@ -80,34 +83,7 @@ class MessageMarshallableGenerator(
                                 // Write the event headers to the message.  First write the
                                 // event type, followed by header-bound members.
                                 addStringHeader(":event-type", member.memberName)
-                                eventHeaderBindings.forEach {
-                                    renderSerializeEventHeader(ctx, it, writer)
-                                }
-
-                                // Write either the payload or the unbound members (there won't be both,
-                                // according to the Smithy spec: https://smithy.io/2.0/spec/streaming.html#eventpayload-trait.)
-                                when {
-                                    eventPayloadBinding != null -> renderSerializeEventPayload(ctx, eventPayloadBinding, writer)
-                                    unbound.isNotEmpty() -> {
-                                        writer.addStringHeader(":content-type", payloadContentType)
-                                        val nodeInfo = NodeInfoUtils(ctx, writer, ctx.service.requestWireProtocol).nodeInfo(member, true)
-                                        writer.write("let writer = \$N(nodeInfo: \$L)", ctx.service.writerSymbol, nodeInfo)
-                                        unbound.forEach {
-                                            val writingClosure =
-                                                WritingClosureUtils(
-                                                    ctx,
-                                                    writer,
-                                                ).writingClosure(ctx.model.expectShape(it.target))
-                                            writer.write(
-                                                "try writer[\$S].write(value.\$L, with: \$L)",
-                                                it.memberName,
-                                                ctx.symbolProvider.toMemberName(it),
-                                                writingClosure,
-                                            )
-                                        }
-                                        writer.write("payload = try writer.data()")
-                                    }
-                                }
+                                renderEventContent(writer, member, "value")
                                 writer.dedent()
                             }
                             writer.write("case .sdkUnknown(_):")
@@ -124,7 +100,97 @@ class MessageMarshallableGenerator(
                             )
                         }
                     }
+                    write("")
+                    renderMarshalError(writer, streamShape)
                 }
+            }
+        }
+    }
+
+    /**
+     * Renders a closure that marshals a modeled error on the event stream to an exception message.
+     *
+     * Modeled errors are not cases of the Swift event stream enum; a client sends one by finishing
+     * its event stream with the error.  The closure returns `nil` for an error that is not modeled.
+     */
+    private fun renderMarshalError(
+        writer: SwiftWriter,
+        streamShape: UnionShape,
+    ) {
+        writer.openBlock(
+            "static var marshalError: (any \$N) throws -> \$N? {",
+            "}",
+            SwiftTypes.Error,
+            SmithyEventStreamsAPITypes.Message,
+        ) {
+            val errors = streamShape.eventStreamErrors(ctx.model)
+            if (errors.isEmpty()) {
+                writer.write("{ _ in nil }")
+                return@openBlock
+            }
+            writer.openBlock("{ error in", "}") {
+                writer.write(
+                    "var headers: [\$N] = [.init(name: \":message-type\", value: .string(\"exception\"))]",
+                    SmithyEventStreamsAPITypes.Header,
+                )
+                writer.write("var payload: \$D", FoundationTypes.Data)
+                writer.write("switch error {")
+                errors.forEach { member ->
+                    writer.write("case let value as \$N:", ctx.symbolProvider.toSymbol(ctx.model.expectShape(member.target)))
+                    writer.indent()
+                    writer.addStringHeader(":exception-type", member.memberName)
+                    renderEventContent(writer, member, "value.properties")
+                    writer.dedent()
+                }
+                writer.write("default:")
+                writer.indent()
+                writer.write("return nil")
+                writer.dedent()
+                writer.write("}")
+                writer.write("return \$N(headers: headers, payload: payload ?? .init())", SmithyEventStreamsAPITypes.Message)
+            }
+        }
+    }
+
+    /**
+     * Renders the headers and payload of an event or error, from its members.
+     *
+     * @param member the member of the event stream union that targets the event or error
+     * @param valuePath the Swift expression for the value holding the event's or error's members
+     */
+    private fun renderEventContent(
+        writer: SwiftWriter,
+        member: MemberShape,
+        valuePath: String,
+    ) {
+        val variant = ctx.model.expectShape(member.target)
+        val eventHeaderBindings = variant.members().filter { it.hasTrait<EventHeaderTrait>() }
+        val eventPayloadBinding = variant.members().firstOrNull { it.hasTrait<EventPayloadTrait>() }
+        val unbound = variant.members().filterNot { it.hasTrait<EventHeaderTrait>() || it.hasTrait<EventPayloadTrait>() }
+
+        eventHeaderBindings.forEach {
+            renderSerializeEventHeader(ctx, it, writer, valuePath)
+        }
+
+        // Write either the payload or the unbound members (there won't be both,
+        // according to the Smithy spec: https://smithy.io/2.0/spec/streaming.html#eventpayload-trait.)
+        when {
+            eventPayloadBinding != null -> renderSerializeEventPayload(ctx, eventPayloadBinding, writer, valuePath)
+            unbound.isNotEmpty() -> {
+                writer.addStringHeader(":content-type", payloadContentType)
+                val nodeInfo = NodeInfoUtils(ctx, writer, ctx.service.requestWireProtocol).nodeInfo(member, true)
+                writer.write("let writer = \$N(nodeInfo: \$L)", ctx.service.writerSymbol, nodeInfo)
+                unbound.forEach {
+                    val writingClosure = WritingClosureUtils(ctx, writer).writingClosure(ctx.model.expectShape(it.target))
+                    writer.write(
+                        "try writer[\$S].write(\$L.\$L, with: \$L)",
+                        it.memberName,
+                        valuePath,
+                        ctx.symbolProvider.toMemberName(it),
+                        writingClosure,
+                    )
+                }
+                writer.write("payload = try writer.data()")
             }
         }
     }
@@ -133,21 +199,28 @@ class MessageMarshallableGenerator(
         ctx: ProtocolGenerator.GenerationContext,
         member: MemberShape,
         writer: SwiftWriter,
+        valuePath: String,
     ) {
         val target = ctx.model.expectShape(member.target)
         val memberName = ctx.symbolProvider.toMemberName(member)
+        // An enum payload is the raw value of the enum, as text.
+        if (target.isEnumShape || target.isEnum) {
+            writer.addStringHeader(":content-type", "text/plain")
+            writer.write("payload = \$L.\$L?.rawValue.data(using: .utf8)", valuePath, memberName)
+            return
+        }
         when (target.type) {
             ShapeType.BLOB -> {
                 writer.addStringHeader(":content-type", "application/octet-stream")
-                writer.write("payload = value.\$L", memberName)
+                writer.write("payload = \$L.\$L", valuePath, memberName)
             }
             ShapeType.STRING -> {
                 writer.addStringHeader(":content-type", "text/plain")
-                writer.write("payload = value.\$L?.data(using: .utf8)", memberName)
+                writer.write("payload = \$L.\$L?.data(using: .utf8)", valuePath, memberName)
             }
             ShapeType.STRUCTURE, ShapeType.UNION -> {
                 writer.addStringHeader(":content-type", payloadContentType)
-                renderPayloadSerialization(ctx, writer, member)
+                renderPayloadSerialization(ctx, writer, member, valuePath)
             }
             else -> throw CodegenException(
                 "unsupported shape type `${target.type}` for target: $target; expected blob, string, structure, or union for eventPayload member: $member",
@@ -159,6 +232,7 @@ class MessageMarshallableGenerator(
         ctx: ProtocolGenerator.GenerationContext,
         member: MemberShape,
         writer: SwiftWriter,
+        valuePath: String,
     ) {
         val target = ctx.model.expectShape(member.target)
         val headerValue =
@@ -175,7 +249,7 @@ class MessageMarshallableGenerator(
             }
 
         val memberName = ctx.symbolProvider.toMemberName(member)
-        writer.openBlock("if let headerValue = value.\$L {", "}", memberName) {
+        writer.openBlock("if let headerValue = \$L.\$L {", "}", valuePath, memberName) {
             when (target.type) {
                 ShapeType.INTEGER -> {
                     writer.write("headers.append(.init(name: \"${member.memberName}\", value: .\$L(Int32(headerValue))))", headerValue)
@@ -215,14 +289,16 @@ class MessageMarshallableGenerator(
         ctx: ProtocolGenerator.GenerationContext,
         writer: SwiftWriter,
         memberShape: MemberShape,
+        valuePath: String,
     ) {
         // get a payload serializer for the given members of the variant
         val nodeInfoUtils = NodeInfoUtils(ctx, writer, ctx.service.responseWireProtocol)
         val rootNodeInfo = nodeInfoUtils.nodeInfo(memberShape, true)
         val valueWritingClosure = WritingClosureUtils(ctx, writer).writingClosure(memberShape)
         writer.write(
-            "payload = try \$N.write(value.\$L, rootNodeInfo: \$L, with: \$L)",
+            "payload = try \$N.write(\$L.\$L, rootNodeInfo: \$L, with: \$L)",
             ctx.service.writerSymbol,
+            valuePath,
             ctx.symbolProvider.toMemberName(memberShape),
             rootNodeInfo,
             valueWritingClosure,

@@ -12,10 +12,22 @@ val smithyVersion: String by project
 
 dependencies {
     implementation("software.amazon.smithy:smithy-aws-traits:$smithyVersion")
+    implementation("software.amazon.smithy:smithy-aws-protocol-tests:$smithyVersion")
+    implementation("software.amazon.smithy:smithy-protocol-tests:$smithyVersion")
+    implementation("software.amazon.smithy:smithy-protocol-traits:$smithyVersion")
     implementation(project(":smithy-swift-codegen"))
 }
 
-data class TestSDK(val name: String, val forceSchemaBased: Boolean = false)
+// `service` defaults to a service defined in test-sdks/model; set it to generate a test SDK for a service
+// defined elsewhere, i.e. in one of the Smithy protocol test packages.
+data class TestSDK(
+    val name: String,
+    val forceSchemaBased: Boolean = false,
+    val service: String = "smithy.swift.tests.$name#$name",
+    // Unused shapes are removed unless this is false.  Set to false when protocol tests on the service's operations
+    // reference shapes that are otherwise unused, i.e. the protocol traits of other protocols.
+    val removeUnusedShapes: Boolean = true,
+)
 
 val testSDKs = listOf(
     TestSDK("AWSJSON"),
@@ -32,12 +44,17 @@ val testSDKs = listOf(
     TestSDK("MaxRecursion"),
     TestSDK("NullTolerance"),
     TestSDK("RestJSON1Response", true),
+    TestSDK("RestJSONEventStream"),
+    TestSDK("RestJSONEventStreamSchemaBased", true),
+    // Its operations are shared with the rpcv2Json corpus service & carry tests for both protocols.
+    TestSDK("RpcV2CborCorpus", service = "smithy.protocoltests.corpus#RpcV2CborCorpusTests", removeUnusedShapes = false),
     TestSDK("StringSerializer"),
     TestSDK("Waiters"),
 )
 
 fun generateProjection(sdk: TestSDK): String {
     val forceSchemaBased = if (sdk.forceSchemaBased) ",\n          \"forceSchemaBased\": true" else ""
+    val removeUnusedShapes = if (sdk.removeUnusedShapes) "        {\n          \"name\": \"removeUnusedShapes\"\n        }," else ""
     return """
     "${sdk.name}": {
       "transforms": [
@@ -45,20 +62,18 @@ fun generateProjection(sdk: TestSDK): String {
           "name": "includeServices",
           "args": {
             "services": [
-              "smithy.swift.tests.${sdk.name}#${sdk.name}"
+              "${sdk.service}"
             ]
           }
         },
-        {
-          "name": "removeUnusedShapes"
-        },
+$removeUnusedShapes
         {
           "name": "flattenAndRemoveMixins"
         }
       ],
       "plugins": {
         "swift-codegen": {
-          "service": "smithy.swift.tests.${sdk.name}#${sdk.name}",
+          "service": "${sdk.service}",
           "module": "${sdk.name}TestSDK",
           "moduleVersion": "0.0.1",
           "gitRepo": "https://github.com/smithy-lang/smithy-swift.git",

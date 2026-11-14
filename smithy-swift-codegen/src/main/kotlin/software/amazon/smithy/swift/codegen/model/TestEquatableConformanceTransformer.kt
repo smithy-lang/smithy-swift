@@ -8,6 +8,7 @@ import software.amazon.smithy.model.shapes.ShapeType
 import software.amazon.smithy.model.shapes.StructureShape
 import software.amazon.smithy.model.transform.ModelTransformer
 import software.amazon.smithy.protocoltests.traits.HttpResponseTestsTrait
+import software.amazon.smithy.protocoltests.traits.eventstream.EventStreamTestsTrait
 import software.amazon.smithy.swift.codegen.customtraits.TestEquatableConformanceTrait
 
 object TestEquatableConformanceTransformer {
@@ -35,6 +36,21 @@ object TestEquatableConformanceTransformer {
         (errorsWithResponseTests + outputsWithResponseTests).forEach {
             addToList(model, it, needsTestEquatableConformance)
         }
+
+        // Event stream tests compare deserialized events, and output members, individually.
+        // The output itself is not compared (its event stream member cannot be Equatable), so
+        // only the shapes nested within the output need Equatable conformance.
+        index
+            .getContainedOperations(service)
+            .filter { it.hasTrait<EventStreamTestsTrait>() }
+            .map { model.expectShape(it.outputShape) as StructureShape }
+            .forEach { output ->
+                model.getNestedShapes(output).forEach { nested ->
+                    if (nested.isStructureShape || nested.isUnionShape) {
+                        needsTestEquatableConformance.add(nested.id)
+                    }
+                }
+            }
 
         // Transform the model by adding the TestEquatableConformanceTrait to shapes that need it
         // In a later SwiftIntegration, the conformance will be code-generated

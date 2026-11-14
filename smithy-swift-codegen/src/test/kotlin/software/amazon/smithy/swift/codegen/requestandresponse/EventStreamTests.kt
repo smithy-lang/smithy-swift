@@ -97,6 +97,24 @@ extension EventStreamTestClientTypes.TestStream {
             return SmithyEventStreamsAPI.Message(headers: headers, payload: payload ?? .init())
         }
     }
+
+    static var marshalError: (any Swift.Error) throws -> SmithyEventStreamsAPI.Message? {
+        { error in
+            var headers: [SmithyEventStreamsAPI.Header] = [.init(name: ":message-type", value: .string("exception"))]
+            var payload: Foundation.Data? = nil
+            switch error {
+            case let value as SomeError:
+                headers.append(.init(name: ":exception-type", value: .string("SomeError")))
+                headers.append(.init(name: ":content-type", value: .string("application/json")))
+                let writer = SmithyJSON.Writer(nodeInfo: "")
+                try writer["Message"].write(value.properties.message, with: SmithyReadWrite.WritingClosures.writeString(value:to:))
+                payload = try writer.data()
+            default:
+                return nil
+            }
+            return SmithyEventStreamsAPI.Message(headers: headers, payload: payload ?? .init())
+        }
+    }
 }
 """
         contents.shouldContainOnlyOnce(expected)
@@ -173,8 +191,8 @@ extension EventStreamTestClientTypes.TestStream {
                     if case .string(let value) = message.headers.value(name: "header") {
                         event.header = value
                     }
-                    let value = try SmithyJSON.Reader.readFrom(message.payload, with: SmithyReadWrite.ReadingClosures.readString(from:))
-                    event.unboundString = value
+                    let value = try SmithyJSON.Reader.readFrom(message.payload, with: EventStreamTestClientTypes.MessageWithUnboundPayloadTraits.read(from:))
+                    event.unboundString = value.unboundString
                     return .messagewithunboundpayloadtraits(event)
                 default:
                     return .sdkUnknown("error processing event stream, unrecognized event: \(params.eventType)")
@@ -187,14 +205,14 @@ extension EventStreamTestClientTypes.TestStream {
                         return value
                     default:
                         let httpResponse = SmithyHTTPAPI.HTTPResponse(body: .data(message.payload), statusCode: .ok)
-                        return ClientRuntime.UnknownHTTPServiceError(httpResponse: httpResponse, message: "error processing event stream, unrecognized ':exceptionType': \(params.exceptionType); contentType: \(params.contentType ?? "nil")", requestID: nil, typeName: nil)
+                        return ClientRuntime.UnknownHTTPServiceError(httpResponse: httpResponse, message: "error processing event stream, unrecognized ':exceptionType': \(params.exceptionType); contentType: \(params.contentType ?? "nil")", typeName: nil)
                     }
                 }
                 let error = try makeError(message, params)
                 throw error
             case .error(let params):
                 let httpResponse = SmithyHTTPAPI.HTTPResponse(body: .data(message.payload), statusCode: .ok)
-                throw ClientRuntime.UnknownHTTPServiceError(httpResponse: httpResponse, message: "error processing event stream, unrecognized ':errorType': \(params.errorCode); message: \(params.message ?? "nil")", requestID: nil, typeName: nil)
+                throw ClientRuntime.UnknownHTTPServiceError(httpResponse: httpResponse, message: "error processing event stream, unrecognized ':errorType': \(params.errorCode); message: \(params.message ?? "nil")", typeName: nil)
             case .unknown(messageType: let messageType):
                 throw Smithy.ClientError.unknownError("unrecognized event stream message ':message-type': \(messageType)")
             }
@@ -229,7 +247,7 @@ extension EventStreamTestClientTypes.TestStream {
         builder.interceptors.add(ClientRuntime.URLPathMiddleware<TestStreamOpInput, TestStreamOpOutput>(TestStreamOpInput.urlPathProvider(_:)))
         builder.interceptors.add(ClientRuntime.URLHostMiddleware<TestStreamOpInput, TestStreamOpOutput>())
         builder.interceptors.add(ClientRuntime.ContentTypeMiddleware<TestStreamOpInput, TestStreamOpOutput>(contentType: "application/json"))
-        builder.serialize(ClientRuntime.EventStreamBodyMiddleware<TestStreamOpInput, TestStreamOpOutput, EventStreamTestClientTypes.TestStream>(keyPath: \.value, defaultBody: "{}", marshalClosure: EventStreamTestClientTypes.TestStream.marshal))
+        builder.serialize(ClientRuntime.EventStreamBodyMiddleware<TestStreamOpInput, TestStreamOpOutput, EventStreamTestClientTypes.TestStream>(keyPath: \.value, defaultBody: "{}", marshalClosure: EventStreamTestClientTypes.TestStream.marshal, errorMarshalClosure: EventStreamTestClientTypes.TestStream.marshalError))
         builder.interceptors.add(ClientRuntime.ContentLengthMiddleware<TestStreamOpInput, TestStreamOpOutput>())
         builder.deserialize(ClientRuntime.DeserializeMiddleware<TestStreamOpOutput>(TestStreamOpOutput.httpOutput(from:), TestStreamOpOutputError.httpError(from:)))
         builder.interceptors.add(ClientRuntime.LoggerMiddleware<TestStreamOpInput, TestStreamOpOutput>(clientLogMode: config.clientLogMode))

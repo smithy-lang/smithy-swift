@@ -46,6 +46,7 @@ class HttpProtocolTestGenerator(
             numTests += renderResponseTests(operation)
             numTests += renderErrorTestCases(operation)
         }
+        numTests += EventStreamTestGenerator(ctx, testsToIgnore, tagsToIgnore).generateEventStreamTests()
         return numTests
     }
 
