@@ -19,13 +19,13 @@ dependencies {
 }
 
 // `service` defaults to a service defined in test-sdks/model; set it to generate a test SDK for a service
-// defined elsewhere, i.e. in one of the Smithy protocol test packages.
+// defined elsewhere, e.g. in one of the Smithy protocol test packages.
 data class TestSDK(
     val name: String,
     val forceSchemaBased: Boolean = false,
     val service: String = "smithy.swift.tests.$name#$name",
     // Unused shapes are removed unless this is false.  Set to false when protocol tests on the service's operations
-    // reference shapes that are otherwise unused, i.e. the protocol traits of other protocols.
+    // reference shapes that are otherwise unused, e.g. the protocol traits of other protocols.
     val removeUnusedShapes: Boolean = true,
 )
 

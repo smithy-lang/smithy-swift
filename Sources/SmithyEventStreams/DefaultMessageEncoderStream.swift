@@ -272,7 +272,7 @@ public class DefaultMessageEncoderStream<Event>: MessageEncoderStream, Stream, @
 /// Thrown when a synchronous read or a write is attempted on a stream backed by an `AsyncStream`.
 ///
 /// Such a stream can only be read asynchronously.  This error is thrown, rather than stopping the process, so
-/// that a caller that attempts a synchronous read (i.e. to compute a hash of the body) fails gracefully.
+/// that a caller that attempts a synchronous read (e.g. to compute a hash of the body) fails gracefully.
 struct UnsupportedStreamOperationError: Error, CustomStringConvertible {
     let operation: String
 

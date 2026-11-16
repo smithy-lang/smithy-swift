@@ -167,7 +167,7 @@ public enum EventStreamTestUtil {
 
     /// Runs code that is expected to fail with an error thrown by the SDK, and returns that error.
     ///
-    /// Errors thrown by the test harness itself, i.e. when the operation did not send a request to the
+    /// Errors thrown by the test harness itself, e.g. when the operation did not send a request to the
     /// protocol test client, are rethrown so that the test fails, rather than being mistaken for the
     /// expected failure.
     /// - Parameter body: The code that is expected to throw.

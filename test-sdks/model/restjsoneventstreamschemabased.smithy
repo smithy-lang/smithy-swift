@@ -5,8 +5,9 @@ namespace smithy.swift.tests.RestJSONEventStreamSchemaBased
 use aws.protocols#restJson1
 
 // A service for exercising the code-generated event stream protocol tests, using schema-based serde.
-// The operations, and the `eventStreamTests` on them, are taken from the Smithy
-// restJson1 protocol tests in the smithy-aws-protocol-tests package.
+// Most operations, and the `eventStreamTests` on them, are taken from the Smithy restJson1
+// protocol tests in the smithy-aws-protocol-tests package.  The rest are defined in
+// eventstreamextras.smithy, for cases that the upstream tests don't cover.
 @restJson1
 service RestJSONEventStreamSchemaBased {
     version: "2026-11-10"

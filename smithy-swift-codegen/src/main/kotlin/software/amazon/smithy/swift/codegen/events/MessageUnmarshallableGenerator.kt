@@ -28,7 +28,7 @@ class MessageUnmarshallableGenerator(
     val ctx: ProtocolGenerator.GenerationContext,
     val customizations: HTTPProtocolCustomizable,
 ) {
-    // The smithy-swift unknown error has no request ID; other unknown error types, i.e. the AWS one,
+    // The smithy-swift unknown error has no request ID; other unknown error types, e.g. the AWS one,
     // require one.
     private val requestIDArg =
         ", requestID: nil".takeIf { customizations.unknownServiceErrorSymbol != ClientRuntimeTypes.Http.UnknownHttpServiceError } ?: ""

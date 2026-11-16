@@ -59,8 +59,10 @@ import java.util.logging.Logger
  * - Response events, along with the initial response if specified, are encoded into a HTTP response that is
  *   returned to the operation by a `ProtocolResponseTestClient`.  The resulting output & events are then
  *   compared to the expected values.
- * - If the test case expects failure, the test asserts that an error, of the expected type if one is given,
- *   is thrown.
+ * - If the test case expects failure, the test asserts that an error is thrown: an error of the expected
+ *   type if the test case gives one, otherwise any error thrown by the SDK, but not one thrown by the test itself.
+ * - Test cases that can't be expressed in Swift are generated as disabled tests, i.e. a value that is out of
+ *   range for its Swift type, or an error event that isn't the last event a client sends.
  *
  * See https://smithy.io/2.0/additional-specs/protocol-traits.html#eventstreamtests-trait
  */
@@ -510,7 +512,7 @@ class EventStreamTestGenerator(
         /**
          * Whether every value in the test's params fits the Swift type that the SDK uses for it.
          *
-         * Values that do not fit, i.e. a `BigInteger` beyond the range of `Int`, cannot be written as Swift literals.
+         * Values that do not fit, e.g. a `BigInteger` beyond the range of `Int`, cannot be written as Swift literals.
          */
         private fun paramsAreRepresentable(): Boolean {
             val streamUnions =
@@ -731,7 +733,7 @@ class EventStreamTestGenerator(
      * Whether the event is an `initial-request` or `initial-response` message, which carries the members of the
      * input or output other than the event stream, rather than an event.
      *
-     * Only RPC protocols send initial messages.  HTTP binding protocols (i.e. restJson1) bind all of those members
+     * Only RPC protocols send initial messages.  HTTP binding protocols (e.g. restJson1) bind all of those members
      * to the HTTP request or response, so on those protocols no event is an initial message.
      */
     private val Event.isInitialMessage: Boolean
