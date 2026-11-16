@@ -14,6 +14,11 @@ object SmithyTestUtilTypes {
     val SerdeBenchmarkTelemetryProvider = runtimeSymbol("SerdeBenchmarkTelemetryProvider", SwiftDeclaration.CLASS)
     val HttpRequestTestBase = runtimeSymbol("HttpRequestTestBase", SwiftDeclaration.CLASS)
     val HttpResponseTestBase = runtimeSymbol("HttpResponseTestBase", SwiftDeclaration.CLASS)
+    val ProtocolTestClient = runtimeSymbol("ProtocolTestClient", SwiftDeclaration.CLASS)
+    val ProtocolResponseTestClient = runtimeSymbol("ProtocolResponseTestClient", SwiftDeclaration.CLASS)
+    val ProtocolTestIdempotencyTokenGenerator = runtimeSymbol("ProtocolTestIdempotencyTokenGenerator", SwiftDeclaration.CLASS)
+    val EventStreamTestUtil = runtimeSymbol("EventStreamTestUtil", SwiftDeclaration.ENUM)
+    val EventStreamTestInterceptorProvider = runtimeSymbol("EventStreamTestInterceptorProvider", SwiftDeclaration.STRUCT)
 }
 
 private fun runtimeSymbol(

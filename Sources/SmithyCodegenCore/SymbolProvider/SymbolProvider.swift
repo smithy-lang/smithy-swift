@@ -66,10 +66,9 @@ public struct SymbolProvider {
             return "Swift.Int8"
         case .short:
             return "Swift.Int16"
-        case .integer, .long:
+        case .integer, .long, .bigInteger:
+            // BigInteger matches the Swift type used for it in models, which are rendered by the Kotlin codegen.
             return "Swift.Int"
-        case .bigInteger:
-            return "Swift.Int64"
         case .float:
             return "Swift.Float"
         case .double, .bigDecimal:

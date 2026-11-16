@@ -87,11 +87,26 @@ public final class EventStreamSerializer: NoOpByDefaultShapeSerializer {
             return eventUnionSerializer.message
         }
 
+        // A modeled error thrown by the event stream is marshaled to an exception message.
+        // The error is matched to a member of the event stream union by its schema.
+        let unionSchema = schema.target ?? schema
+        let errorMarshalClosure: DefaultMessageEncoderStream<E>.ErrorMarshalClosure = { error in
+            guard let error = error as? any SerializableStruct else { return nil }
+            let eventErrorSerializer = EventErrorSerializer(
+                codec: codec,
+                contentType: contentType,
+                unionSchema: unionSchema
+            )
+            try error.serialize(eventErrorSerializer)
+            return eventErrorSerializer.message
+        }
+
         // Create a message encoder stream & use that as the body of the request.
         body = .stream(DefaultMessageEncoderStream<E>(
             stream: value,
             messageEncoder: messageEncoder,
             marshalClosure: marshalClosure,
+            errorMarshalClosure: errorMarshalClosure,
             messageSigner: messageSigner,
             initialRequestMessage: initialRequestMessage
         ))
