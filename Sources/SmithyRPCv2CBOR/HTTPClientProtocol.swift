@@ -19,7 +19,18 @@ import enum Smithy.ClientError
 import class Smithy.Context
 import class Smithy.Schema
 import struct Smithy.ShapeID
+@_spi(SchemaBasedSerde)
+import class Smithy.StreamingTrait
 import class Smithy.TargetsUnitTrait
+@_spi(SmithyEventStreams)
+import class SmithyEventStreams.DefaultMessageDecoder
+@_spi(SchemaBasedSerde)
+import struct SmithyEventStreams.EventStreamDeserializer
+@_spi(SchemaBasedSerde)
+import class SmithyEventStreams.EventStreamSerializer
+import struct SmithyEventStreamsAPI.Header
+import struct SmithyEventStreamsAPI.Message
+import SmithyEventStreamsAuthAPI
 import class SmithyHTTPAPI.HTTPRequest
 import class SmithyHTTPAPI.HTTPRequestBuilder
 import class SmithyHTTPAPI.HTTPResponse
@@ -31,6 +42,9 @@ import protocol SmithySerialization.Codec
 import protocol SmithySerialization.DeserializableStruct
 @_spi(SchemaBasedSerde)
 import struct SmithySerialization.Operation
+@_spi(SchemaBasedSerde)
+import protocol SmithySerialization.SerializableStruct
+import struct SmithySerialization.SerializerError
 @_spi(SchemaBasedSerde)
 import struct SmithySerialization.TypeRegistry
 
@@ -62,13 +76,45 @@ public struct HTTPClientProtocol: SmithySerialization.ClientProtocol, Sendable {
         }
 
         // Serialize the input to data.
+        // The CBOR serializer skips an event stream member, so for an event streaming input this
+        // serializes only the non-stream members.
         let serializer = try codec.makeSerializer()
         try input.serialize(serializer)
         let data = try serializer.data
 
-        // Add the data to the request body.
-        let body = ByteStream.data(data)
-        requestBuilder.withBody(body)
+        if operation.inputSchema.hasEventStreamMember {
+            // The non-stream members are sent in an initial-request event, followed by the events on the stream.
+            guard let messageEncoder = context.messageEncoder else {
+                throw SerializerError("Message encoder was not configured")
+            }
+            guard let messageSigner = context.messageSigner else {
+                throw SerializerError("Message signer was not configured")
+            }
+            let initialRequestMessage = Message(
+                headers: [
+                    Header(name: ":message-type", value: .string("event")),
+                    Header(name: ":event-type", value: .string("initial-request")),
+                    Header(name: ":content-type", value: .string("application/cbor")),
+                ],
+                payload: data ?? Data()
+            )
+            let eventStreamSerializer = EventStreamSerializer(
+                codec: codec,
+                contentType: "application/cbor",
+                messageEncoder: messageEncoder,
+                messageSigner: messageSigner,
+                initialRequestMessage: initialRequestMessage
+            )
+            try input.serialize(eventStreamSerializer)
+            requestBuilder.withBody(eventStreamSerializer.body)
+            if let mediaType = eventStreamSerializer.mediaType {
+                requestBuilder.updateHeader(name: "Content-Type", value: mediaType)
+            }
+        } else {
+            // Add the data to the request body.
+            let body = ByteStream.data(data)
+            requestBuilder.withBody(body)
+        }
     }
 
     public func deserializeResponse<Input, Output: DeserializableStruct>(
@@ -76,6 +122,10 @@ public struct HTTPClientProtocol: SmithySerialization.ClientProtocol, Sendable {
         context: Context,
         response: HTTPResponse
     ) async throws -> Output {
+        if (200..<300).contains(response.statusCode.rawValue),
+           let streamingMember = operation.outputSchema.eventStreamMember {
+            return try await deserializeEventStreamResponse(streamingMember: streamingMember, response: response)
+        }
         let bodyData = try await response.body.readData() ?? Data()
         if (200..<300).contains(response.statusCode.rawValue) {
             // HTTP code indicates success.  Attempt to parse the output type & return it.
@@ -145,6 +195,55 @@ public struct HTTPClientProtocol: SmithySerialization.ClientProtocol, Sendable {
             }
         }
     }
+}
+
+extension HTTPClientProtocol {
+
+    /// Deserializes a successful response whose output has an event stream member.
+    ///
+    /// The non-stream output members are read from the payload of the `initial-response` event, if the stream
+    /// begins with one.  The rest of the stream is delivered as the output's event stream member.
+    private func deserializeEventStreamResponse<Output: DeserializableStruct>(
+        streamingMember: Schema,
+        response: HTTPResponse
+    ) async throws -> Output {
+        guard case .stream(let stream) = response.body else {
+            throw SerializerError("Event stream response did not have a streaming body")
+        }
+
+        // Read from the stream until the initial-response is received, or the first other message
+        // shows that there will be none.  Any messages read past it stay buffered in the decoder.
+        let messageDecoder = DefaultMessageDecoder()
+        while !messageDecoder.hasResolvedInitialResponse,
+              let data = try await stream.readAsync(upToCount: Int.max) {
+            try messageDecoder.feed(data: data)
+        }
+
+        // Deserialize the non-stream members from the initial-response.  If there is no initial-response,
+        // or it has an empty payload, deserialize from an empty CBOR map so the output is still created.
+        let emptyCBORMap = Data([0xa0])
+        let initialData = messageDecoder.initialResponsePayload.flatMap { $0.isEmpty ? nil : $0 } ?? emptyCBORMap
+        var output = try Output.deserialize(codec.makeDeserializer(data: initialData))
+
+        // Deserialize the event stream using the same message decoder, so buffered messages are delivered.
+        let eventStreamDeserializer = EventStreamDeserializer(
+            codec: codec,
+            response: response,
+            messageDecoder: messageDecoder
+        )
+        try output.deserializeMember(streamingMember, eventStreamDeserializer)
+        return output
+    }
+}
+
+private extension Schema {
+
+    /// The member of this structure that targets an event stream union, if any.
+    var eventStreamMember: Schema? {
+        members.first { $0.type == .union && $0.hasTrait(StreamingTrait.self) }
+    }
+
+    var hasEventStreamMember: Bool { eventStreamMember != nil }
 }
 
 extension HTTPResponse {

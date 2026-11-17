@@ -25,6 +25,15 @@ public class DefaultMessageDecoder: MessageDecoder, @unchecked Sendable {
     private var onInitialResponseReceived: ((Data?) -> Void)?
     private var didProcessInitialMessage = false
 
+    /// The payload of the `initial-response` message, or `nil` if none has been received.
+    ///
+    /// Final once `hasResolvedInitialResponse` is `true`.
+    public private(set) var initialResponsePayload: Data?
+
+    /// Whether the decoder has received either an `initial-response` message or the first other message,
+    /// after which no `initial-response` is expected.
+    public var hasResolvedInitialResponse: Bool { didProcessInitialMessage }
+
     private var decodedPayload = Data()
     private var decodededHeaders: [EventStreamHeader] = []
 
@@ -55,6 +64,7 @@ public class DefaultMessageDecoder: MessageDecoder, @unchecked Sendable {
                     Header(name: ":event-type", value: .string("initial-response"))
                 ) {
                     self.initialMessage = message.payload
+                    self.initialResponsePayload = message.payload
                     self.onInitialResponseReceived?(self.initialMessage)
                     self.onInitialResponseReceived = nil // ensure reference counter is set to 0 and cleaned up
                     self.didProcessInitialMessage = true
