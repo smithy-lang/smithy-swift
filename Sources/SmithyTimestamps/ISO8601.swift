@@ -76,7 +76,10 @@ extension Date {
     }
 
     /// This date, rounded to the nearest millisecond.
+    ///
+    /// Rounding is performed relative to the Unix epoch, so that the result is identical to a date
+    /// created with `Date(timeIntervalSince1970:)` from a value with millisecond precision.
     var roundedToMilliseconds: Date {
-        Date(timeIntervalSinceReferenceDate: (timeIntervalSinceReferenceDate * 1000).rounded() / 1000)
+        Date(timeIntervalSince1970: (timeIntervalSince1970 * 1000).rounded() / 1000)
     }
 }
