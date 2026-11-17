@@ -278,6 +278,55 @@ class DateFormatterTests: XCTestCase {
         XCTAssertEqual(dateString, "1991-05-04T10:12:10Z")
     }
 
+    // MARK: - ISO8601 (Date.ISO8601FormatStyle where available)
+
+    func test_iso8601String_returnsDateForValidISO8601String() {
+        let validDates = [
+            "1993-11-20T05:45:01Z":
+                ExpectedDateComponents(day: 20, month: 11, year: 1993, hour: 5, minute: 45, second: 1),
+            "1993-11-20T05:45:01z":
+                ExpectedDateComponents(day: 20, month: 11, year: 1993, hour: 5, minute: 45, second: 1),
+            "1993-11-20T05:45:01+05:00":
+                ExpectedDateComponents(day: 20, month: 11, year: 1993, hour: 0, minute: 45, second: 1),
+            "1993-11-20T05:45:01-00:02":
+                ExpectedDateComponents(day: 20, month: 11, year: 1993, hour: 5, minute: 47, second: 1),
+            "1993-11-20T05:45:01.1Z":
+                ExpectedDateComponents(day: 20, month: 11, year: 1993, hour: 5, minute: 45, second: 1, milliseconds: 100),
+            "1993-11-20T05:00:00.123456789z":
+                ExpectedDateComponents(day: 20, month: 11, year: 1993, hour: 5, minute: 0, second: 0, milliseconds: 123),
+            "1993-11-20T05:45:01.0-05:00":
+                ExpectedDateComponents(day: 20, month: 11, year: 1993, hour: 10, minute: 45, second: 1, milliseconds: 0),
+            "1993-11-20T05:45:01.010-00:02":
+                ExpectedDateComponents(day: 20, month: 11, year: 1993, hour: 5, minute: 47, second: 1, milliseconds: 10),
+            "1985-04-12T23:20:50.52+00:00":
+                ExpectedDateComponents(day: 12, month: 4, year: 1985, hour: 23, minute: 20, second: 50, milliseconds: 520),
+        ]
+
+        for (dateString, dateComponents) in validDates {
+            guard let constructedDate = Date(iso8601String: dateString) else {
+                XCTFail("could not parse ISO8601 string: \(dateString)")
+                continue
+            }
+            assert(date: constructedDate, hasComponents: dateComponents, dateString: dateString)
+        }
+    }
+
+    func test_iso8601String_returnsNilForInvalidISO8601String() {
+        let inValidDates = [
+            "",
+            "1993-11-20",
+            "20201105T02:31:22Z",
+            "20201105",
+            "2017-07-032T03:30:00Z",
+            "2017-07-22T03::00Z",
+            "2017-07-22T03:0f:00Z",
+        ]
+
+        for dateString in inValidDates {
+            XCTAssertNil(Date(iso8601String: dateString), "able to parse invalid ISO8601 string: \(dateString)")
+        }
+    }
+
     // MARK: - Test Helpers
 
     struct ExpectedDateComponents {

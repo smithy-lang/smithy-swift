@@ -5,8 +5,11 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
+#if canImport(FoundationEssentials)
+import struct FoundationEssentials.Date
+#else
 import struct Foundation.Date
-import func Foundation.floor
+#endif
 import enum Smithy.TimestampFormat
 
 @_spi(SmithyTimestamps)
@@ -32,9 +35,10 @@ public struct TimestampFormatter {
         switch format {
         case .epochSeconds:
             let seconds = date.timeIntervalSince1970
-            return date.hasFractionalSeconds
-            ? String(seconds)
-            : String(format: "%.0f", seconds)
+            guard !date.hasFractionalSeconds, let wholeSeconds = Int64(exactly: seconds) else {
+                return String(seconds)
+            }
+            return String(wholeSeconds)
         case .dateTime:
             return date.hasFractionalSeconds
             ? date.iso8601WithFractionalSeconds()
@@ -57,42 +61,17 @@ public struct TimestampFormatter {
         case .epochSeconds:
             return Double(string).map(Date.init(timeIntervalSince1970:))
         case .dateTime:
-            return Date(
-                from: string,
-                formatters: [
-                    .iso8601DateFormatterWithFractionalSeconds,
-                    .iso8601DateFormatterWithoutFractionalSeconds
-                ]
-            )
+            return Date(iso8601String: string)
         case .httpDate:
-            return Date(
-                from: string,
-                formatters: [
-                    .rfc5322WithFractionalSeconds,
-                    .rfc5322WithoutFractionalSeconds
-                ]
-            )
+            return Date(rfc5322String: string)
         }
     }
 }
 
 @_spi(SmithyTimestamps)
 extension Date {
-    /// Creates a date from a string using the given formatters.
-    /// The date returned will be from the first formatter, in the given formatters list, that is able to successfully convert the date to a string.
-    /// Returns `nil` if the none of the given formatters were able to create a date from the given string or if formatters is empty.
-    init?(from string: String, formatters: [DateFormatter]) {
-        for formatter in formatters {
-            if let date = formatter.date(from: string) {
-                self = date
-                return
-            }
-        }
-        return nil
-    }
-
     /// Returns true if the date contains non-zero values for fractional seconds, otherwise returns false.
     var hasFractionalSeconds: Bool {
-        timeIntervalSince1970 != Foundation.floor(timeIntervalSince1970)
+        timeIntervalSince1970 != timeIntervalSince1970.rounded(.down)
     }
 }
