@@ -197,7 +197,7 @@ package struct SerializeCodegen {
         case .integer:
             let methodName = try target.serializeMethodName
             writer.write("try serializer.\(methodName)(\(schemaVarName), SmithySerialization.Numerics.int32(value))")
-        case .long:
+        case .long, .bigInteger:
             let methodName = try target.serializeMethodName
             writer.write("try serializer.\(methodName)(\(schemaVarName), Int64(value))")
         default:

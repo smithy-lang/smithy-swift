@@ -244,13 +244,14 @@ class OperationInputBodyMiddleware(
         sendInitialRequest: Boolean,
     ) {
         writer.write(
-            "\$N<\$N, \$N, \$N>(keyPath: \$L, defaultBody: \$L, marshalClosure: \$N.marshal\$L)",
+            "\$N<\$N, \$N, \$N>(keyPath: \$L, defaultBody: \$L, marshalClosure: \$N.marshal, errorMarshalClosure: \$N.marshalError\$L)",
             ClientRuntimeTypes.Middleware.EventStreamBodyMiddleware,
             inputSymbol,
             outputSymbol,
             payloadSymbol,
             keyPath,
             defaultBody,
+            payloadSymbol,
             payloadSymbol,
             if (sendInitialRequest) ", initialRequestMessage: try input.makeInitialRequestMessage()" else "",
         )

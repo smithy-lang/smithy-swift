@@ -160,12 +160,16 @@ let package = Package(
             name: "SmithyTestUtilTests",
             dependencies: [
                 .product(name: "SmithyTestUtil", package: "smithy-swift"),
+                .product(name: "SmithyEventStreams", package: "smithy-swift"),
+                .product(name: "SmithyEventStreamsAPI", package: "smithy-swift"),
             ]
         ),
         .testTarget(
             name: "SmithyEventStreamsTests",
             dependencies: [
                 .product(name: "SmithyEventStreams", package: "smithy-swift"),
+                .product(name: "SmithyHTTPAPI", package: "smithy-swift"),
+                .product(name: "SmithyStreams", package: "smithy-swift"),
                 .product(name: "SmithyAWSJSON", package: "smithy-swift"),
                 .product(name: "SmithySerialization", package: "smithy-swift"),
                 testSDKProduct("EventStream"),
