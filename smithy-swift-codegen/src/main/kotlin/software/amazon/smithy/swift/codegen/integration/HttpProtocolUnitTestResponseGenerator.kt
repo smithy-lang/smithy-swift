@@ -38,7 +38,7 @@ import java.util.Base64
 open class HttpProtocolUnitTestResponseGenerator protected constructor(
     builder: Builder,
 ) : HttpProtocolUnitTestGenerator<HttpResponseTestCase>(builder) {
-    override val baseTestClassSymbol = SmithyTestUtilTypes.HttpResponseTestBase
+    override val testSuiteProtocolSymbol = SmithyTestUtilTypes.HTTPResponseProtocolTestSuite
 
     protected open val inputShape: Shape?
         get() {
@@ -70,14 +70,9 @@ open class HttpProtocolUnitTestResponseGenerator protected constructor(
     }
 
     protected fun renderBuildHttpResponse(test: HttpResponseTestCase) {
-        writer.openBlock("guard let httpResponse = buildHttpResponse(", ") else {") {
+        writer.openBlock("let httpResponse = buildHttpResponse(", ")") {
             renderBuildHttpResponseParams(test)
         }
-        writer.indent()
-        writer.write("XCTFail(\"Something is wrong with the created http response\")")
-        writer.write("return")
-        writer.dedent()
-        writer.write("}")
     }
 
     open fun renderExpectedBody(test: HttpResponseTestCase) {
@@ -177,49 +172,13 @@ open class HttpProtocolUnitTestResponseGenerator protected constructor(
     }
 
     fun renderActualOutput(test: HttpResponseTestCase) {
-        val clientName = "${ctx.settings.clientBaseName}Client"
-        val region = "us-west-2"
-
-        // Create a client config.  Use a dummy for:
-        // - credential resolver
-        // - endpoint resolver (unless the test has endpoint rules)
-        // - HTTP client engine; a mock that returns the test's HTTPResponse is used
-
-        // Create benchmark telemetry for serde benchmark tests only
+        // Create & install benchmark telemetry for serde benchmark tests only
         if (test.isSerdeBenchmarkTest) {
-            writer.write(
-                "let telemetryProvider = \$N()",
-                SmithyTestUtilTypes.SerdeBenchmarkTelemetryProvider,
-            )
+            writer.write("let telemetryProvider = \$N()", SmithyTestUtilTypes.SerdeBenchmarkTelemetryProvider)
+            writer.write("let client = try await makeClient(httpResponse: httpResponse, telemetryProvider: telemetryProvider)")
+        } else {
+            writer.write("let client = try await makeClient(httpResponse: httpResponse)")
         }
-        writer.openBlock("let config = try await \$1L.\$1LConfig(", ")", clientName) {
-            writer.write("awsCredentialIdentityResolver: try \$N(),", SmithyTestUtilTypes.dummyIdentityResolver)
-            writer.write("region: \$S,", region)
-            writer.write("signingRegion: \$S,", region)
-            if (!ctx.service.hasEndpointRules()) {
-                writer.openBlock(
-                    "endpointResolver: \$L.StaticEndpointResolver(endpoint: try \$N(",
-                    ")),",
-                    ctx.settings.moduleName,
-                    SmithyHTTPAPITypes.Endpoint,
-                ) {
-                    writer.write("urlString: \"https://example.com\"")
-                }
-            }
-            // Install benchmark telemetry for serde benchmark tests only
-            if (test.isSerdeBenchmarkTest) {
-                writer.write("telemetryProvider: telemetryProvider,")
-            }
-            writer.write(
-                "retryStrategyOptions: \$N.make(),",
-                SmithyTestUtilTypes.ProtocolTestRetryStrategyOptions,
-            )
-            writer.write("httpClientEngine: ProtocolResponseTestClient(httpResponse: httpResponse)")
-        }
-        writer.write("")
-
-        // Create a client with the config
-        writer.write("let client = \$L(config: config)", clientName)
         writer.write("")
 
         // If input has any httpLabel-bound members, these must be filled so the request can succeed
@@ -253,6 +212,10 @@ open class HttpProtocolUnitTestResponseGenerator protected constructor(
             captureResponse(test)
         }
         writer.write("")
+    }
+
+    override fun renderSuiteHelpers() {
+        ctx.renderMakeClient(writer, ProtocolTestClientKind.RESPONSE, telemetryProvider = hasSerdeBenchmarkTests)
     }
 
     open fun captureResponse(test: HttpResponseTestCase) {
@@ -296,7 +259,7 @@ open class HttpProtocolUnitTestResponseGenerator protected constructor(
         outputShape: Shape,
     ) {
         if (test.isSerdeBenchmarkTest) return
-        writer.write("XCTAssertEqual(actual, expected)")
+        writer.write("#expect(actual == expected)")
     }
 
     open class Builder : HttpProtocolUnitTestGenerator.Builder<HttpResponseTestCase>() {

@@ -35,9 +35,15 @@ class EventStreamTestGeneratorTests {
         inputContents.shouldSyntacticSanityCheck()
         outputContents.shouldSyntacticSanityCheck()
         inputContents.shouldContainOnlyOnce("import Testing\n")
-        inputContents.shouldContainOnlyOnce("@Suite\nstruct InputStreamEventStreamTests {\n")
-        outputContents.shouldContainOnlyOnce("@Suite\nstruct OutputStreamEventStreamTests {\n")
+        inputContents.shouldContainOnlyOnce(
+            "@Suite\nstruct InputStreamEventStreamTests: SmithyTestUtil.EventStreamProtocolTestSuite {\n",
+        )
+        outputContents.shouldContainOnlyOnce(
+            "@Suite\nstruct OutputStreamEventStreamTests: SmithyTestUtil.EventStreamProtocolTestSuite {\n",
+        )
         inputContents.shouldNotContain("XCTest")
+        inputContents.shouldNotContain("EventStreamTestUtil.")
+        outputContents.shouldNotContain("EventStreamTestUtil.")
     }
 
     @Test
@@ -52,16 +58,7 @@ class EventStreamTestGeneratorTests {
     @Test
     func test_HeadersAndPayloadInput() async throws {
         // Serialize the request & its events
-        let config = try await ExampleClient.ExampleClientConfig(
-            awsCredentialIdentityResolver: try SmithyTestUtil.dummyIdentityResolver(),
-            region: "us-west-2",
-            signingRegion: "us-west-2",
-            endpointResolver: example.StaticEndpointResolver(endpoint: try SmithyHTTPAPI.Endpoint(urlString: "https://example.com")),
-            idempotencyTokenGenerator: SmithyTestUtil.ProtocolTestIdempotencyTokenGenerator(),
-            httpClientEngine: SmithyTestUtil.ProtocolTestClient(),
-            httpInterceptorProviders: [SmithyTestUtil.EventStreamTestInterceptorProvider()]
-        )
-        let client = ExampleClient(config: config)
+        let client = try await makeClient()
 
         var input = InputStreamInput(
             initialMember: "foo"
@@ -75,20 +72,21 @@ class EventStreamTestGeneratorTests {
             ))
             ,
         ]
-        input.stream = SmithyTestUtil.EventStreamTestUtil.stream(inputEvents)
+        input.stream = stream(inputEvents)
 
-        let request = try await SmithyTestUtil.EventStreamTestUtil.captureRequest {
-            _ = try await client.inputStream(input: input)
-        }
+        let request = try await captureRequest { try await client.inputStream(input: input) }
 
         // Verify the initial request
-        #expect(request.method == .post)
-        #expect(request.path == "/InputStream")
-        #expect(request.headers.value(for: "initial-member") == "foo")
-        #expect(!request.headers.exists(name: "forbidden-header"))
+        try await assertRequest(
+            request,
+            method: .post,
+            path: "/InputStream",
+            headers: ["initial-member": "foo"],
+            forbiddenHeaders: ["forbidden-header"]
+        )
 
         // Verify the request events
-        let messages = try await SmithyTestUtil.EventStreamTestUtil.messages(in: request)
+        let messages = try await self.messages(in: request)
         try #require(messages.count == 1)
         #expect(messages[0].headers.value(name: ":message-type") == .string("event"))
         #expect(messages[0].headers.value(name: "blobHeader") == .byteArray(Foundation.Data(base64Encoded: "Zm9v")!))
@@ -97,7 +95,7 @@ class EventStreamTestGeneratorTests {
         #expect(messages[0].headers.value(name: "timestampHeader") == .timestamp(Foundation.Date(timeIntervalSince1970: 1730384114.500)))
         #expect(messages[0].headers.value(name: "forbidden") == nil)
         #expect(messages[0].headers.value(name: ":event-type") != nil)
-        #expect(try SmithyTestUtil.EventStreamTestUtil.payload(messages[0].payload, matches: Foundation.Data("{\"structureMember\":\"baz\"}".utf8), mediaType: "application/json"))
+        #expect(try payload(messages[0].payload, matches: Foundation.Data("{\"structureMember\":\"baz\"}".utf8), mediaType: "application/json"))
     }
 """
         inputContents.shouldContainOnlyOnce(expected)
@@ -110,7 +108,7 @@ class EventStreamTestGeneratorTests {
         let inputError = ErrorEvent(
             message: "foo"
         )
-        input.stream = SmithyTestUtil.EventStreamTestUtil.stream(inputEvents, finishingWith: inputError)
+        input.stream = stream(inputEvents, finishingWith: inputError)
 """
         inputContents.shouldContainOnlyOnce(expected)
         inputContents.shouldNotContain(".disabled(")
@@ -119,10 +117,8 @@ class EventStreamTestGeneratorTests {
     @Test
     fun `it expects any error from the SDK when a failing request test has no errorId`() {
         val expected = """
-        let error = try await SmithyTestUtil.EventStreamTestUtil.sdkError {
-            let request = try await SmithyTestUtil.EventStreamTestUtil.captureRequest {
-                _ = try await client.inputStream(input: input)
-            }
+        let error = try await sdkError {
+            let request = try await captureRequest { try await client.inputStream(input: input) }
             _ = try await request.body.readData()
         }
         #expect(error != nil, "Expected the SDK to throw an error")
@@ -135,9 +131,7 @@ class EventStreamTestGeneratorTests {
     fun `it expects the errorId type when a failing request test has one`() {
         val expected = """
         await #expect(throws: ErrorEvent.self) {
-            let request = try await SmithyTestUtil.EventStreamTestUtil.captureRequest {
-                _ = try await client.inputStream(input: input)
-            }
+            let request = try await captureRequest { try await client.inputStream(input: input) }
             _ = try await request.body.readData()
         }
     }
@@ -150,8 +144,8 @@ class EventStreamTestGeneratorTests {
         val expectedBody = """
         var body = Foundation.Data()
         body.append(Foundation.Data(base64Encoded: "AAAAAA==")!)
-        body.append(try SmithyTestUtil.EventStreamTestUtil.encode([SmithyEventStreamsAPI.Message(headers: [SmithyEventStreamsAPI.Header(name: ":event-type", value: .string("payloadEvent")), SmithyEventStreamsAPI.Header(name: ":message-type", value: .string("event")), SmithyEventStreamsAPI.Header(name: "header", value: .string("qux"))], payload: Foundation.Data())]))
-        let httpResponse = try SmithyTestUtil.EventStreamTestUtil.httpResponse(
+        body.append(try encode([SmithyEventStreamsAPI.Message(headers: [SmithyEventStreamsAPI.Header(name: ":event-type", value: .string("payloadEvent")), SmithyEventStreamsAPI.Header(name: ":message-type", value: .string("event")), SmithyEventStreamsAPI.Header(name: "header", value: .string("qux"))], payload: Foundation.Data())]))
+        let httpResponse = try self.httpResponse(
             statusCode: 200,
             headers: [
                 "Content-Type": "application/vnd.amazon.eventstream",
@@ -160,16 +154,30 @@ class EventStreamTestGeneratorTests {
         )
 """
         outputContents.shouldContainOnlyOnce(expectedBody)
-        val expectedConfig = """
+        outputContents.shouldContain("let client = try await makeClient(httpResponse: httpResponse)\n")
+        val expectedHelper = """
+    private func makeClient(httpResponse: SmithyHTTPAPI.HTTPResponse, host: String = "example.com") async throws -> ExampleClient {
+        let config = try await ExampleClient.ExampleClientConfig(
+            awsCredentialIdentityResolver: try SmithyTestUtil.dummyIdentityResolver(),
+            region: "us-west-2",
+            signingRegion: "us-west-2",
+            endpointResolver: example.StaticEndpointResolver(endpoint: try SmithyHTTPAPI.Endpoint(urlString: "https://\(host)")),
             retryStrategyOptions: SmithyTestUtil.ProtocolTestRetryStrategyOptions.make(),
             httpClientEngine: SmithyTestUtil.ProtocolResponseTestClient(httpResponse: httpResponse),
+            httpInterceptorProviders: [SmithyTestUtil.EventStreamTestInterceptorProvider()]
+        )
+        return ExampleClient(config: config)
+    }
+}
 """
-        outputContents.shouldContain(expectedConfig)
+        outputContents.shouldContainOnlyOnce(expectedHelper)
+        // Only the response helper is used by the output stream tests.
+        outputContents.shouldContainOnlyOnce("private func makeClient(")
         val expectedAssertions = """
         let output = try await client.outputStream(input: input)
 
         // Verify the response events
-        let events = try await SmithyTestUtil.EventStreamTestUtil.events(output.stream)
+        let events = try await self.events(output.stream)
         try #require(events.count == 2)
         #expect(events[0] == TestEventStream.payloadevent(PayloadEvent(
             header: "bar",
@@ -191,7 +199,7 @@ class EventStreamTestGeneratorTests {
         val expected = """
         await #expect(throws: ErrorEvent.self) {
             let output = try await client.outputStream(input: input)
-            _ = try await SmithyTestUtil.EventStreamTestUtil.events(output.stream)
+            _ = try await events(output.stream)
         }
 """
         outputContents.shouldContainOnlyOnce(expected)
@@ -202,7 +210,7 @@ class EventStreamTestGeneratorTests {
         val expectedResponse = """
         var body = Foundation.Data()
         body.append(Foundation.Data("{\"message\": \"foo\"}".utf8))
-        let httpResponse = try SmithyTestUtil.EventStreamTestUtil.httpResponse(
+        let httpResponse = try self.httpResponse(
             statusCode: 500,
             headers: [
                 "X-Amzn-Errortype": "ServiceError",
@@ -218,7 +226,7 @@ class EventStreamTestGeneratorTests {
     fun `it verifies initial response members`() {
         val expected = """
         let body = Foundation.Data()
-        let httpResponse = try SmithyTestUtil.EventStreamTestUtil.httpResponse(
+        let httpResponse = try self.httpResponse(
             statusCode: 200,
             headers: [
                 "initial-member": "foo",

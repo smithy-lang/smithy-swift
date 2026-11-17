@@ -19,7 +19,7 @@ import class SmithyHTTPAPI.HTTPResponse
 ///
 /// Event stream protocol tests verify the serialization of event stream messages.  SDKs that sign event stream
 /// messages configure their own encoder & signer, which are left in place; signed messages are unwrapped by
-/// ``EventStreamTestUtil/messages(from:)`` before they are verified.
+/// ``EventStreamProtocolTestSuite/messages(from:)`` before they are verified.
 public struct EventStreamTestInterceptorProvider: HttpInterceptorProvider, Sendable {
 
     public init() {}
