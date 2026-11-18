@@ -49,6 +49,7 @@ val testSDKs = listOf(
     // Its operations are shared with the rpcv2Json corpus service & carry tests for both protocols.
     TestSDK("RpcV2CborCorpus", service = "smithy.protocoltests.corpus#RpcV2CborCorpusTests", removeUnusedShapes = false),
     TestSDK("StringSerializer"),
+    TestSDK("UnionDebugDescription"),
     TestSDK("Waiters"),
 )
 

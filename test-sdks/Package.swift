@@ -35,6 +35,7 @@ let package = Package(
         testSDKPackage("NullTolerance"),
         testSDKPackage("RestJSON1Response"),
         testSDKPackage("StringSerializer"),
+        testSDKPackage("UnionDebugDescription"),
         testSDKPackage("Waiters"),
     ],
     targets: [
@@ -60,6 +61,12 @@ let package = Package(
             dependencies: [
                 .product(name: "ClientRuntime", package: "smithy-swift"),
                 testSDKProduct("EndpointBDD"),
+            ]
+        ),
+        .testTarget(
+            name: "UnionDebugDescriptionTests",
+            dependencies: [
+                testSDKProduct("UnionDebugDescription"),
             ]
         ),
         .testTarget(
