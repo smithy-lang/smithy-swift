@@ -17,8 +17,6 @@ import class Smithy.Schema
 @_spi(SchemaBasedSerde)
 import struct Smithy.ShapeID
 @_spi(SchemaBasedSerde)
-import class Smithy.StreamingTrait
-@_spi(SchemaBasedSerde)
 import struct SmithyEventStreams.EventStreamDeserializer
 @_spi(SchemaBasedSerde)
 import class SmithyEventStreams.EventStreamSerializer
@@ -27,6 +25,8 @@ import SmithyEventStreamsAuthAPI
 import class SmithyHTTPAPI.HTTPBindingsDeserializer
 @_spi(SchemaBasedSerde)
 import class SmithyHTTPAPI.HTTPBindingsSerializer
+@_spi(SchemaBasedSerde)
+import class SmithyHTTPAPI.HTTPOperationExtension
 import class SmithyHTTPAPI.HTTPRequest
 import class SmithyHTTPAPI.HTTPRequestBuilder
 import class SmithyHTTPAPI.HTTPResponse
@@ -78,7 +78,7 @@ public struct HTTPClientProtocol: ClientProtocol {
         requestBuilder.withQueryItems(serializer.queryItems)
         requestBuilder.withHeaders(serializer.headers)
 
-        switch operation.requestStreamingType {
+        switch serializer.operationExtension.requestStreamingType {
         case .event:
             guard let messageEncoder = context.messageEncoder else {
                 throw SerializerError("Message encoder was not configured")
@@ -118,7 +118,8 @@ public struct HTTPClientProtocol: ClientProtocol {
         response: HTTPResponse
     ) async throws -> Output where Input: SerializableStruct, Output: DeserializableStruct {
         if response.statusCode.isSuccess {
-            if let streamingMember = operation.responseStreamingMember {
+            let operationExtension = try operation.schema.getOrCreateExtension(HTTPOperationExtension.self)
+            if let streamingMember = operationExtension.responseStreamingMember {
                 // Fill all output members other than the streaming members.
                 let deserializer = HTTPBindingsDeserializer(codec: codec, response: response, data: nil)
                 var output = try Output.deserialize(deserializer)
@@ -213,29 +214,5 @@ extension HTTPResponse {
         self.headers.value(for: "x-amzn-error-message")
             ?? self.headers.value(for: ":error-message")
             ?? self.headers.value(for: "x-amzn-ErrorMessage")
-    }
-}
-
-private extension Operation {
-
-    enum StreamingType {
-        case event
-        case data
-    }
-
-    var requestStreamingType: StreamingType? {
-        let streamingMemberType = inputSchema.members.first { $0.hasTrait(StreamingTrait.self) }?.type
-        switch streamingMemberType {
-        case .union:
-            return .event
-        case .blob:
-            return .data
-        default:
-            return nil
-        }
-    }
-
-    var responseStreamingMember: Schema? {
-        outputSchema.members.first { $0.hasTrait(StreamingTrait.self) }
     }
 }
