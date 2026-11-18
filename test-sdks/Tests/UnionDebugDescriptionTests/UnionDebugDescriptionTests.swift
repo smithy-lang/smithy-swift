@@ -13,7 +13,7 @@ import enum UnionDebugDescriptionTestSDK.UnionDebugDescriptionClientTypes
 final class UnionDebugDescriptionTests: XCTestCase {
     typealias Types = UnionDebugDescriptionClientTypes
 
-    private let secret = "not-a-real-secret"
+    private let secret = "super-important-secret"
 
     func test_sensitiveVariants_areRedacted() {
         let unions: [Types.SensitiveVariantUnion] = [
@@ -41,7 +41,7 @@ final class UnionDebugDescriptionTests: XCTestCase {
     }
 
     func test_sensitiveUnion_isFullyRedacted() {
-        for union: Types.SensitiveUnion in [.a("visible-value"), .b(8675309)] {
+        for union: Types.SensitiveUnion in [.a("visible-value"), .b(42)] {
             let description = String(describing: union)
             XCTAssertEqual(description, "CONTENT_REDACTED")
         }
