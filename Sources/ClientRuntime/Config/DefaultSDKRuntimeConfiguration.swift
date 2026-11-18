@@ -116,7 +116,7 @@ public extension DefaultSDKRuntimeConfiguration {
     static var defaultIdempotencyTokenGenerator: IdempotencyTokenGenerator { DefaultIdempotencyTokenGenerator() }
 
     /// The default retry strategy options with the exponential backoff strategy & other defaults
-    /// defined in `RetryStrategyOptions`.
+    /// defined in `RetryStrategyOptions`, including Retry Behavior 2.1.
     static var defaultRetryStrategyOptions: RetryStrategyOptions {
         RetryStrategyOptions(backoffStrategy: ExponentialBackoffStrategy())
     }

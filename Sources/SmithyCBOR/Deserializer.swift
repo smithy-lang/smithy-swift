@@ -301,6 +301,9 @@ public class Deserializer: ShapeDeserializer {
             break
         case .indef_break, .indef_bytes_start, .indef_text_start:
             throw CBORDecoderError("unexpected \(next)")
+        default:
+            // Self-contained values added by newer CRT versions (e.g. bignums) have no children to skip.
+            break
         }
     }
 

@@ -24,6 +24,8 @@ extension Shape {
         long.id: long,
         float.id: float,
         double.id: double,
+        bigInteger.id: bigInteger,
+        bigDecimal.id: bigDecimal,
         document.id: document,
         primitiveBoolean.id: primitiveBoolean,
         primitiveInteger.id: primitiveInteger,
@@ -33,6 +35,16 @@ extension Shape {
         primitiveFloat.id: primitiveFloat,
         primitiveDouble.id: primitiveDouble,
     ]}
+
+    static var bigInteger: Shape {
+        let schema = Smithy.Prelude.bigIntegerSchema
+        return Shape(id: schema.id, type: schema.type, traits: schema.traits)
+    }
+
+    static var bigDecimal: Shape {
+        let schema = Smithy.Prelude.bigDecimalSchema
+        return Shape(id: schema.id, type: schema.type, traits: schema.traits)
+    }
 
     static var unit: Shape {
         let schema = Smithy.Prelude.unitSchema

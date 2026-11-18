@@ -67,7 +67,7 @@ let package = Package(
         var dependencies: [Package.Dependency] = [
             crtDependency,
             .package(url: "https://github.com/apple/swift-argument-parser.git", from: "1.1.0"),
-            .package(url: "https://github.com/apple/swift-log.git", from: "1.0.0"),
+            .package(url: "https://github.com/apple/swift-log.git", "1.0.0"..<"1.17.0"),
             .package(url: "https://github.com/swift-server/async-http-client.git", from: "1.22.0"),
         ]
 
@@ -85,7 +85,7 @@ var crtDependency: Package.Dependency {
     return if useCRTFromMain {
         .package(url: "https://github.com/awslabs/aws-crt-swift", branch: "main")
     } else {
-        .package(url: "https://github.com/awslabs/aws-crt-swift", from: "0.64.0")
+        .package(url: "https://github.com/awslabs/aws-crt-swift", from: "0.64.3")
     }
 }
 
@@ -197,7 +197,17 @@ var runtimeTargets: [PackageDescription.Target] {
         ),
         .target(
             name: "SmithyTestUtil",
-            dependencies: ["ClientRuntime", "SmithyHTTPAPI", "SmithyIdentity", "SmithyCBOR", "SmithyTelemetryAPI"]
+            dependencies: [
+                "ClientRuntime",
+                "SmithyHTTPAPI",
+                "SmithyIdentity",
+                "SmithyCBOR",
+                "SmithyTelemetryAPI",
+                "SmithyEventStreams",
+                "SmithyEventStreamsAPI",
+                "SmithyEventStreamsAuthAPI",
+                "SmithyStreams",
+            ]
         ),
         .target(
             name: "SmithyIdentity",

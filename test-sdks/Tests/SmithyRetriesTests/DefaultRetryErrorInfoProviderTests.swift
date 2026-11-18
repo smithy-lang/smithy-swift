@@ -42,6 +42,31 @@ final class DefaultRetryErrorInfoProviderTests: XCTestCase {
         )
     }
 
+    func test_returnsThrottlingWhenErrorIsABare429() {
+
+        struct TooManyRequestsHTTPError: Error, HTTPError {
+            var httpResponse = HTTPResponse(headers: Headers(), statusCode: .tooManyRequests)
+        }
+
+        XCTAssertEqual(
+            DefaultRetryErrorInfoProvider.errorInfo(for: TooManyRequestsHTTPError()),
+            .init(errorType: .throttling, retryAfterHint: nil, isTimeout: false)
+        )
+    }
+
+    func test_returnsNilWhenErrorIsANonRetryableModeledErrorWith429() {
+
+        struct ModeledNonRetryable429Error: Error, ModeledError, HTTPError {
+            static var typeName: String { "ModeledNonRetryable429Error" }
+            static var fault: ClientRuntime.ErrorFault { .client }
+            static var isRetryable: Bool { false }
+            static var isThrottling: Bool { false }
+            var httpResponse = HTTPResponse(headers: Headers(), statusCode: .tooManyRequests)
+        }
+
+        XCTAssertNil(DefaultRetryErrorInfoProvider.errorInfo(for: ModeledNonRetryable429Error()))
+    }
+
     // MARK: - Modeled errors
 
     func test_returnsErrorInfoWhenErrorIsModeledRetryableAndFaultIsServer() {

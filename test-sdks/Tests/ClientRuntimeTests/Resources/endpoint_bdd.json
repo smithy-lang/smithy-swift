@@ -1,0 +1,31 @@
+{
+  "version": "1.1",
+  "parameters": {
+    "Region": {"required": true, "documentation": "The AWS region", "type": "string"},
+    "UseFips": {"required": true, "default": false, "documentation": "Use FIPS endpoints", "type": "boolean"}
+  },
+  "conditions": [
+    {"fn": "booleanEquals", "argv": [{"ref": "UseFips"}, true]}
+  ],
+  "results": [
+    {
+      "conditions": [],
+      "endpoint": {"url": "https://service-fips.{Region}.amazonaws.com", "properties": {}, "headers": {}},
+      "type": "endpoint"
+    },
+    {
+      "conditions": [],
+      "endpoint": {
+        "url": "https://service.{Region}.amazonaws.com",
+        "properties": {
+          "authSchemes": [{"name": "sigv4", "signingName": "service", "signingRegion": "{Region}"}]
+        },
+        "headers": {"x-amz-region": ["{Region}"], "x-amz-multi": ["*", "{Region}"]}
+      },
+      "type": "endpoint"
+    }
+  ],
+  "root": 2,
+  "nodeCount": 2,
+  "nodes": "/////wAAAAH/////AAAAAAX14QEF9eEC"
+}

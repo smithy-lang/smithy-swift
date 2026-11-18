@@ -10,16 +10,15 @@ import software.amazon.smithy.model.traits.AuthTrait
 import software.amazon.smithy.model.traits.OptionalAuthTrait
 import software.amazon.smithy.model.traits.Trait
 import software.amazon.smithy.model.traits.synthetic.NoAuthTrait
-import software.amazon.smithy.rulesengine.language.EndpointRuleSet
 import software.amazon.smithy.rulesengine.language.syntax.parameters.Parameter
 import software.amazon.smithy.rulesengine.language.syntax.parameters.ParameterType
-import software.amazon.smithy.rulesengine.traits.EndpointRuleSetTrait
 import software.amazon.smithy.swift.codegen.endpoints.EndpointTypes
 import software.amazon.smithy.swift.codegen.integration.ProtocolGenerator
 import software.amazon.smithy.swift.codegen.model.boxed
 import software.amazon.smithy.swift.codegen.model.buildSymbol
 import software.amazon.smithy.swift.codegen.model.defaultValue
-import software.amazon.smithy.swift.codegen.model.getTrait
+import software.amazon.smithy.swift.codegen.model.endpointParameters
+import software.amazon.smithy.swift.codegen.model.hasEndpointRules
 import software.amazon.smithy.swift.codegen.model.hasTrait
 import software.amazon.smithy.swift.codegen.swiftmodules.SmithyHTTPAuthAPITypes
 import software.amazon.smithy.swift.codegen.swiftmodules.SmithyTypes
@@ -83,9 +82,7 @@ class AuthSchemeResolverGenerator {
         writer: SwiftWriter,
     ) {
         writer.apply {
-            val ruleSetNode = ctx.service.getTrait<EndpointRuleSetTrait>()?.ruleSet
-            val ruleSet = if (ruleSetNode != null) EndpointRuleSet.fromNode(ruleSetNode) else null
-            ruleSet?.parameters?.toList()?.sortedBy { it.name.toString() }?.let { sortedParameters ->
+            ctx.service.endpointParameters()?.toList()?.sortedBy { it.name.toString() }?.let { sortedParameters ->
                 sortedParameters.forEach { param ->
                     val memberName = param.name.toString().toLowerCamelCase()
                     val memberSymbol = param.toSymbol()
@@ -335,7 +332,7 @@ class AuthSchemeResolverGenerator {
 
         // Utility function for checking if a service relies on endpoint resolver for auth scheme resolution
         fun usesRulesBasedAuthResolver(ctx: ProtocolGenerator.GenerationContext): Boolean {
-            if (!ctx.service.hasTrait<EndpointRuleSetTrait>()) return false
+            if (!ctx.service.hasEndpointRules()) return false
             return listOf("S3", "EventBridge", "CloudFront KeyValueStore", "SESv2").contains(ctx.settings.sdkId)
         }
 
