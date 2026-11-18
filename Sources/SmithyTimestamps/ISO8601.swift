@@ -33,18 +33,31 @@ extension Date.ISO8601FormatStyle {
 
 @_spi(SmithyTimestamps)
 extension Date {
-    /// Returns a string representation of the date in the ISO8601 format using the date-time production in RFC3339 section 5.6 with no UTC offset and with fractional seconds (for example, 1985-04-12T23:20:50.52Z)
+    /// Returns a string representation of the date in the ISO8601 format using the date-time production in RFC3339 section 5.6 with no UTC offset and with fractional seconds (for example, 1985-04-12T23:20:50.520Z)
+    ///
+    /// Fractional seconds are truncated to milliseconds, as specified for the Smithy `date-time` format.
     func iso8601WithFractionalSeconds() -> String {
+        guard let (wholeSeconds, milliseconds) = truncatedToMilliseconds else {
+            return iso8601WithoutFractionalSeconds()
+        }
+        let wholeSecondsDate = Date(timeIntervalSince1970: wholeSeconds)
         if #available(macOS 12.0, *) {
-            // ISO8601FormatStyle truncates to milliseconds, while DateFormatter rounds.  Round to the
-            // nearest millisecond, then nudge forward by 0.1 ms so that floating point error can't cause
-            // truncation to the previous millisecond (i.e. "x.762" must not be formatted as "x.761").
-            let nudged = roundedToMilliseconds.addingTimeInterval(0.0001)
-            return nudged.formatted(Date.ISO8601FormatStyle.iso8601WithFractionalSeconds)
+            // Format the whole seconds, then insert the milliseconds before the trailing "Z".
+            // Inserting the milliseconds as digits, rather than formatting the fractional date,
+            // keeps floating point error from affecting the formatted milliseconds.
+            var string = wholeSecondsDate.formatted(Date.ISO8601FormatStyle.iso8601WithoutFractionalSeconds)
+            string.removeLast()
+            string += milliseconds < 10 ? ".00" : milliseconds < 100 ? ".0" : "."
+            string += String(milliseconds)
+            string += "Z"
+            return string
         } else {
-            return legacyISO8601WithFractionalSeconds()
+            // DateFormatter rounds to the nearest millisecond, so pass it the exact millisecond.
+            let date = Date(timeIntervalSince1970: (wholeSeconds * 1000 + Double(milliseconds)) / 1000)
+            return date.legacyISO8601WithFractionalSeconds()
         }
     }
+
     /// Returns a string representation of the date in the ISO8601 format using the date-time production in RFC3339 section 5.6 with no UTC offset and without fractional seconds (for example, 1985-04-12T23:20:50Z)
     func iso8601WithoutFractionalSeconds() -> String {
         if #available(macOS 12.0, *) {
@@ -57,22 +70,40 @@ extension Date {
     /// Creates a date from an ISO8601 string using the date-time production in RFC3339 section 5.6,
     /// with or without fractional seconds.
     ///
+    /// The string must strictly match the RFC 3339 `date-time` production, with all fields in range.
+    /// Fractional seconds are truncated to milliseconds, as specified for the Smithy `date-time` format.
+    ///
     /// Returns `nil` if the string is not a valid date-time.
     init?(iso8601String string: String) {
+        // ISO8601FormatStyle ignores content after a valid prefix, and carries out-of-range fields
+        // into the next unit (i.e. February 30 becomes March 2), so validate the string first.
+        guard let dateTime = RFC3339DateTime(string) else { return nil }
         if #available(macOS 12.0, *) {
-            // Try with fractional seconds first, then without, since some Foundation versions
-            // require the presence of fractional seconds to match the style used to parse.
-            // Parsed dates are rounded to milliseconds, matching the precision of DateFormatter.
-            if let date = try? Date.ISO8601FormatStyle.iso8601WithFractionalSeconds.parse(string) {
-                self = date.roundedToMilliseconds
-            } else if let date = try? Date.ISO8601FormatStyle.iso8601WithoutFractionalSeconds.parse(string) {
-                self = date.roundedToMilliseconds
-            } else {
-                return nil
-            }
+            // Parse the string with fractional seconds removed, then add the milliseconds exactly.
+            guard let wholeSeconds = try? Date.ISO8601FormatStyle.iso8601WithoutFractionalSeconds.parse(
+                dateTime.wholeSecondsString
+            ) else { return nil }
+            let totalMilliseconds = wholeSeconds.timeIntervalSince1970 * 1000 + Double(dateTime.milliseconds)
+            self.init(timeIntervalSince1970: totalMilliseconds / 1000)
         } else {
-            self.init(legacyISO8601String: string)
+            guard let date = Date(legacyISO8601String: string) else { return nil }
+            self = date.roundedToMilliseconds
         }
+    }
+
+    /// This date's whole seconds and milliseconds since the Unix epoch, with fractional milliseconds truncated.
+    ///
+    /// A margin of 1 microsecond is added before truncating, so that a millisecond value whose binary
+    /// representation falls just below the millisecond (i.e. `x.762` stored as `x.76199996`) is not
+    /// truncated to the previous millisecond.
+    ///
+    /// Returns `nil` if this date is not finite.
+    private var truncatedToMilliseconds: (wholeSeconds: Double, milliseconds: Int)? {
+        let totalMilliseconds = (timeIntervalSince1970 * 1000 + 0.001).rounded(.down)
+        guard totalMilliseconds.isFinite else { return nil }
+        let wholeSeconds = (totalMilliseconds / 1000).rounded(.down)
+        let milliseconds = Int(totalMilliseconds - wholeSeconds * 1000)
+        return (wholeSeconds, milliseconds)
     }
 
     /// This date, rounded to the nearest millisecond.
