@@ -63,16 +63,8 @@ open class RpcV2CborProtocolGenerator(
         operationMiddleware.removeMiddleware(operation, "OperationInputHeadersMiddleware")
 
         // The @streaming trait is on the union targeted by an input or output member, not on the structure itself.
-        val hasEventStreamResponse = operation.isOutputEventStream(ctx.model)
         val hasEventStreamRequest = operation.isInputEventStream(ctx.model)
-
-        // Determine the value of the Accept header based on output shape
-        val acceptHeaderValue =
-            if (hasEventStreamResponse) {
-                "application/vnd.amazon.eventstream"
-            } else {
-                "application/cbor"
-            }
+        val hasEventStreamResponse = operation.isOutputEventStream(ctx.model)
 
         // Determine the value of the Content-Type header based on input shape
         val contentTypeValue =
@@ -80,6 +72,14 @@ open class RpcV2CborProtocolGenerator(
                 "application/vnd.amazon.eventstream"
             } else {
                 defaultContentType
+            }
+
+        // Determine the value of the Accept header based on output shape
+        val acceptHeaderValue =
+            if (hasEventStreamResponse) {
+                "application/vnd.amazon.eventstream"
+            } else {
+                "application/cbor"
             }
 
         // Middleware to set smithy-protocol and Accept headers
