@@ -68,7 +68,7 @@ public final class HTTPOperationExtension: SchemaExtension {
         }
         self.method = method
 
-        let inputSchema = schema.input
+        let inputSchema = try schema.input
         self.input = try inputSchema.getOrCreateExtension(HTTPBindingsExtension.self)
 
         let (path, literalQuery) = Self.split(uri: httpTrait.uri)
@@ -95,7 +95,7 @@ public final class HTTPOperationExtension: SchemaExtension {
         self.labelIsGreedy = labelIsGreedy
 
         self.requestStreamingType = Self.streamingType(ofMembersOf: inputSchema)
-        self.responseStreamingMember = schema.output.members.first { $0.hasTrait(StreamingTrait.self) }
+        self.responseStreamingMember = try schema.output.members.first { $0.hasTrait(StreamingTrait.self) }
     }
 
     // MARK: - Private methods
