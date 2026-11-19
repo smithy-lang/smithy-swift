@@ -91,7 +91,9 @@ public struct HTTPClientProtocol: SmithySerialization.ClientProtocol {
             }
             // An initial-request is only sent when one is modeled, i.e. when the input has members besides the
             // event stream.  Per the Smithy event streams spec, a client must not send one otherwise.
-            let hasInitialRequestMembers = operation.inputSchema.members.contains { $0 !== streamingMember }
+            let hasInitialRequestMembers = operation.inputSchema.members.contains {
+                $0.memberName != streamingMember.memberName
+            }
             let initialRequestMessage = hasInitialRequestMembers ? Message(
                 headers: [
                     Header(name: ":message-type", value: .string("event")),
@@ -127,7 +129,11 @@ public struct HTTPClientProtocol: SmithySerialization.ClientProtocol {
     ) async throws -> Output where Input: SerializableStruct, Output: DeserializableStruct {
         if (200..<300).contains(response.statusCode.rawValue) {
             if let streamingMember = operation.outputSchema.eventStreamMember {
-                return try await deserializeEventStreamResponse(streamingMember: streamingMember, response: response)
+                return try await deserializeEventStreamResponse(
+                    outputSchema: operation.outputSchema,
+                    streamingMember: streamingMember,
+                    response: response
+                )
             } else {
                 let data = try await response.body.readData() ?? Data()
                 let deserializer = try codec.makeDeserializer(data: data)
@@ -217,7 +223,14 @@ extension HTTPClientProtocol {
     ///
     /// The non-stream output members are read from the payload of the `initial-response` event, if the stream
     /// begins with one.  The rest of the stream is delivered as the output's event stream member.
+    ///
+    /// When the output has members besides the event stream, this waits for the first message on the stream
+    /// before returning, because those members must be filled from the `initial-response`.  A server sending
+    /// such an output must send the `initial-response` first.  When the event stream is the only member,
+    /// the output is returned without waiting, so that a bidirectional stream whose server waits for request
+    /// events before responding cannot deadlock; an `initial-response`, if sent, is dropped by the decoder.
     private func deserializeEventStreamResponse<Output: DeserializableStruct>(
+        outputSchema: Schema,
         streamingMember: Schema,
         response: HTTPResponse
     ) async throws -> Output {
@@ -225,10 +238,13 @@ extension HTTPClientProtocol {
             throw SerializerError("Event stream response did not have a streaming body")
         }
 
-        // Read from the stream until the initial-response is received, or the first other message
-        // shows that there will be none.  Any messages read past it stay buffered in the decoder.
+        // If there are non-stream members, read from the stream until the initial-response is received,
+        // or the first other message shows that there will be none.  Any messages read past it stay
+        // buffered in the decoder.
         let messageDecoder = DefaultMessageDecoder()
-        while !messageDecoder.hasResolvedInitialResponse,
+        let hasInitialResponseMembers = outputSchema.members.contains { $0.memberName != streamingMember.memberName }
+        while hasInitialResponseMembers,
+              !messageDecoder.hasResolvedInitialResponse,
               let data = try await stream.readAsync(upToCount: Int.max) {
             try messageDecoder.feed(data: data)
         }
