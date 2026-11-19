@@ -25,6 +25,8 @@ import software.amazon.smithy.swift.codegen.integration.CustomDebugStringConvert
 import software.amazon.smithy.swift.codegen.integration.CustomDebugStringConvertibleGenerator.Companion.isSensitive
 import software.amazon.smithy.swift.codegen.integration.ProtocolGenerator
 import software.amazon.smithy.swift.codegen.integration.SwiftIntegration
+import software.amazon.smithy.swift.codegen.integration.UnionCustomDebugStringConvertibleGenerator
+import software.amazon.smithy.swift.codegen.integration.UnionCustomDebugStringConvertibleGenerator.Companion.needsRedactingDebugDescription
 import software.amazon.smithy.swift.codegen.integration.serde.SerdeUtils
 import software.amazon.smithy.swift.codegen.model.hasTrait
 import java.util.logging.Logger
@@ -159,6 +161,12 @@ class DirectedSwiftCodegen(
         val symbolProvider = directive.symbolProvider()
         val writers = context.writerDelegator()
         writers.useShapeWriter(shape) { writer: SwiftWriter -> UnionGenerator(model, symbolProvider, writer, shape, settings).render() }
+
+        if (!SerdeUtils.useSchemaBased(settings, model) && shape.needsRedactingDebugDescription(model)) {
+            writers.useShapeExtensionWriter(shape, "CustomDebugStringConvertible") { writer: SwiftWriter ->
+                UnionCustomDebugStringConvertibleGenerator(symbolProvider, writer, shape, model).render()
+            }
+        }
     }
 
     override fun generateEnumShape(directive: GenerateEnumDirective<GenerationContext, SwiftSettings>) {

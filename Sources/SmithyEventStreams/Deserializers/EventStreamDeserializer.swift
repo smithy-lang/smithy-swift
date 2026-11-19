@@ -33,10 +33,19 @@ import protocol SmithySerialization.ThrowByDefaultShapeDeserializer
 public struct EventStreamDeserializer: ThrowByDefaultShapeDeserializer {
     let codec: any Codec
     let response: ResponseMessage
+    let messageDecoder: DefaultMessageDecoder
 
-    public init(codec: any Codec, response: ResponseMessage) {
+    /// Creates a deserializer for the event stream on a response.
+    /// - Parameters:
+    ///   - codec: The codec used to deserialize event payloads.
+    ///   - response: The response whose body carries the event stream.
+    ///   - messageDecoder: The decoder for the event stream messages.  Pass a decoder that has already been
+    ///     fed data from the response body, i.e. to read an `initial-response` message, so that the messages
+    ///     it has buffered are delivered.  Defaults to a new decoder.
+    public init(codec: any Codec, response: ResponseMessage, messageDecoder: DefaultMessageDecoder = .init()) {
         self.codec = codec
         self.response = response
+        self.messageDecoder = messageDecoder
     }
 
     public func readStruct<T: DeserializableStruct>(_ schema: Schema, _ value: inout T) throws {
@@ -70,7 +79,7 @@ public struct EventStreamDeserializer: ThrowByDefaultShapeDeserializer {
         // Create a message decoder stream & use that to create the async stream that is returned.
         return DefaultMessageDecoderStream<E>(
             stream: stream,
-            messageDecoder: DefaultMessageDecoder(),
+            messageDecoder: messageDecoder,
             unmarshalClosure: unmarshalClosure
         ).toAsyncStream()
     }
