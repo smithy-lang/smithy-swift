@@ -22,77 +22,76 @@ struct SmithyCodeGeneratorPlugin: BuildToolPlugin {
         let smithyCodegenCLITool = try context.tool(named: "SmithyCodegenCLI")
 
         // Construct a build command for each source file with a particular suffix.
-        return try sourceFiles.map(\.path).compactMap {
+        return try sourceFiles.map(\.url).compactMap {
             try createBuildCommand(
                 name: target.name,
                 for: $0,
-                in: context.pluginWorkDirectory,
-                with: smithyCodegenCLITool.path
+                in: context.pluginWorkDirectoryURL,
+                with: smithyCodegenCLITool.url
             )
         }
     }
 
     private func createBuildCommand(
         name: String,
-        for inputPath: Path,
-        in outputDirectoryPath: Path,
-        with generatorToolPath: Path
+        for inputURL: URL,
+        in outputDirectoryURL: URL,
+        with generatorToolURL: URL
     ) throws -> Command? {
         // Skip any file that isn't the swift-settings.json for this service.
-        guard inputPath.lastComponent == "swift-settings.json" else { return nil }
+        guard inputURL.lastPathComponent == "swift-settings.json" else { return nil }
 
         let currentWorkingDirectoryFileURL = URL(fileURLWithPath: FileManager.default.currentDirectoryPath)
 
         // Get the swift-settings.json file path.
-        let swiftSettingsPath = inputPath.string
+        let swiftSettingsPath = inputURL.path
 
         // Get the model path URL field from swift-settings.json.
-        let swiftSettingsData = try Data(contentsOf: URL(fileURLWithPath: inputPath.string))
+        let swiftSettingsData = try Data(contentsOf: inputURL)
         let swiftSettingsModelInfo = try JSONDecoder().decode(SwiftSettingsModelInfo.self, from: swiftSettingsData)
         let modelPathURL = if let modelPath = swiftSettingsModelInfo.modelPath {
             currentWorkingDirectoryFileURL.appendingPathComponent(modelPath)
         } else {
-            URL(fileURLWithPath: inputPath.removingLastComponent().appending(["model.json"]).string)
+            inputURL.deletingLastPathComponent().appendingPathComponent("model.json")
         }
-        let modelPath = Path(modelPathURL.path)
 
         // Construct the Schemas.swift path.
-        let schemasSwiftPath = outputDirectoryPath.appending("\(name)Schemas.swift")
+        let schemasSwiftURL = outputDirectoryURL.appendingPathComponent("\(name)Schemas.swift")
 
         // Construct the Serialize.swift path.
-        let serializeSwiftPath = outputDirectoryPath.appending("\(name)Serialize.swift")
+        let serializeSwiftURL = outputDirectoryURL.appendingPathComponent("\(name)Serialize.swift")
 
         // Construct the Deserialize.swift path.
-        let deserializeSwiftPath = outputDirectoryPath.appending("\(name)Deserialize.swift")
+        let deserializeSwiftURL = outputDirectoryURL.appendingPathComponent("\(name)Deserialize.swift")
 
         // Construct the TypeRegistry.swift path.
-        let typeRegistrySwiftPath = outputDirectoryPath.appending("\(name)TypeRegistry.swift")
+        let typeRegistrySwiftURL = outputDirectoryURL.appendingPathComponent("\(name)TypeRegistry.swift")
 
         // Construct the Operations.swift path.
-        let operationsSwiftPath = outputDirectoryPath.appending("\(name)Operations.swift")
+        let operationsSwiftURL = outputDirectoryURL.appendingPathComponent("\(name)Operations.swift")
 
-        let arguments: [any CustomStringConvertible] = [
+        let arguments: [String] = [
             "--swift-settings-path", swiftSettingsPath,
-            "--model-path", modelPath,
-            "--schemas-path", schemasSwiftPath,
-            "--serialize-path", serializeSwiftPath,
-            "--deserialize-path", deserializeSwiftPath,
-            "--type-registry-path", typeRegistrySwiftPath,
-            "--operations-path", operationsSwiftPath,
+            "--model-path", modelPathURL.path,
+            "--schemas-path", schemasSwiftURL.path,
+            "--serialize-path", serializeSwiftURL.path,
+            "--deserialize-path", deserializeSwiftURL.path,
+            "--type-registry-path", typeRegistrySwiftURL.path,
+            "--operations-path", operationsSwiftURL.path,
         ]
 
         // Construct the build command that invokes SmithyCodegenCLI.
         return .buildCommand(
-            displayName: "Generating Swift source files from model file \(modelPath)",
-            executable: generatorToolPath,
+            displayName: "Generating Swift source files from model file \(modelPathURL.path)",
+            executable: generatorToolURL,
             arguments: arguments,
-            inputFiles: [inputPath, modelPath],
+            inputFiles: [inputURL, modelPathURL],
             outputFiles: [
-                schemasSwiftPath,
-                serializeSwiftPath,
-                deserializeSwiftPath,
-                typeRegistrySwiftPath,
-                operationsSwiftPath,
+                schemasSwiftURL,
+                serializeSwiftURL,
+                deserializeSwiftURL,
+                typeRegistrySwiftURL,
+                operationsSwiftURL,
             ]
         )
     }
