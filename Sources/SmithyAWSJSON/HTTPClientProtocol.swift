@@ -17,11 +17,20 @@ import class Smithy.AWSQueryErrorTrait
 import enum Smithy.ClientError
 import class Smithy.Context
 @_spi(SchemaBasedSerde)
+import class Smithy.Schema
+@_spi(SchemaBasedSerde)
 import struct Smithy.ShapeID
 @_spi(SchemaBasedSerde)
 import class Smithy.StreamingTrait
+@_spi(SmithyEventStreams)
+import class SmithyEventStreams.DefaultMessageDecoder
 @_spi(SchemaBasedSerde)
 import struct SmithyEventStreams.EventStreamDeserializer
+@_spi(SchemaBasedSerde)
+import class SmithyEventStreams.EventStreamSerializer
+import struct SmithyEventStreamsAPI.Header
+import struct SmithyEventStreamsAPI.Message
+import SmithyEventStreamsAuthAPI
 import class SmithyHTTPAPI.HTTPRequest
 import class SmithyHTTPAPI.HTTPRequestBuilder
 import class SmithyHTTPAPI.HTTPResponse
@@ -35,6 +44,7 @@ import protocol SmithySerialization.DeserializableStruct
 import struct SmithySerialization.Operation
 @_spi(SchemaBasedSerde)
 import protocol SmithySerialization.SerializableStruct
+import struct SmithySerialization.SerializerError
 @_spi(SchemaBasedSerde)
 import struct SmithySerialization.TypeRegistry
 
@@ -65,11 +75,52 @@ public struct HTTPClientProtocol: SmithySerialization.ClientProtocol {
         requestBuilder: HTTPRequestBuilder,
         context: Context
     ) throws where Input: SerializableStruct, Output: DeserializableStruct {
+        // The JSON serializer skips an event stream member, so for an event streaming input this
+        // serializes only the non-stream members.
         let serializer = try codec.makeSerializer()
         try input.serialize(serializer)
         let data = try serializer.data
-        requestBuilder.withBody(.data(data))
+
+        if let streamingMember = operation.inputSchema.eventStreamMember {
+            // The non-stream members are sent in an initial-request event, followed by the events on the stream.
+            guard let messageEncoder = context.messageEncoder else {
+                throw SerializerError("Message encoder was not configured")
+            }
+            guard let messageSigner = context.messageSigner else {
+                throw SerializerError("Message signer was not configured")
+            }
+            // An initial-request is only sent when one is modeled, i.e. when the input has members besides the
+            // event stream.  Per the Smithy event streams spec, a client must not send one otherwise.
+            let hasInitialRequestMembers = operation.inputSchema.members.contains {
+                $0.memberName != streamingMember.memberName
+            }
+            let initialRequestMessage = hasInitialRequestMembers ? Message(
+                headers: [
+                    Header(name: ":message-type", value: .string("event")),
+                    Header(name: ":event-type", value: .string("initial-request")),
+                    Header(name: ":content-type", value: .string(eventContentType)),
+                ],
+                payload: data ?? Data()
+            ) : nil
+            let eventStreamSerializer = EventStreamSerializer(
+                codec: codec,
+                contentType: eventContentType,
+                messageEncoder: messageEncoder,
+                messageSigner: messageSigner,
+                initialRequestMessage: initialRequestMessage
+            )
+            try input.serialize(eventStreamSerializer)
+            requestBuilder.withBody(eventStreamSerializer.body)
+            if let mediaType = eventStreamSerializer.mediaType {
+                requestBuilder.updateHeader(name: "Content-Type", value: mediaType)
+            }
+        } else {
+            requestBuilder.withBody(.data(data))
+        }
     }
+
+    /// The content type of the payload of each event on an event stream.
+    private var eventContentType: String { "application/json" }
 
     public func deserializeResponse<Input, Output>(
         operation: Operation<Input, Output>,
@@ -77,9 +128,12 @@ public struct HTTPClientProtocol: SmithySerialization.ClientProtocol {
         response: HTTPResponse
     ) async throws -> Output where Input: SerializableStruct, Output: DeserializableStruct {
         if (200..<300).contains(response.statusCode.rawValue) {
-            if response.isEventStream {
-                let eventStreamDeserializer = EventStreamDeserializer(codec: codec, response: response)
-                return try Output.deserialize(eventStreamDeserializer)
+            if let streamingMember = operation.outputSchema.eventStreamMember {
+                return try await deserializeEventStreamResponse(
+                    outputSchema: operation.outputSchema,
+                    streamingMember: streamingMember,
+                    response: response
+                )
             } else {
                 let data = try await response.body.readData() ?? Data()
                 let deserializer = try codec.makeDeserializer(data: data)
@@ -163,11 +217,64 @@ public struct HTTPClientProtocol: SmithySerialization.ClientProtocol {
     }
 }
 
-extension HTTPResponse {
+extension HTTPClientProtocol {
 
-    var isEventStream: Bool {
-        headers.value(for: "Content-Type")?.contains("application/vnd.amazon.eventstream") ?? false
+    /// Deserializes a successful response whose output has an event stream member.
+    ///
+    /// The non-stream output members are read from the payload of the `initial-response` event, if the stream
+    /// begins with one.  The rest of the stream is delivered as the output's event stream member.
+    ///
+    /// When the output has members besides the event stream, this waits for the first message on the stream
+    /// before returning, because those members must be filled from the `initial-response`.  A server sending
+    /// such an output must send the `initial-response` first.  When the event stream is the only member,
+    /// the output is returned without waiting, so that a bidirectional stream whose server waits for request
+    /// events before responding cannot deadlock; an `initial-response`, if sent, is dropped by the decoder.
+    private func deserializeEventStreamResponse<Output: DeserializableStruct>(
+        outputSchema: Schema,
+        streamingMember: Schema,
+        response: HTTPResponse
+    ) async throws -> Output {
+        guard case .stream(let stream) = response.body else {
+            throw SerializerError("Event stream response did not have a streaming body")
+        }
+
+        // If there are non-stream members, read from the stream until the initial-response is received,
+        // or the first other message shows that there will be none.  Any messages read past it stay
+        // buffered in the decoder.
+        let messageDecoder = DefaultMessageDecoder()
+        let hasInitialResponseMembers = outputSchema.members.contains { $0.memberName != streamingMember.memberName }
+        while hasInitialResponseMembers,
+              !messageDecoder.hasResolvedInitialResponse,
+              let data = try await stream.readAsync(upToCount: Int.max) {
+            try messageDecoder.feed(data: data)
+        }
+
+        // Deserialize the non-stream members from the initial-response.  If there is no initial-response,
+        // or it has an empty payload, deserialize from an empty JSON object so the output is still created.
+        let emptyJSONObject = Data("{}".utf8)
+        let initialData = messageDecoder.initialResponsePayload.flatMap { $0.isEmpty ? nil : $0 } ?? emptyJSONObject
+        var output = try Output.deserialize(codec.makeDeserializer(data: initialData))
+
+        // Deserialize the event stream using the same message decoder, so buffered messages are delivered.
+        let eventStreamDeserializer = EventStreamDeserializer(
+            codec: codec,
+            response: response,
+            messageDecoder: messageDecoder
+        )
+        try output.deserializeMember(streamingMember, eventStreamDeserializer)
+        return output
     }
+}
+
+private extension Schema {
+
+    /// The member of this structure that targets an event stream union, if any.
+    var eventStreamMember: Schema? {
+        members.first { $0.type == .union && $0.hasTrait(StreamingTrait.self) }
+    }
+}
+
+extension HTTPResponse {
 
     func queryCompatibleErrorCode<Input, Output>(for operation: Operation<Input, Output>) throws -> String? {
         guard operation.serviceSchema.hasTrait(AWSQueryCompatibleTrait.self) else { return nil }
