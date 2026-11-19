@@ -353,6 +353,9 @@ var runtimeTargets: [PackageDescription.Target] {
                 "SmithySerialization",
                 "SmithyCBOR",
                 "SmithyHTTPAPI",
+                "SmithyEventStreams",
+                "SmithyEventStreamsAPI",
+                "SmithyEventStreamsAuthAPI",
             ]
         ),
     ].compactMap { $0 }
