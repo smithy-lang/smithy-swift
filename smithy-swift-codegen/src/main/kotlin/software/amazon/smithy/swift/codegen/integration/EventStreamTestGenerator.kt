@@ -25,7 +25,6 @@ import software.amazon.smithy.protocoltests.traits.eventstream.EventHeaderValue
 import software.amazon.smithy.protocoltests.traits.eventstream.EventStreamTestCase
 import software.amazon.smithy.protocoltests.traits.eventstream.EventStreamTestsTrait
 import software.amazon.smithy.protocoltests.traits.eventstream.EventType
-import software.amazon.smithy.rulesengine.traits.EndpointRuleSetTrait
 import software.amazon.smithy.swift.codegen.ShapeValueGenerator
 import software.amazon.smithy.swift.codegen.SwiftDependency
 import software.amazon.smithy.swift.codegen.SwiftWriter
@@ -33,15 +32,14 @@ import software.amazon.smithy.swift.codegen.model.RecursiveShapeBoxer
 import software.amazon.smithy.swift.codegen.model.expectShape
 import software.amazon.smithy.swift.codegen.model.findStreamingMember
 import software.amazon.smithy.swift.codegen.model.getTrait
+import software.amazon.smithy.swift.codegen.model.hasEndpointRules
 import software.amazon.smithy.swift.codegen.model.hasTrait
 import software.amazon.smithy.swift.codegen.model.toLowerCamelCase
 import software.amazon.smithy.swift.codegen.model.toUpperCamelCase
 import software.amazon.smithy.swift.codegen.supportsStreamingAndIsRPC
 import software.amazon.smithy.swift.codegen.swiftmodules.FoundationTypes
 import software.amazon.smithy.swift.codegen.swiftmodules.SmithyEventStreamsAPITypes
-import software.amazon.smithy.swift.codegen.swiftmodules.SmithyHTTPAPITypes
 import software.amazon.smithy.swift.codegen.swiftmodules.SmithyTestUtilTypes
-import software.amazon.smithy.swift.codegen.utils.SDKFileUtils
 import java.time.Instant
 import java.util.Base64
 import java.util.TreeSet
@@ -76,8 +74,6 @@ class EventStreamTestGenerator(
     private val LOGGER = Logger.getLogger(javaClass.name)
 
     private val model: Model = RecursiveShapeBoxer.transform(ctx.model)
-    private val clientName = "${ctx.settings.clientBaseName}Client"
-    private val region = "us-west-2"
 
     /**
      * Generates the event stream tests for all operations in the service.
@@ -110,18 +106,17 @@ class EventStreamTestGenerator(
         testCases: List<EventStreamTestCase>,
     ) {
         val suiteName = "${operation.toUpperCamelCase()}EventStreamTests"
-        val filename = SDKFileUtils(ctx.settings).testsDirFilePath(suiteName)
-        ctx.delegator.useTestFileWriter(filename, ctx.settings.moduleName) { writer ->
+        ctx.useTestSuiteWriter(suiteName) { writer ->
             LOGGER.fine("Generating event stream test cases for ${operation.id}")
-            writer.addImport(SwiftDependency.SWIFT_TESTING.target)
-            writer.addImport(SwiftDependency.CLIENT_RUNTIME.target)
             writer.addImport(SwiftDependency.SMITHY_EVENT_STREAMS_API.target)
-            writer.addImport(ctx.settings.moduleName, true)
-            writer.addImport(SwiftDependency.SMITHY_TEST_UTIL.target)
             writer.write("")
             writer.write("@Suite")
-            writer.openBlock("struct \$L {", "}", suiteName) {
-                testCases.forEach { OperationTest(writer, operation, it).render() }
+            writer.openBlock("struct \$L: \$N {", "}", suiteName, SmithyTestUtilTypes.EventStreamProtocolTestSuite) {
+                // Render the tests, then the client helpers that the tests use.
+                val clientKinds = testCases.flatMap { OperationTest(writer, operation, it).render() }.toSet()
+                ProtocolTestClientKind.entries.filter { it in clientKinds }.forEach {
+                    ctx.renderMakeClient(writer, it, eventStreams = true)
+                }
             }
         }
     }
@@ -146,7 +141,12 @@ class EventStreamTestGenerator(
         val hasResponsePhase =
             responseEvents.isNotEmpty() || initialResponse != null || test.initialResponseParams.isPresent
 
-        fun render() {
+        /**
+         * Renders the test.
+         *
+         * @return the kinds of client that the test uses.
+         */
+        fun render(): Set<ProtocolTestClientKind> {
             writer.write("")
             test.documentation.ifPresent { writer.writeDocs(it) }
             if (!paramsAreRepresentable()) {
@@ -155,7 +155,7 @@ class EventStreamTestGenerator(
                     swiftString("A value in this test is out of range for the Swift type that the SDK uses for it"),
                 )
                 writer.write("func test_\$L() async throws {}", test.id)
-                return
+                return setOf()
             }
             val requestErrorEvents = requestEvents.filter { errorShape(inputShape, it) != null }
             if (requestErrorEvents.isNotEmpty() && (requestErrorEvents.size > 1 || requestEvents.last() != requestErrorEvents[0])) {
@@ -166,7 +166,7 @@ class EventStreamTestGenerator(
                     swiftString("A client can only send an error event as the last event on its event stream"),
                 )
                 writer.write("func test_\$L() async throws {}", test.id)
-                return
+                return setOf()
             }
             writer.write("@Test")
             writer.openBlock("func test_\$L() async throws {", "}", test.id) {
@@ -182,16 +182,17 @@ class EventStreamTestGenerator(
                     renderResponsePhase()
                 }
             }
+            return setOfNotNull(
+                ProtocolTestClientKind.REQUEST.takeIf { hasRequestPhase },
+                ProtocolTestClientKind.RESPONSE.takeIf { hasResponsePhase },
+            )
         }
 
         // MARK: - Request
 
         private fun renderRequestPhase(expectFailure: Boolean) {
             writer.write("// Serialize the request & its events")
-            renderConfigAndClient(
-                httpClientEngine = writer.format("\$N()", SmithyTestUtilTypes.ProtocolTestClient),
-                isResponse = false,
-            )
+            renderMakeClientCall()
             writer.write("")
             renderInput(test.initialRequestParams.orElse(Node.objectNode()), requestEvents.filter { it.params.isPresent })
             writer.write("")
@@ -214,73 +215,48 @@ class EventStreamTestGenerator(
         }
 
         private fun renderCaptureRequest() {
-            writer.openBlock("let request = try await \$N.captureRequest {", "}", SmithyTestUtilTypes.EventStreamTestUtil) {
-                writer.write("_ = try await client.\$L(input: input)", operation.toLowerCamelCase())
-            }
+            writer.write("let request = try await captureRequest { try await client.\$L(input: input) }", operation.toLowerCamelCase())
         }
 
         private fun renderInitialRequestAssertions(initialRequest: ObjectNode) {
-            writer.write("")
-            writer.write("// Verify the initial request")
-            initialRequest.getStringMember("method").ifPresent {
-                writer.write("#expect(request.method == .\$L)", it.value.lowercase())
+            val args = mutableListOf<String>()
+            initialRequest.getStringMember("method").ifPresent { args.add("method: .${it.value.lowercase()}") }
+            initialRequest.getStringMember("uri").ifPresent { args.add("path: ${swiftString(it.value)}") }
+            initialRequest.getStringMember("resolvedHost").ifPresent { args.add("host: ${swiftString(it.value)}") }
+            initialRequest.getObjectMember("headers").ifPresent { headers ->
+                val entries = headers.stringMap.map { (name, value) -> "${swiftString(name)}: ${swiftString(value.expectStringNode().value)}" }
+                if (entries.isNotEmpty()) args.add("headers: [${entries.joinToString(", ")}]")
             }
-            initialRequest.getStringMember("uri").ifPresent {
-                writer.write("#expect(request.path == \$L)", swiftString(it.value))
-            }
-            initialRequest.getStringMember("resolvedHost").ifPresent {
-                writer.write("#expect(request.host == \$L)", swiftString(it.value))
-            }
+            stringListArg(initialRequest, "forbidHeaders", "forbiddenHeaders")?.let { args.add(it) }
+            stringListArg(initialRequest, "requireHeaders", "requiredHeaders")?.let { args.add(it) }
+            stringListArg(initialRequest, "queryParams", "queryParams")?.let { args.add(it) }
+            stringListArg(initialRequest, "forbidQueryParams", "forbiddenQueryParams")?.let { args.add(it) }
+            stringListArg(initialRequest, "requireQueryParams", "requiredQueryParams")?.let { args.add(it) }
             // When the input has an event stream, the request body is the event stream & is verified as events.
             // Otherwise the initial request's body, if given, is the request body.
             if (inputShape.findStreamingMember(model) == null) {
                 initialRequest.getStringMember("body").ifPresent { body ->
                     val mediaType = initialRequest.getStringMember("bodyMediaType").map { it.value }.orElse(null)
-                    writer.write(
-                        "#expect(try await \$N.payload(request.body.readData() ?? \$N(), matches: \$L, mediaType: \$L))",
-                        SmithyTestUtilTypes.EventStreamTestUtil,
-                        FoundationTypes.Data,
-                        bodyData(body.value, mediaType),
-                        mediaType?.let { swiftString(it) } ?: "nil",
-                    )
+                    args.add("body: ${bodyData(body.value, mediaType)}")
+                    mediaType?.let { args.add("bodyMediaType: ${swiftString(it)}") }
                 }
             }
-            initialRequest.getObjectMember("headers").ifPresent { headers ->
-                headers.stringMap.forEach { (name, value) ->
-                    writer.write(
-                        "#expect(request.headers.value(for: \$L) == \$L)",
-                        swiftString(name),
-                        swiftString(value.expectStringNode().value),
-                    )
-                }
+            if (args.isEmpty()) return
+            writer.write("")
+            writer.write("// Verify the initial request")
+            writer.openBlock("try await assertRequest(", ")") {
+                writer.write((listOf("request") + args).joinToString(",\n"))
             }
-            stringList(initialRequest, "forbidHeaders").forEach {
-                writer.write("#expect(!request.headers.exists(name: \$L))", swiftString(it))
-            }
-            stringList(initialRequest, "requireHeaders").forEach {
-                writer.write("#expect(request.headers.exists(name: \$L))", swiftString(it))
-            }
-            stringList(initialRequest, "queryParams").forEach {
-                writer.write(
-                    "#expect(\$N.request(request, hasQueryItem: \$L))",
-                    SmithyTestUtilTypes.EventStreamTestUtil,
-                    swiftString(it),
-                )
-            }
-            stringList(initialRequest, "forbidQueryParams").forEach {
-                writer.write(
-                    "#expect(!\$N.request(request, hasQueryItemNamed: \$L))",
-                    SmithyTestUtilTypes.EventStreamTestUtil,
-                    swiftString(it),
-                )
-            }
-            stringList(initialRequest, "requireQueryParams").forEach {
-                writer.write(
-                    "#expect(\$N.request(request, hasQueryItemNamed: \$L))",
-                    SmithyTestUtilTypes.EventStreamTestUtil,
-                    swiftString(it),
-                )
-            }
+        }
+
+        private fun stringListArg(
+            node: ObjectNode,
+            member: String,
+            label: String,
+        ): String? {
+            val values = stringList(node, member)
+            if (values.isEmpty()) return null
+            return "$label: [${values.joinToString(", ") { swiftString(it) }}]"
         }
 
         private fun renderRequestEventAssertions() {
@@ -288,7 +264,7 @@ class EventStreamTestGenerator(
             val events = requestEvents.filter { it.params.isPresent || it.isInitialMessage }
             writer.write("")
             writer.write("// Verify the request events")
-            writer.write("let messages = try await \$N.messages(in: request)", SmithyTestUtilTypes.EventStreamTestUtil)
+            writer.write("let messages = try await self.messages(in: request)")
             writer.write("try #require(messages.count == \$L)", events.size)
             events.forEachIndexed { index, event ->
                 val message = "messages[$index]"
@@ -309,8 +285,7 @@ class EventStreamTestGenerator(
                 event.body.ifPresent { body ->
                     val mediaType = event.bodyMediaType.orElse(null)
                     writer.write(
-                        "#expect(try \$N.payload(\$L.payload, matches: \$L, mediaType: \$L))",
-                        SmithyTestUtilTypes.EventStreamTestUtil,
+                        "#expect(try payload(\$L.payload, matches: \$L, mediaType: \$L))",
                         message,
                         bodyData(body, mediaType),
                         mediaType?.let { swiftString(it) } ?: "nil",
@@ -325,11 +300,7 @@ class EventStreamTestGenerator(
             writer.write("// Deserialize the response & its events")
             renderHTTPResponse()
             writer.write("")
-            renderConfigAndClient(
-                httpClientEngine =
-                    writer.format("\$N(httpResponse: httpResponse)", SmithyTestUtilTypes.ProtocolResponseTestClient),
-                isResponse = true,
-            )
+            renderMakeClientCall(httpResponse = "httpResponse")
             writer.write("")
             renderInput(responsePhaseInputParams(), listOf())
             writer.write("")
@@ -341,11 +312,7 @@ class EventStreamTestGenerator(
                 renderExpectFailure(expectedErrorShape() ?: errorEventShape) {
                     writer.write("let output = try await client.\$L(input: input)", operation.toLowerCamelCase())
                     if (outputStreamMember != null) {
-                        writer.write(
-                            "_ = try await \$N.events(output.\$L)",
-                            SmithyTestUtilTypes.EventStreamTestUtil,
-                            ctx.symbolProvider.toMemberName(outputStreamMember),
-                        )
+                        writer.write("_ = try await events(output.\$L)", ctx.symbolProvider.toMemberName(outputStreamMember))
                     } else {
                         writer.write("_ = output")
                     }
@@ -393,7 +360,7 @@ class EventStreamTestGenerator(
                 writer.write("var body = \$N()", FoundationTypes.Data)
                 bodyParts.forEach { writer.write("body.append(\$L)", it) }
             }
-            writer.openBlock("let httpResponse = try \$N.httpResponse(", ")", SmithyTestUtilTypes.EventStreamTestUtil) {
+            writer.openBlock("let httpResponse = try self.httpResponse(", ")") {
                 writer.write("statusCode: \$L,", statusCode)
                 if (headers.isEmpty()) {
                     writer.write("headers: [:],")
@@ -427,8 +394,7 @@ class EventStreamTestGenerator(
                     .map { bodyData(it, event.bodyMediaType.orElse(null)) }
                     .orElse(writer.format("\$N()", FoundationTypes.Data))
             return writer.format(
-                "try \$N.encode([\$N(headers: [\$L], payload: \$L)])",
-                SmithyTestUtilTypes.EventStreamTestUtil,
+                "try encode([\$N(headers: [\$L], payload: \$L)])",
                 SmithyEventStreamsAPITypes.Message,
                 headers,
                 payload,
@@ -451,11 +417,7 @@ class EventStreamTestGenerator(
         private fun renderResponseEventAssertions(streamMember: MemberShape) {
             writer.write("")
             writer.write("// Verify the response events")
-            writer.write(
-                "let events = try await \$N.events(output.\$L)",
-                SmithyTestUtilTypes.EventStreamTestUtil,
-                ctx.symbolProvider.toMemberName(streamMember),
-            )
+            writer.write("let events = try await self.events(output.\$L)", ctx.symbolProvider.toMemberName(streamMember))
             // An initial-response message carries output members, not an event, so it is not on the event stream.
             val streamEvents = responseEvents.filterNot { it.isInitialMessage }
             // Events without params are unmodeled; their deserialized form is not specified, so the
@@ -495,7 +457,7 @@ class EventStreamTestGenerator(
                 val errorSymbol = ctx.symbolProvider.toSymbol(errorShape)
                 writer.openBlock("await #expect(throws: \$N.self) {", "}", errorSymbol) { body() }
             } else {
-                writer.openBlock("let error = try await \$N.sdkError {", "}", SmithyTestUtilTypes.EventStreamTestUtil) { body() }
+                writer.openBlock("let error = try await sdkError {", "}") { body() }
                 writer.write("#expect(error != nil, \"Expected the SDK to throw an error\")")
             }
         }
@@ -583,38 +545,24 @@ class EventStreamTestGenerator(
             return model.expectShape(member.target).takeIf { it.hasTrait<ErrorTrait>() }
         }
 
-        private fun renderConfigAndClient(
-            httpClientEngine: String,
-            isResponse: Boolean,
-        ) {
-            writer.openBlock("let config = try await \$1L.\$1LConfig(", ")", clientName) {
-                writer.write("awsCredentialIdentityResolver: try \$N(),", SmithyTestUtilTypes.dummyIdentityResolver)
-                writer.write("region: \$S,", region)
-                writer.write("signingRegion: \$S,", region)
-                if (!ctx.service.hasTrait<EndpointRuleSetTrait>()) {
-                    // The initial request's host, if given, is the host the client is configured with.
-                    val host =
-                        initialRequest
-                            ?.getStringMember("host")
-                            ?.map { it.value }
-                            ?.orElse(null)
-                            ?.takeIf { it.isNotEmpty() } ?: "example.com"
-                    writer.write(
-                        "endpointResolver: \$L.StaticEndpointResolver(endpoint: try \$N(urlString: \$L)),",
-                        ctx.settings.moduleName,
-                        SmithyHTTPAPITypes.Endpoint,
-                        swiftString("https://$host"),
-                    )
-                }
-                if (isResponse) {
-                    writer.write("retryStrategyOptions: \$N.make(),", SmithyTestUtilTypes.ProtocolTestRetryStrategyOptions)
-                } else {
-                    writer.write("idempotencyTokenGenerator: \$N(),", SmithyTestUtilTypes.ProtocolTestIdempotencyTokenGenerator)
-                }
-                writer.write("httpClientEngine: \$L,", httpClientEngine)
-                writer.write("httpInterceptorProviders: [\$N()]", SmithyTestUtilTypes.EventStreamTestInterceptorProvider)
+        /**
+         * Renders a call to the suite's `makeClient` helper.  The client is configured with the initial request's
+         * host, if the test gives one & the service uses a static endpoint.
+         *
+         * @param httpResponse the response to be returned to the client, or `null` for a client that captures its request.
+         */
+        private fun renderMakeClientCall(httpResponse: String? = null) {
+            val args = mutableListOf<String>()
+            httpResponse?.let { args.add("httpResponse: $it") }
+            if (!ctx.service.hasEndpointRules()) {
+                initialRequest
+                    ?.getStringMember("host")
+                    ?.map { it.value }
+                    ?.orElse(null)
+                    ?.takeIf { it.isNotEmpty() }
+                    ?.let { args.add("host: ${swiftString(it)}") }
             }
-            writer.write("let client = \$L(config: config)", clientName)
+            writer.write("let client = try await makeClient(\$L)", args.joinToString(", "))
         }
 
         /**
@@ -657,13 +605,9 @@ class EventStreamTestGenerator(
                 writer.writeInline("let inputError = ")
                 ShapeValueGenerator(model, ctx.symbolProvider).writeShapeValueInline(writer, errorShape, errorParams)
                 writer.write("")
-                writer.write(
-                    "input.\$L = \$N.stream(inputEvents, finishingWith: inputError)",
-                    memberName,
-                    SmithyTestUtilTypes.EventStreamTestUtil,
-                )
+                writer.write("input.\$L = stream(inputEvents, finishingWith: inputError)", memberName)
             } else {
-                writer.write("input.\$L = \$N.stream(inputEvents)", memberName, SmithyTestUtilTypes.EventStreamTestUtil)
+                writer.write("input.\$L = stream(inputEvents)", memberName)
             }
         }
 

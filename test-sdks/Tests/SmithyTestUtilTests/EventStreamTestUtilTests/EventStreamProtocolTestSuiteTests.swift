@@ -12,7 +12,7 @@ import SmithyEventStreamsAPI
 import SmithyTestUtil
 
 @Suite
-struct EventStreamTestUtilTests {
+struct EventStreamProtocolTestSuiteTests: EventStreamProtocolTestSuite {
     let event = Message(
         headers: [
             Header(name: ":message-type", value: .string("event")),
@@ -24,9 +24,9 @@ struct EventStreamTestUtilTests {
 
     @Test
     func messages_decodesUnsignedMessagesAndDropsTheEmptyEndMessage() throws {
-        let data = try EventStreamTestUtil.encode([event, event, Message()])
+        let data = try encode([event, event, Message()])
 
-        let messages = try EventStreamTestUtil.messages(from: data)
+        let messages = try messages(from: data)
 
         #expect(messages == [event, event])
     }
@@ -35,9 +35,9 @@ struct EventStreamTestUtilTests {
     func messages_unwrapsSignedMessagesAndDropsTheSignedEndMessage() throws {
         let signedEvent = try signedMessage(DefaultMessageEncoder().encode(message: event))
         let signedEnd = signedMessage(Data())
-        let data = try EventStreamTestUtil.encode([signedEvent, signedEnd])
+        let data = try encode([signedEvent, signedEnd])
 
-        let messages = try EventStreamTestUtil.messages(from: data)
+        let messages = try messages(from: data)
 
         #expect(messages == [event])
     }
@@ -50,7 +50,7 @@ struct EventStreamTestUtilTests {
         )!
         let message = Message(headers: event.headers)
 
-        #expect(try EventStreamTestUtil.encode([message]) == expected)
+        #expect(try encode([message]) == expected)
     }
 
     @Test
@@ -58,39 +58,39 @@ struct EventStreamTestUtilTests {
         let actual = Data(#"{"a":1,"b":"c"}"#.utf8)
         let expected = Data(#"{ "b": "c", "a": 1 }"#.utf8)
 
-        #expect(try EventStreamTestUtil.payload(actual, matches: expected, mediaType: "application/json"))
-        #expect(try !EventStreamTestUtil.payload(actual, matches: expected, mediaType: "text/plain"))
+        #expect(try payload(actual, matches: expected, mediaType: "application/json"))
+        #expect(try !payload(actual, matches: expected, mediaType: "text/plain"))
     }
 
     @Test
     func payload_comparesOtherMediaTypesByteForByte() throws {
         let data = Data("foo".utf8)
 
-        #expect(try EventStreamTestUtil.payload(data, matches: data, mediaType: "application/octet-stream"))
-        #expect(try EventStreamTestUtil.payload(data, matches: data, mediaType: nil))
-        #expect(try !EventStreamTestUtil.payload(data, matches: Data("bar".utf8), mediaType: nil))
+        #expect(try payload(data, matches: data, mediaType: "application/octet-stream"))
+        #expect(try payload(data, matches: data, mediaType: nil))
+        #expect(try !payload(data, matches: Data("bar".utf8), mediaType: nil))
     }
 
     @Test
     func events_readsAllEventsFromTheStream() async throws {
-        let stream = EventStreamTestUtil.stream([1, 2, 3])
+        let stream = stream([1, 2, 3])
 
-        #expect(try await EventStreamTestUtil.events(stream) == [1, 2, 3])
-        #expect(try await EventStreamTestUtil.events(nil as AsyncThrowingStream<Int, any Error>?) == [])
+        #expect(try await events(stream) == [1, 2, 3])
+        #expect(try await events(nil as AsyncThrowingStream<Int, any Error>?) == [])
     }
 
     @Test
     func sdkError_returnsTheErrorThrownByTheSDK() async throws {
         struct SDKError: Error {}
 
-        let error = try await EventStreamTestUtil.sdkError { throw SDKError() }
+        let error = try await sdkError { throw SDKError() }
 
         #expect(error is SDKError)
     }
 
     @Test
     func sdkError_returnsNilWhenNothingIsThrown() async throws {
-        let error = try await EventStreamTestUtil.sdkError {}
+        let error = try await sdkError {}
 
         #expect(error == nil)
     }
@@ -98,13 +98,13 @@ struct EventStreamTestUtilTests {
     @Test
     func sdkError_rethrowsAnErrorThrownByTheTestHarness() async throws {
         await #expect(throws: SmithyTestUtilError.self) {
-            _ = try await EventStreamTestUtil.sdkError { throw SmithyTestUtilError("harness failure") }
+            _ = try await sdkError { throw SmithyTestUtilError("harness failure") }
         }
     }
 
     @Test
     func httpResponse_usesTheGivenStatusCode() throws {
-        let response = try EventStreamTestUtil.httpResponse(statusCode: 500, headers: [:], body: Data())
+        let response = try httpResponse(statusCode: 500, headers: [:], body: Data())
 
         #expect(response.statusCode == .internalServerError)
     }
@@ -112,7 +112,7 @@ struct EventStreamTestUtilTests {
     @Test
     func httpResponse_throwsForAnUndefinedStatusCode() {
         #expect(throws: SmithyTestUtilError.self) {
-            _ = try EventStreamTestUtil.httpResponse(statusCode: 299, headers: [:], body: Data())
+            _ = try httpResponse(statusCode: 299, headers: [:], body: Data())
         }
     }
 

@@ -34,15 +34,6 @@ class SwiftDependency(
                 "",
                 "",
             )
-        val XCTest =
-            SwiftDependency(
-                "XCTest",
-                null,
-                "",
-                "",
-                "",
-                "",
-            )
         val SWIFT_TESTING =
             SwiftDependency(
                 "Testing",

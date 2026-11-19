@@ -16,7 +16,6 @@ import software.amazon.smithy.swift.codegen.integration.serde.readwrite.requestW
 import software.amazon.smithy.swift.codegen.integration.serde.readwrite.responseWireProtocol
 import software.amazon.smithy.swift.codegen.model.toLowerCamelCase
 import software.amazon.smithy.swift.codegen.swiftmodules.SmithyHTTPAPITypes
-import software.amazon.smithy.swift.codegen.swiftmodules.SwiftTypes
 import software.amazon.smithy.swift.codegen.utils.toLowerCamelCase
 import java.util.Base64
 
@@ -34,31 +33,19 @@ open class HttpProtocolUnitTestErrorGenerator protected constructor(
     }
 
     override fun captureResponse(test: HttpResponseTestCase) {
-        writer.write("var operationError: \$N?", SwiftTypes.Error)
-        writer.write("do {")
-        writer.indent {
-            writer.write("_ = try await client.\$L(input: input)", operation.toLowerCamelCase())
-            writer.write("XCTFail(\"Request should have failed\")")
-        }
-        writer.openBlock("} catch {", "}") {
-            writer.write("operationError = error")
-        }
+        writer.write(
+            "let actual = try await captureError(\$L.self) { try await client.\$L(input: input) }",
+            symbolProvider.toSymbol(error).name,
+            operation.toLowerCamelCase(),
+        )
     }
 
     private fun renderCompareActualAndExpectedErrors(
         test: HttpResponseTestCase,
         errorShape: Shape,
     ) {
-        val errorType = symbolProvider.toSymbol(errorShape).name
-
-        writer.openBlock("if let actual = operationError as? \$L {", "} else {", errorType) {
-            renderExpectedOutput(test, errorShape)
-            renderAssertions(test, errorShape)
-        }
-        writer.indent()
-        writer.write("XCTFail(\"The deserialized error type does not match expected type\")")
-        writer.dedent()
-        writer.write("}")
+        renderExpectedOutput(test, errorShape)
+        renderAssertions(test, errorShape)
     }
 
     override fun renderAssertions(
@@ -67,7 +54,7 @@ open class HttpProtocolUnitTestErrorGenerator protected constructor(
     ) {
         writer.addImport(SwiftDependency.SMITHY_HTTP_API.target)
         writer.write(
-            "XCTAssertEqual(actual.httpResponse.statusCode, \$N(rawValue: \$L))",
+            "#expect(actual.httpResponse.statusCode == \$N(rawValue: \$L))",
             SmithyHTTPAPITypes.HTTPStatusCode,
             test.code,
         )

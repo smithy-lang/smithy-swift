@@ -15,7 +15,7 @@ class HttpProtocolUnitTestErrorGeneratorTests : HttpProtocolUnitTestResponseGene
         contents.shouldSyntacticSanityCheck()
         val expectedContents = """
     func test_RestJsonComplexErrorWithNoMessage() async throws {
-        guard let httpResponse = buildHttpResponse(
+        let httpResponse = buildHttpResponse(
             code: 403,
             headers: [
                 "Content-Type": "application/json",
@@ -30,48 +30,23 @@ class HttpProtocolUnitTestErrorGeneratorTests : HttpProtocolUnitTestResponseGene
                 }
             }
             ""${'"'}.utf8))
-        ) else {
-            XCTFail("Something is wrong with the created http response")
-            return
-        }
-
-        let config = try await ExampleClient.ExampleClientConfig(
-            awsCredentialIdentityResolver: try SmithyTestUtil.dummyIdentityResolver(),
-            region: "us-west-2",
-            signingRegion: "us-west-2",
-            endpointResolver: example.StaticEndpointResolver(endpoint: try SmithyHTTPAPI.Endpoint(
-                urlString: "https://example.com"
-            )),
-            retryStrategyOptions: SmithyTestUtil.ProtocolTestRetryStrategyOptions.make(),
-            httpClientEngine: ProtocolResponseTestClient(httpResponse: httpResponse)
         )
 
-        let client = ExampleClient(config: config)
+        let client = try await makeClient(httpResponse: httpResponse)
 
         let input = GreetingWithErrorsInput()
 
-        var operationError: Swift.Error?
-        do {
-            _ = try await client.greetingWithErrors(input: input)
-            XCTFail("Request should have failed")
-        } catch {
-            operationError = error
-        }
+        let actual = try await captureError(ComplexError.self) { try await client.greetingWithErrors(input: input) }
 
-        if let actual = operationError as? ComplexError {
-
-            let expected = ComplexError(
-                header: "Header",
-                nested: ComplexNestedErrorData(
-                    foo: "bar"
-                ),
-                topLevel: "Top level"
-            )
-            XCTAssertEqual(actual.httpResponse.statusCode, SmithyHTTPAPI.HTTPStatusCode(rawValue: 403))
-            XCTAssertEqual(actual, expected)
-        } else {
-            XCTFail("The deserialized error type does not match expected type")
-        }
+        let expected = ComplexError(
+            header: "Header",
+            nested: ComplexNestedErrorData(
+                foo: "bar"
+            ),
+            topLevel: "Top level"
+        )
+        #expect(actual.httpResponse.statusCode == SmithyHTTPAPI.HTTPStatusCode(rawValue: 403))
+        #expect(actual == expected)
     }
 """
         contents.shouldContainOnlyOnce(expectedContents)
@@ -83,7 +58,7 @@ class HttpProtocolUnitTestErrorGeneratorTests : HttpProtocolUnitTestResponseGene
         contents.shouldSyntacticSanityCheck()
         val expectedContents = """
     func test_RestJsonComplexErrorWithNoMessage() async throws {
-        guard let httpResponse = buildHttpResponse(
+        let httpResponse = buildHttpResponse(
             code: 403,
             headers: [
                 "Content-Type": "application/json",
@@ -98,48 +73,23 @@ class HttpProtocolUnitTestErrorGeneratorTests : HttpProtocolUnitTestResponseGene
                 }
             }
             ""${'"'}.utf8))
-        ) else {
-            XCTFail("Something is wrong with the created http response")
-            return
-        }
-
-        let config = try await ExampleClient.ExampleClientConfig(
-            awsCredentialIdentityResolver: try SmithyTestUtil.dummyIdentityResolver(),
-            region: "us-west-2",
-            signingRegion: "us-west-2",
-            endpointResolver: example.StaticEndpointResolver(endpoint: try SmithyHTTPAPI.Endpoint(
-                urlString: "https://example.com"
-            )),
-            retryStrategyOptions: SmithyTestUtil.ProtocolTestRetryStrategyOptions.make(),
-            httpClientEngine: ProtocolResponseTestClient(httpResponse: httpResponse)
         )
 
-        let client = ExampleClient(config: config)
+        let client = try await makeClient(httpResponse: httpResponse)
 
         let input = GreetingWithErrorsInput()
 
-        var operationError: Swift.Error?
-        do {
-            _ = try await client.greetingWithErrors(input: input)
-            XCTFail("Request should have failed")
-        } catch {
-            operationError = error
-        }
+        let actual = try await captureError(ComplexError.self) { try await client.greetingWithErrors(input: input) }
 
-        if let actual = operationError as? ComplexError {
-
-            let expected = ComplexError(
-                header: "Header",
-                nested: ComplexNestedErrorData(
-                    foo: "bar"
-                ),
-                topLevel: "Top level"
-            )
-            XCTAssertEqual(actual.httpResponse.statusCode, SmithyHTTPAPI.HTTPStatusCode(rawValue: 403))
-            XCTAssertEqual(actual, expected)
-        } else {
-            XCTFail("The deserialized error type does not match expected type")
-        }
+        let expected = ComplexError(
+            header: "Header",
+            nested: ComplexNestedErrorData(
+                foo: "bar"
+            ),
+            topLevel: "Top level"
+        )
+        #expect(actual.httpResponse.statusCode == SmithyHTTPAPI.HTTPStatusCode(rawValue: 403))
+        #expect(actual == expected)
     }
 """
         contents.shouldContainOnlyOnce(expectedContents)

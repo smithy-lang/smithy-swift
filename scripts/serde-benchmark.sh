@@ -23,25 +23,27 @@ rm -rf serde-benchmark/build/smithyprojections/serde-benchmark/SerdeBenchmarkSmi
 # Regenerate all serde-benchmark test SDKs
 ./gradlew -p serde-benchmark build
 
-# Run tests, using release config, for each serde performance test SDK
+# Run tests, using release config, for each serde performance test SDK.
+# Benchmark tests are Swift Testing tests, which run in parallel by default; --no-parallel keeps
+# benchmarks from contending with each other for CPU and from racing on the results file.
 cd serde-benchmark/build/smithyprojections/serde-benchmark/SerdeBenchmarkAWSJSONRPC10/swift-codegen/SerdeBenchmarkAWSJSONRPC10
-swift test -c release
+swift test -c release --no-parallel
 cd ../../../../../../..
 
 cd serde-benchmark/build/smithyprojections/serde-benchmark/SerdeBenchmarkAWSQuery/swift-codegen/SerdeBenchmarkAWSQuery
-swift test -c release
+swift test -c release --no-parallel
 cd ../../../../../../..
 
 cd serde-benchmark/build/smithyprojections/serde-benchmark/SerdeBenchmarkAWSRestJSON/swift-codegen/SerdeBenchmarkAWSRestJSON
-swift test -c release
+swift test -c release --no-parallel
 cd ../../../../../../..
 
 cd serde-benchmark/build/smithyprojections/serde-benchmark/SerdeBenchmarkAWSRestXML/swift-codegen/SerdeBenchmarkAWSRestXML
-swift test -c release
+swift test -c release --no-parallel
 cd ../../../../../../..
 
 cd serde-benchmark/build/smithyprojections/serde-benchmark/SerdeBenchmarkSmithyRPCV2CBOR/swift-codegen/SerdeBenchmarkSmithyRPCV2CBOR
-swift test -c release
+swift test -c release --no-parallel
 cd ../../../../../../..
 
 # Cumulative results will be written to the root of the smithy-swift project, named instance-report.json
