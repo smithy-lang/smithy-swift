@@ -73,6 +73,18 @@ class TimestampSerdeUtilsTests: XCTestCase {
 
     // MARK: - Decoding Tests
 
+    func test_TimestampFormatter_decodedFractionalSecondsEqualDateFromEpochSeconds() throws {
+        // Matches the expectations of the Smithy DateTimeWithFractionalSeconds protocol tests.
+        XCTAssertEqual(
+            TimestampFormatter(format: .dateTime).date(from: "2000-01-02T20:34:56.123Z"),
+            Date(timeIntervalSince1970: 946845296.123)
+        )
+        XCTAssertEqual(
+            TimestampFormatter(format: .httpDate).date(from: "Sun, 02 Jan 2000 20:34:56.123 GMT"),
+            Date(timeIntervalSince1970: 946845296.123)
+        )
+    }
+
     func test_TimestampFormatter_decodesExpectedValue() throws {
         let subjects: [(TimestampFormat, String, Date?)] = [
             (.epochSeconds, "\(testDateWithFractionalSeconds.timeIntervalSince1970)", testDateWithFractionalSeconds),

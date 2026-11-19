@@ -278,6 +278,133 @@ class DateFormatterTests: XCTestCase {
         XCTAssertEqual(dateString, "1991-05-04T10:12:10Z")
     }
 
+    // MARK: - ISO8601 (Date.ISO8601FormatStyle where available)
+
+    func test_iso8601String_returnsDateForValidISO8601String() {
+        let validDates = [
+            "1993-11-20T05:45:01Z":
+                ExpectedDateComponents(day: 20, month: 11, year: 1993, hour: 5, minute: 45, second: 1),
+            "1993-11-20T05:45:01z":
+                ExpectedDateComponents(day: 20, month: 11, year: 1993, hour: 5, minute: 45, second: 1),
+            "1993-11-20T05:45:01+05:00":
+                ExpectedDateComponents(day: 20, month: 11, year: 1993, hour: 0, minute: 45, second: 1),
+            "1993-11-20T05:45:01-00:02":
+                ExpectedDateComponents(day: 20, month: 11, year: 1993, hour: 5, minute: 47, second: 1),
+            "1993-11-20T05:45:01.1Z":
+                ExpectedDateComponents(day: 20, month: 11, year: 1993, hour: 5, minute: 45, second: 1, milliseconds: 100),
+            "1993-11-20T05:00:00.123456789z":
+                ExpectedDateComponents(day: 20, month: 11, year: 1993, hour: 5, minute: 0, second: 0, milliseconds: 123),
+            "1993-11-20T05:45:01.0-05:00":
+                ExpectedDateComponents(day: 20, month: 11, year: 1993, hour: 10, minute: 45, second: 1, milliseconds: 0),
+            "1993-11-20T05:45:01.010-00:02":
+                ExpectedDateComponents(day: 20, month: 11, year: 1993, hour: 5, minute: 47, second: 1, milliseconds: 10),
+            "1985-04-12T23:20:50.52+00:00":
+                ExpectedDateComponents(day: 12, month: 4, year: 1985, hour: 23, minute: 20, second: 50, milliseconds: 520),
+        ]
+
+        for (dateString, dateComponents) in validDates {
+            guard let constructedDate = Date(iso8601String: dateString) else {
+                XCTFail("could not parse ISO8601 string: \(dateString)")
+                continue
+            }
+            assert(date: constructedDate, hasComponents: dateComponents, dateString: dateString)
+        }
+    }
+
+    func test_iso8601String_returnsNilForInvalidISO8601String() {
+        let inValidDates = [
+            "",
+            "1993-11-20",
+            "20201105T02:31:22Z",
+            "20201105",
+            "2017-07-032T03:30:00Z",
+            "2017-07-22T03::00Z",
+            "2017-07-22T03:0f:00Z",
+            "1993-11-20T05:45:01z+05:00",
+            "1993-11-20T05:45:01.Z",
+            "1993-11-20T05:45:01.123",
+            "1993-11-20T05:45:01Z ",
+            " 1993-11-20T05:45:01Z",
+            "1993-11-20T05:45:01+05:00Z",
+            "1993-11-20T05:45:01+0500",
+            "1993-11-20T05:45:01+24:00",
+            "1993-11-20T05:45:01+05:60",
+            "1993-11-20T05:45:01 -0050",
+            "193-7-022T05:00045:001 +005001",
+            "١٩٩٣-11-20T05:45:01Z",
+
+            // From the Smithy malformed timestamp protocol tests
+            // https://github.com/smithy-lang/smithy/blob/main/smithy-aws-protocol-tests/model/restJson1/malformedRequests/malformed-timestamp-body.smithy
+            "1996-12-19T16:39:57+00",
+            "1996-12-19T16:39:57+00Z",
+            "1996-12-19T16:39:57",
+            "1996-12-19T163957",
+            "19961219T163957Z",
+            "19961219T163957",
+            "19961219T16:39:57Z",
+            "19961219T16:39:57",
+            "1996-12-19T16:39Z",
+            "1996-12-19T16:39",
+            "1996-12-19T1639",
+            "1996-12-19T16Z",
+            "1996-12-19T16",
+            "1996-12-19 16:39:57Z",
+            "2011-12-03T10:15:30+01:00[Europe/Paris]",
+
+            // Out-of-range fields
+            "2021-00-01T00:00:00Z",
+            "2021-13-01T00:00:00Z",
+            "2021-01-00T00:00:00Z",
+            "2021-01-32T00:00:00Z",
+            "2021-02-29T00:00:00Z", // not a leap year
+            "2100-02-29T00:00:00Z", // not a leap year
+            "2026-02-30T00:00:00Z",
+            "2021-04-31T00:00:00Z",
+            "2021-06-31T00:00:00Z",
+            "2021-09-31T00:00:00Z",
+            "2021-11-31T00:00:00Z",
+            "2021-01-01T24:00:00Z",
+            "2021-01-01T00:60:00Z",
+            "2021-01-01T00:00:60Z",
+        ]
+
+        for dateString in inValidDates {
+            XCTAssertNil(Date(iso8601String: dateString), "able to parse invalid ISO8601 string: \(dateString)")
+        }
+    }
+
+    func test_iso8601String_acceptsLeapDays() {
+        XCTAssertEqual(Date(iso8601String: "2024-02-29T00:00:00Z"), Date(timeIntervalSince1970: 1709164800))
+        XCTAssertEqual(Date(iso8601String: "2000-02-29T00:00:00Z"), Date(timeIntervalSince1970: 951782400))
+    }
+
+    func test_iso8601String_truncatesToMilliseconds() {
+        XCTAssertEqual(Date(iso8601String: "2000-01-02T20:34:56.9995Z"), Date(timeIntervalSince1970: 946845296.999))
+        XCTAssertEqual(Date(iso8601String: "2000-01-02T20:34:56.1239Z"), Date(timeIntervalSince1970: 946845296.123))
+        XCTAssertEqual(Date(iso8601String: "2000-01-02T20:34:56.123456789Z"), Date(timeIntervalSince1970: 946845296.123))
+        XCTAssertEqual(Date(iso8601String: "2000-01-02T20:34:56.1Z"), Date(timeIntervalSince1970: 946845296.1))
+        XCTAssertEqual(Date(iso8601String: "2000-01-02T20:34:56.12Z"), Date(timeIntervalSince1970: 946845296.12))
+    }
+
+    func test_iso8601WithFractionalSeconds_truncatesToMilliseconds() {
+        XCTAssertEqual(Date(timeIntervalSince1970: 946845296.9995).iso8601WithFractionalSeconds(), "2000-01-02T20:34:56.999Z")
+        XCTAssertEqual(Date(timeIntervalSince1970: 946845296.1239).iso8601WithFractionalSeconds(), "2000-01-02T20:34:56.123Z")
+        XCTAssertEqual(Date(timeIntervalSince1970: 946845296.001).iso8601WithFractionalSeconds(), "2000-01-02T20:34:56.001Z")
+        XCTAssertEqual(Date(timeIntervalSince1970: 946845296.05).iso8601WithFractionalSeconds(), "2000-01-02T20:34:56.050Z")
+        XCTAssertEqual(Date(timeIntervalSince1970: -0.5).iso8601WithFractionalSeconds(), "1969-12-31T23:59:59.500Z")
+    }
+
+    func test_iso8601_roundTripsMillisecondDates() {
+        var generator = SystemRandomNumberGenerator()
+        for _ in 0..<10_000 {
+            // Random millisecond-precision dates between 1900 and 2100
+            let milliseconds = Int64.random(in: -2_208_988_800_000...4_102_444_800_000, using: &generator)
+            let date = Date(timeIntervalSince1970: Double(milliseconds) / 1000)
+            let string = date.iso8601WithFractionalSeconds()
+            XCTAssertEqual(Date(iso8601String: string), date, "\(string) did not round-trip to \(milliseconds) ms")
+        }
+    }
+
     // MARK: - Test Helpers
 
     struct ExpectedDateComponents {
