@@ -16,13 +16,6 @@ import struct Foundation.TimeZone
 @available(macOS 12.0, *)
 @_spi(SmithyTimestamps)
 extension Date.ISO8601FormatStyle {
-    /// A format style that converts between dates and the ISO8601 string representation using the date-time production in RFC3339 section 5.6 with no UTC offset and with fractional seconds (for example, 1985-04-12T23:20:50.520Z)
-    /// https://xml2rfc.tools.ietf.org/public/rfc/html/rfc3339.html#anchor14
-    static let iso8601WithFractionalSeconds = Date.ISO8601FormatStyle(
-        includingFractionalSeconds: true,
-        timeZone: TimeZone(secondsFromGMT: 0)!
-    )
-
     /// A format style that converts between dates and the ISO8601 string representation using the date-time production in RFC3339 section 5.6 with no UTC offset and without fractional seconds (for example, 1985-04-12T23:20:50Z)
     /// https://xml2rfc.tools.ietf.org/public/rfc/html/rfc3339.html#anchor14
     static let iso8601WithoutFractionalSeconds = Date.ISO8601FormatStyle(
