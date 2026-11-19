@@ -5,7 +5,6 @@ import software.amazon.smithy.model.shapes.MemberShape
 import software.amazon.smithy.model.shapes.OperationShape
 import software.amazon.smithy.model.shapes.Shape
 import software.amazon.smithy.model.shapes.ShapeId
-import software.amazon.smithy.model.traits.StreamingTrait
 import software.amazon.smithy.model.traits.UnitTypeTrait
 import software.amazon.smithy.protocol.traits.Rpcv2CborTrait
 import software.amazon.smithy.swift.codegen.SyntheticClone
@@ -17,7 +16,8 @@ import software.amazon.smithy.swift.codegen.integration.middlewares.ContentTypeM
 import software.amazon.smithy.swift.codegen.integration.middlewares.MutateHeadersMiddleware
 import software.amazon.smithy.swift.codegen.middleware.MiddlewareRenderable
 import software.amazon.smithy.swift.codegen.model.getTrait
-import software.amazon.smithy.swift.codegen.model.hasTrait
+import software.amazon.smithy.swift.codegen.model.isInputEventStream
+import software.amazon.smithy.swift.codegen.model.isOutputEventStream
 import software.amazon.smithy.swift.codegen.model.targetOrSelf
 import software.amazon.smithy.swift.codegen.protocols.core.SmithyHTTPBindingProtocolGenerator
 
@@ -62,16 +62,9 @@ open class RpcV2CborProtocolGenerator(
         // Remove the header middleware if installed, modeled HTTP headers are not supported in RPCv2CBOR
         operationMiddleware.removeMiddleware(operation, "OperationInputHeadersMiddleware")
 
-        val hasEventStreamResponse = ctx.model.expectShape(operation.outputShape).hasTrait<StreamingTrait>()
-        val hasEventStreamRequest = ctx.model.expectShape(operation.inputShape).hasTrait<StreamingTrait>()
-
-        // Determine the value of the Accept header based on output shape
-        val acceptHeaderValue =
-            if (hasEventStreamResponse) {
-                "application/vnd.amazon.eventstream"
-            } else {
-                "application/cbor"
-            }
+        // The @streaming trait is on the union targeted by an input or output member, not on the structure itself.
+        val hasEventStreamRequest = operation.isInputEventStream(ctx.model)
+        val hasEventStreamResponse = operation.isOutputEventStream(ctx.model)
 
         // Determine the value of the Content-Type header based on input shape
         val contentTypeValue =
@@ -79,6 +72,14 @@ open class RpcV2CborProtocolGenerator(
                 "application/vnd.amazon.eventstream"
             } else {
                 defaultContentType
+            }
+
+        // Determine the value of the Accept header based on output shape
+        val acceptHeaderValue =
+            if (hasEventStreamResponse) {
+                "application/vnd.amazon.eventstream"
+            } else {
+                "application/cbor"
             }
 
         // Middleware to set smithy-protocol and Accept headers
