@@ -6,6 +6,8 @@
 //
 
 @_spi(SchemaBasedSerde)
+import class Smithy.HTTPLabelTrait
+@_spi(SchemaBasedSerde)
 import class Smithy.HTTPTrait
 @_spi(SchemaBasedSerde)
 import class Smithy.Schema
@@ -78,18 +80,36 @@ public final class HTTPOperationExtension: SchemaExtension {
 
         // Resolve every label-bound member to its segment up front, so that serializing a label is a
         // lookup by member index instead of a search through the segments.
+        //
+        // Only members carrying the `httpLabel` trait are bound, so no other member can be written into
+        // the path.  The model is validated before code is generated from it, but this runs only once
+        // per operation, so a URI and input that disagree are reported here instead of sending a
+        // request with label template text left in its path.
         let members = inputSchema.members
         var labelSegmentIndex = [Int?](repeating: nil, count: members.count)
         var labelIsGreedy = [Bool](repeating: false, count: members.count)
-        for (segmentIndex, segment) in segments.enumerated() where segment.hasPrefix("{") {
-            // A segment bound to a member reads `{name}`, or `{name+}` when the binding is greedy.
-            var name = segment.dropFirst()
-            let isGreedy = name.hasSuffix("+}")
-            name = isGreedy ? name.dropLast(2) : name.dropLast()
-            guard let member = members.first(where: { $0.id.member.map { $0 == name } ?? false })
-            else { continue }
+        for (segmentIndex, segment) in segments.enumerated() {
+            guard let label = try Self.label(in: segment, uri: httpTrait.uri) else { continue }
+            let member = members.first { member in
+                member.hasTrait(HTTPLabelTrait.self) && member.id.member.map { $0[...] == label.name } ?? false
+            }
+            guard let member else {
+                throw SerializerError(
+                    "URI label {\(label.name)} in \(httpTrait.uri) for operation \(schema.id) " +
+                    "has no matching @httpLabel member in \(inputSchema.id)"
+                )
+            }
             labelSegmentIndex[member.index] = segmentIndex
-            labelIsGreedy[member.index] = isGreedy
+            labelIsGreedy[member.index] = label.isGreedy
+        }
+        let unboundLabelMembers = members.filter { member in
+            member.hasTrait(HTTPLabelTrait.self) && labelSegmentIndex[member.index] == nil
+        }
+        if let member = unboundLabelMembers.first {
+            throw SerializerError(
+                "@httpLabel member \(member.id) has no matching label in URI \(httpTrait.uri) " +
+                "for operation \(schema.id)"
+            )
         }
         self.labelSegmentIndex = labelSegmentIndex
         self.labelIsGreedy = labelIsGreedy
@@ -110,6 +130,25 @@ public final class HTTPOperationExtension: SchemaExtension {
         case .blob: return .data
         default: return nil
         }
+    }
+
+    /// The label that a URI path segment is bound to, if it is a label segment.
+    ///
+    /// A label spans its whole segment, reading `{name}`, or `{name+}` when it is greedy.  A segment
+    /// holding a brace in any other form is malformed, and throws rather than being taken as literal
+    /// text or misread as a differently named label.
+    private static func label(in segment: Substring, uri: String) throws -> (name: Substring, isGreedy: Bool)? {
+        guard segment.contains("{") || segment.contains("}") else { return nil }
+        guard segment.first == "{", segment.last == "}" else {
+            throw SerializerError("URI path segment \(segment) in \(uri) is not a well-formed label")
+        }
+        var name = segment.dropFirst().dropLast()
+        let isGreedy = name.last == "+"
+        if isGreedy { name = name.dropLast() }
+        guard !name.isEmpty, !name.contains("{"), !name.contains("}"), !name.contains("+") else {
+            throw SerializerError("URI path segment \(segment) in \(uri) is not a well-formed label")
+        }
+        return (name, isGreedy)
     }
 
     /// Splits a URI into its path and its literal query string, if it has one.
