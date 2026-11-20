@@ -34,24 +34,21 @@ public final class HTTPHeaderSerializer: ShapeSerializer {
     /// already been validated for, so a member's header is appended without first searching for an
     /// existing header of the same name.  Searching would make serializing a structure with `n`
     /// header bindings cost `O(n²)` name comparisons.
-    private var serialized = [Header]()
+    ///
+    /// Headers are appended to the storage of this value directly, so reading it neither copies nor
+    /// rebuilds anything.
+    public private(set) var headers = Headers()
 
     /// The header name to use for the members of a list currently being serialized, or `nil`
     /// if a list is not being serialized.
     private var listName: String?
 
-    /// The position in `serialized` of the header that holds the list currently being serialized,
+    /// The position in `headers` of the header that holds the list currently being serialized,
     /// or `nil` if no element of that list has been serialized yet.
     ///
     /// Every element of a list is bound to the same single header, so the first element appends that
     /// header and the rest append their values to it.
     private var listHeaderIndex: Int?
-
-    public var headers: Headers {
-        var headers = Headers()
-        headers.headers = serialized
-        return headers
-    }
 
     public init() {}
 
@@ -67,7 +64,7 @@ public final class HTTPHeaderSerializer: ShapeSerializer {
         guard let name = schema.getTrait(HTTPHeaderTrait.self)?.name else { return }
         // An empty list still serializes to a header, present with an empty value.
         guard !value.isEmpty else {
-            serialized.append(Header(name: name, value: ""))
+            headers.headers.append(Header(name: name, value: ""))
             return
         }
         // Each list element is appended to the header that shares the list's header name.
@@ -186,13 +183,13 @@ public final class HTTPHeaderSerializer: ShapeSerializer {
     /// of a list the name belongs to a single member, so its header is appended directly.
     private func append(name: String, value: String) {
         if let listHeaderIndex {
-            serialized[listHeaderIndex].value.append(value)
+            headers.headers[listHeaderIndex].value.append(value)
             return
         }
         if listName != nil {
-            listHeaderIndex = serialized.count
+            listHeaderIndex = headers.headers.count
         }
-        serialized.append(Header(name: name, value: value))
+        headers.headers.append(Header(name: name, value: value))
     }
 
     private static let quotableHeaderValueChars = "\",()"
