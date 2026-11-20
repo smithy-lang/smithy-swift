@@ -274,6 +274,9 @@ final class HTTPHeaderSerializerTests: XCTestCase {
         let input = MixedHTTPHeaderInput(alpha: "a", beta: ["b1", "b2"], gamma: "c")
         try input.serializeMembers(operation.inputSchema, subject)
 
+        // `values(for:)` gathers the values of every header with a matching name, so the count of
+        // headers is what confirms the list's values were joined onto a single header.
+        XCTAssertEqual(subject.headers.headers.count, 3)
         XCTAssertEqual(subject.headers.values(for: "X-Alpha"), ["a"])
         XCTAssertEqual(subject.headers.values(for: "X-Beta"), ["b1", "b2"])
         XCTAssertEqual(subject.headers.values(for: "X-Gamma"), ["c"])

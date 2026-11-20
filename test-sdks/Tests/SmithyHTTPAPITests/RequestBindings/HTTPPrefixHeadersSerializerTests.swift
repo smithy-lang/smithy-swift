@@ -45,6 +45,20 @@ final class HTTPPrefixHeadersSerializerTests: XCTestCase {
         ]))
     }
 
+    func test_prefixed_keysDifferingOnlyInCaseShareOneHeader() throws {
+        let operation = HTTPPrefixHeadersClient.prefixedHTTPPrefixHeadersOperation
+        let subject = HTTPPrefixHeadersSerializer()
+
+        // Map keys are distinct strings, but header names are case-insensitive, so keys that differ
+        // only in case name the same header.  Both values belong to that one header.
+        let input = PrefixedHTTPPrefixHeadersInput(headers: ["Abc": "first", "abc": "second"])
+        try input.serializeMembers(operation.inputSchema, subject)
+
+        XCTAssertEqual(subject.headers.headers.count, 1)
+        // A dictionary's iteration order is unspecified, so the order of the values is too.
+        XCTAssertEqual(subject.headers.values(for: "X-Foo-Abc")?.sorted(), ["first", "second"])
+    }
+
     func test_prefixed_serializesValueVerbatimWithoutQuoting() throws {
         let operation = HTTPPrefixHeadersClient.prefixedHTTPPrefixHeadersOperation
         let subject = HTTPPrefixHeadersSerializer()

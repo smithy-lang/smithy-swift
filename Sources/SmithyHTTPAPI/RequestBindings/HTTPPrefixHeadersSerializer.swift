@@ -25,19 +25,15 @@ public final class HTTPPrefixHeadersSerializer: NoOpByDefaultShapeSerializer {
 
     /// The headers serialized so far.
     ///
-    /// One header comes from each entry of a single map, so their names are distinct and a header is
-    /// appended without first searching for an existing header of the same name.
-    private var serialized = [Header]()
+    /// Each value is added with `Headers.add`, which joins it to any existing header of the same
+    /// name rather than appending a new header.  Map keys are distinct strings, but header names
+    /// are case-insensitive, so two keys that differ only in case, i.e. `Foo` & `foo`, name the same
+    /// header and both of their values belong in it.
+    public private(set) var headers = Headers()
 
     /// The header name to use while a single map entry is being serialized,
     /// or `nil` if a map entry is not currently being serialized.
     private var name: String?
-
-    public var headers: Headers {
-        var headers = Headers()
-        headers.headers = serialized
-        return headers
-    }
 
     public init() {}
 
@@ -60,7 +56,7 @@ public final class HTTPPrefixHeadersSerializer: NoOpByDefaultShapeSerializer {
         // Outside of a map entry there is no header name to bind to, so this is a no-op.
         guard let name else { return }
         // A map value is a scalar string, never a list element, so it is added without quoting.
-        serialized.append(Header(name: name, value: value))
+        headers.add(name: name, value: value)
     }
 
     public var mediaType: String? { nil }
