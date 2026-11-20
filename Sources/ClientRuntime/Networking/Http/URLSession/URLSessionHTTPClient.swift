@@ -291,8 +291,14 @@ public final class URLSessionHTTPClient: HTTPClient, @unchecked Sendable {
                 }
                 let statusCode = HTTPStatusCode(rawValue: httpResponse.statusCode) ?? .insufficientStorage
                 let httpHeaders: [HTTPHeader] = httpResponse.allHeaderFields.compactMap { (name, value) in
-                    guard let name = name as? String else { return nil }
-                    return HTTPHeader(name: name, value: String(describing: value))
+                    guard var name = name as? String else { return nil }
+                    var value = (value as? String) ?? String(describing: value)
+                    // Foundation may hand back lazily-bridged NSStrings, which are slow to iterate
+                    // as UTF-8.  Header names & values are compared and sliced repeatedly during
+                    // deserialization, so convert them to native Swift storage once, up front.
+                    name.makeContiguousUTF8()
+                    value.makeContiguousUTF8()
+                    return HTTPHeader(name: name, value: value)
                 }
                 let headers = Headers(httpHeaders: httpHeaders)
                 let body = ByteStream.stream(connection.responseStream)
