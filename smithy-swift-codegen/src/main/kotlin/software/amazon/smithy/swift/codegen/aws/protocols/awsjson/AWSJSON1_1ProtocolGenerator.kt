@@ -72,6 +72,7 @@ open class AWSJSON1_1ProtocolGenerator(
         // Remove this middleware as it will be handled by a plugin
         operationMiddleware.removeMiddleware(operation, "OperationInputUrlPathMiddleware")
         operationMiddleware.removeMiddleware(operation, "OperationInputQueryItemMiddleware")
+        operationMiddleware.removeMiddleware(operation, "OperationInputHeadersMiddleware")
 
         val resolver = getProtocolHttpBindingResolver(ctx, defaultContentType)
         operationMiddleware.removeMiddleware(operation, "ContentTypeMiddleware")
