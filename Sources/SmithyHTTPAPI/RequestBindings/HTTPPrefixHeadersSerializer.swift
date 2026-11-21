@@ -22,6 +22,13 @@ import protocol SmithySerialization.ShapeSerializer
 /// serializer is a no-op for every other type.
 @_spi(SchemaBasedSerde)
 public final class HTTPPrefixHeadersSerializer: NoOpByDefaultShapeSerializer {
+
+    /// The headers serialized so far.
+    ///
+    /// Each value is added with `Headers.add`, which joins it to any existing header of the same
+    /// name rather than appending a new header.  Map keys are distinct strings, but header names
+    /// are case-insensitive, so two keys that differ only in case, i.e. `Foo` & `foo`, name the same
+    /// header and both of their values belong in it.
     public private(set) var headers = Headers()
 
     /// The header name to use while a single map entry is being serialized,
