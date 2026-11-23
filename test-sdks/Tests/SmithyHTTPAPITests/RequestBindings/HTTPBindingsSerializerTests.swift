@@ -94,6 +94,25 @@ final class HTTPBindingsSerializerTests: XCTestCase {
         )
     }
 
+    // `@httpPrefixHeaders` keys that differ only in case name the same header, since header names
+    // are case-insensitive.  Every value reaches the request; none is dropped as a collision.
+    func test_headerAndPrefixHeaders_prefixKeysDifferingOnlyInCase_keepAllValues() throws {
+        let operation = HTTPBindingsClient.headerAndPrefixHeadersOperation
+        let input = HeaderAndPrefixHeadersInput(
+            prefixHeaders: ["X-Foo": "first", "x-foo": "second"],
+            specific: "Specific"
+        )
+
+        let subject = try HTTPBindingsSerializer(codec: TestCodec(), operation: operation)
+        try input.serialize(subject)
+
+        let headers = subject.headers
+        XCTAssertEqual(headers.headers.count, 3) // X-Specific, X-Foo, and Content-Type
+        // A dictionary's iteration order is unspecified, so the order of the values is too.
+        XCTAssertEqual(headers.values(for: "X-Foo")?.sorted(), ["first", "second"])
+        XCTAssertEqual(headers.values(for: "X-Specific"), ["Specific"])
+    }
+
     // Merging prefix headers into the explicit headers must not accumulate into the header
     // serializer, so the headers are the same no matter how many times they are read.
     func test_headerAndPrefixHeaders_headersAreStableAcrossReads() throws {
