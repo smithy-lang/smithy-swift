@@ -6,7 +6,6 @@ import software.amazon.smithy.model.shapes.OperationShape
 import software.amazon.smithy.swift.codegen.SwiftWriter
 import software.amazon.smithy.swift.codegen.integration.ProtocolGenerator
 import software.amazon.smithy.swift.codegen.integration.middlewares.handlers.MiddlewareShapeUtils
-import software.amazon.smithy.swift.codegen.integration.serde.SerdeUtils
 import software.amazon.smithy.swift.codegen.middleware.MiddlewareRenderable
 import software.amazon.smithy.swift.codegen.swiftmodules.ClientRuntimeTypes
 
@@ -22,9 +21,6 @@ class OperationInputQueryItemMiddleware(
         op: OperationShape,
         operationStackName: String,
     ) {
-        // Mirrors the skip at HTTPBindingProtocolGenerator.generateSerializers; without it, the
-        // middleware references a queryItemProvider static that's never emitted.
-        if (SerdeUtils.useSchemaBased(ctx)) return
         if (MiddlewareShapeUtils.hasQueryItems(model, op)) {
             super.renderSpecific(ctx, writer, op, operationStackName, "serialize")
         }
