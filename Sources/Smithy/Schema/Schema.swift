@@ -113,15 +113,35 @@ public final class Schema: Sendable {
     /// Returns the input schema.
     ///
     /// Only access this property on a schema of type `.operation`.
+    /// - Throws: `SchemaError` if the schema is not of type `.operation`, has no input member, or the
+    ///   input member has no target.
     public var input: Schema {
-        members[0].target!
+        get throws {
+            guard type == .operation else {
+                throw SchemaError("input accessed on \(id), which is not an operation schema")
+            }
+            guard let target = members.first?.target else {
+                throw SchemaError("no input schema for \(id)")
+            }
+            return target
+        }
     }
 
     /// Returns the output schema.
     ///
     /// Only access this property on a schema of type `.operation`.
+    /// - Throws: `SchemaError` if the schema is not of type `.operation`, has no output member, or the
+    ///   output member has no target.
     public var output: Schema {
-        members[1].target!
+        get throws {
+            guard type == .operation else {
+                throw SchemaError("output accessed on \(id), which is not an operation schema")
+            }
+            guard members.count > 1, let target = members[1].target else {
+                throw SchemaError("no output schema for \(id)")
+            }
+            return target
+        }
     }
 
     /// Returns the member for a List's element.
