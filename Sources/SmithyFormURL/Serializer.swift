@@ -57,8 +57,6 @@ public final class Serializer: ShapeSerializer {
     private static let positiveInfinity = Array("Infinity".utf8)
     private static let negativeInfinity = Array("-Infinity".utf8)
     private static let entryBytes = Array("entry".utf8)
-    private static let keyBytes = Array("key".utf8)
-    private static let valueBytes = Array("value".utf8)
 
     /// The protocol whose serialization rules are followed.
     public let variant: Variant
