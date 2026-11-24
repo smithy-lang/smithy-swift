@@ -30,7 +30,6 @@ final class RetryIntegrationTests: XCTestCase {
     private func setUp(availableCapacity: Int, maxCapacity: Int, maxRetriesBase: Int, maxBackoff: TimeInterval) async {
         context = Context(attributes: Attributes())
         context.partitionID = partitionID
-        context.socketTimeout = 60.0
 
         next = TestOutputHandler()
 
