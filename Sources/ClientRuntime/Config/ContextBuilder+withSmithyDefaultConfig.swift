@@ -20,7 +20,6 @@ extension ContextBuilder {
             .withAuthSchemes(value: config.authSchemes ?? [])
             .withAuthSchemePreference(value: config.authSchemePreference)
             .withAuthSchemeResolver(value: config.authSchemeResolver)
-            .withSocketTimeout(value: config.httpClientConfiguration.socketTimeout)
             .withIdentityResolver(value: config.bearerTokenIdentityResolver, schemeID: "smithy.api#httpBearerAuth")
             .withIdentityResolver(value: config.awsCredentialIdentityResolver, schemeID: "aws.auth#sigv4")
             .withRegion(value: config.region)

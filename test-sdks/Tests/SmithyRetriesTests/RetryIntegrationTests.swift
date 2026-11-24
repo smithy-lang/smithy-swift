@@ -30,8 +30,6 @@ final class RetryIntegrationTests: XCTestCase {
     private func setUp(availableCapacity: Int, maxCapacity: Int, maxRetriesBase: Int, maxBackoff: TimeInterval) async {
         context = Context(attributes: Attributes())
         context.partitionID = partitionID
-        context.socketTimeout = 60.0
-        context.estimatedSkew = 30.0
 
         next = TestOutputHandler()
 
@@ -172,19 +170,6 @@ final class RetryIntegrationTests: XCTestCase {
         try await runInvocation()
     }
 
-    func test_getEstimatedSkew() {
-        let responseDateString = "Mon, 15 Jul 2024 01:24:12 GMT"
-        let dateFormatter = DateFormatter()
-        dateFormatter.dateFormat = "EEE, dd MMM yyyy HH:mm:ss z"
-        dateFormatter.locale = Locale(identifier: "en_US_POSIX")
-        dateFormatter.timeZone = TimeZone(abbreviation: "GMT")
-        let responseDate: Date = dateFormatter.date(from: responseDateString)!
-
-        let responseDateStringPlusTen = "Mon, 15 Jul 2024 01:24:22 GMT"
-        let estimatedSkew = getEstimatedSkew(now: responseDate, responseDateString: responseDateStringPlusTen)
-
-        XCTAssertEqual(estimatedSkew, 10.0)
-    }
 }
 
 private struct TestStep {

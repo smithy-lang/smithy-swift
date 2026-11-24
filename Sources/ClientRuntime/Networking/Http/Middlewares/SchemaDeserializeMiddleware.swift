@@ -6,12 +6,6 @@
 //
 
 import struct Foundation.Data
-import struct Foundation.Date
-import class Foundation.DateFormatter
-import struct Foundation.Locale
-import struct Foundation.TimeInterval
-import struct Foundation.TimeZone
-import struct Foundation.UUID
 import class Smithy.Context
 import protocol Smithy.ResponseMessageDeserializer
 import SmithyHTTPAPI
@@ -44,11 +38,6 @@ extension SchemaDeserializeMiddleware: ResponseMessageDeserializer {
 
     public func deserialize(response: ClientProtocol.ResponseType, attributes: Context) async throws -> Output {
         if let response = response as? HTTPResponse {
-            if let responseDateString = response.headers.value(for: "Date") {
-                let estimatedSkew = getEstimatedSkew(now: Date(), responseDateString: responseDateString)
-                attributes.estimatedSkew = estimatedSkew
-            }
-
             // check if the response body was affected by a previous middleware
             if let contextBody = attributes.httpResponse?.body {
                 response.body = contextBody
