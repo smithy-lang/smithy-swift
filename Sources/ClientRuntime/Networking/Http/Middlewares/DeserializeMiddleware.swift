@@ -5,12 +5,6 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
-import struct Foundation.Date
-import class Foundation.DateFormatter
-import struct Foundation.Locale
-import struct Foundation.TimeInterval
-import struct Foundation.TimeZone
-import struct Foundation.UUID
 import class Smithy.Context
 import protocol Smithy.ResponseMessageDeserializer
 import SmithyHTTPAPI
@@ -61,16 +55,4 @@ extension DeserializeMiddleware: ResponseMessageDeserializer {
             }
         }
     }
-}
-
-// Calculates & returns estimated skew.
-@available(*, deprecated, message: "No longer used by the SDK. Will be removed in a future version.")
-public func getEstimatedSkew(now: Date, responseDateString: String) -> TimeInterval {
-    let dateFormatter = DateFormatter()
-    dateFormatter.dateFormat = "EEE, dd MMM yyyy HH:mm:ss z"
-    dateFormatter.locale = Locale(identifier: "en_US_POSIX")
-    dateFormatter.timeZone = TimeZone(abbreviation: "GMT")
-    let responseDate: Date = dateFormatter.date(from: responseDateString) ?? now
-    // (Estimated skew) = (Date header from HTTP response) - (client's current time)).
-    return responseDate.timeIntervalSince(now)
 }
