@@ -41,11 +41,6 @@ extension DeserializeMiddleware: ResponseMessageDeserializer {
             attributes.estimatedSkew = estimatedSkew
         }
 
-        // check if the response body was effected by a previous middleware
-        if let contextBody = attributes.httpResponse?.body {
-            response.body = contextBody
-        }
-
         let copiedResponse = response
         if (200..<300).contains(response.statusCode.rawValue) {
             return try await wireResponseClosure(copiedResponse)

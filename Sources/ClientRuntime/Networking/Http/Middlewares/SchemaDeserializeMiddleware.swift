@@ -49,11 +49,6 @@ extension SchemaDeserializeMiddleware: ResponseMessageDeserializer {
                 attributes.estimatedSkew = estimatedSkew
             }
 
-            // check if the response body was affected by a previous middleware
-            if let contextBody = attributes.httpResponse?.body {
-                response.body = contextBody
-            }
-
             // if the response is an error and the response body is a stream, we need to cache the stream so
             // that it can be read again.
             //
