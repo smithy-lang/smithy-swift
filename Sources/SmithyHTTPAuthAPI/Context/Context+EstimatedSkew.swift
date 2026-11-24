@@ -11,6 +11,7 @@ import class Smithy.Context
 import class Smithy.ContextBuilder
 
 public extension Context {
+    @available(*, deprecated, message: "No longer set by the SDK. Will be removed in a future version.")
     var estimatedSkew: TimeInterval? {
         get { get(key: estimatedSkewKey) }
         set { set(key: estimatedSkewKey, value: newValue) }

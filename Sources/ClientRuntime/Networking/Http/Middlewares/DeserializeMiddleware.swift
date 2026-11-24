@@ -36,11 +36,6 @@ extension DeserializeMiddleware: ResponseMessageDeserializer {
         response: HTTPResponse,
         attributes: Context
     ) async throws -> OperationStackOutput {
-        if let responseDateString = response.headers.value(for: "Date") {
-            let estimatedSkew = getEstimatedSkew(now: Date(), responseDateString: responseDateString)
-            attributes.estimatedSkew = estimatedSkew
-        }
-
         // check if the response body was effected by a previous middleware
         if let contextBody = attributes.httpResponse?.body {
             response.body = contextBody
@@ -69,6 +64,7 @@ extension DeserializeMiddleware: ResponseMessageDeserializer {
 }
 
 // Calculates & returns estimated skew.
+@available(*, deprecated, message: "No longer used by the SDK. Will be removed in a future version.")
 public func getEstimatedSkew(now: Date, responseDateString: String) -> TimeInterval {
     let dateFormatter = DateFormatter()
     dateFormatter.dateFormat = "EEE, dd MMM yyyy HH:mm:ss z"
