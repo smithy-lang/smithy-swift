@@ -153,7 +153,9 @@ let package = Package(
         .testTarget(
             name: "SmithyFormURLTests",
             dependencies: [
+                .product(name: "Smithy", package: "smithy-swift"),
                 .product(name: "SmithyFormURL", package: "smithy-swift"),
+                .product(name: "SmithySerialization", package: "smithy-swift"),
                 .product(name: "ClientRuntime", package: "smithy-swift"),
             ]
         ),

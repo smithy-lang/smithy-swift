@@ -186,7 +186,9 @@ var runtimeTargets: [PackageDescription.Target] {
         .target(
             name: "SmithyFormURL",
             dependencies: [
+                "Smithy",
                 "SmithyReadWrite",
+                "SmithySerialization",
                 "SmithyTimestamps"
             ]
         ),

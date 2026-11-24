@@ -14,6 +14,7 @@ public let allRuntimeTraitTypes: [any Trait.Type] = [
     AWSQueryErrorTrait.self,
     ClientOptionalTrait.self,
     DefaultTrait.self,
+    EC2QueryNameTrait.self,
     EnumValueTrait.self,
     ErrorTrait.self,
     EventHeaderTrait.self,
@@ -35,6 +36,8 @@ public let allRuntimeTraitTypes: [any Trait.Type] = [
     SparseTrait.self,
     StreamingTrait.self,
     TimestampFormatTrait.self,
+    XMLFlattenedTrait.self,
+    XMLNameTrait.self,
     UnitTypeTrait.self, // UnitTypeTrait will only ever appear in Prelude.unitSchema
 
     // Synthetic traits
