@@ -17,6 +17,7 @@ public enum SigningPropertyKeys {
     public static let clockSkew = AttributeKey<TimeInterval>(name: "ClockSkew")
     public static let expiration = AttributeKey<TimeInterval>(name: "Expiration")
     public static let isChunkedEligibleStream = AttributeKey<Bool>(name: "isChunkedEligibleStream")
+    public static let enableAwsChunked = AttributeKey<Bool>(name: "enableAwsChunked")
     public static let omitSessionToken = AttributeKey<Bool>(name: "OmitSessionToken")
     public static let shouldNormalizeURIPath = AttributeKey<Bool>(name: "ShouldNormalizeURIPath")
     public static let signatureType = AttributeKey<AWSSignatureType>(name: "SignatureType")
