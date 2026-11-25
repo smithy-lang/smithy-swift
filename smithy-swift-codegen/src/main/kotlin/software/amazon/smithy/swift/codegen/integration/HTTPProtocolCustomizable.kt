@@ -53,6 +53,15 @@ interface HTTPProtocolCustomizable {
         TODO("Not yet implemented")
     }
 
+    /**
+     * Renders the client protocol for a service, for protocols that need properties of the service,
+     * i.e. its version.  Defaults to [renderClientProtocol] without the context.
+     */
+    fun renderClientProtocol(
+        ctx: ProtocolGenerator.GenerationContext,
+        writer: SwiftWriter,
+    ): String = renderClientProtocol(writer)
+
     val plugins: List<Plugin>
         get() = listOf()
 

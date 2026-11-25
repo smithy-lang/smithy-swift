@@ -66,7 +66,7 @@ class MiddlewareExecutionGenerator(
         if (isSchemaBased) {
             writer.write(
                 "let clientProtocol = \$L",
-                httpProtocolCustomizable.renderClientProtocol(writer),
+                httpProtocolCustomizable.renderClientProtocol(ctx, writer),
             )
             writer.write(
                 "let builder = \$N(operation, clientProtocol)",

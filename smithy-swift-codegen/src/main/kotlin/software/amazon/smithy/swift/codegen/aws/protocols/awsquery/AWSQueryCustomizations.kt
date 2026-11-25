@@ -11,7 +11,10 @@ import software.amazon.smithy.model.traits.TimestampFormatTrait
 import software.amazon.smithy.protocoltests.traits.HttpRequestTestCase
 import software.amazon.smithy.swift.codegen.SwiftWriter
 import software.amazon.smithy.swift.codegen.integration.DefaultHTTPProtocolCustomizations
+import software.amazon.smithy.swift.codegen.integration.Plugin
+import software.amazon.smithy.swift.codegen.integration.ProtocolGenerator
 import software.amazon.smithy.swift.codegen.swiftmodules.ClientRuntimeTypes
+import software.amazon.smithy.swift.codegen.swiftmodules.SmithyAWSQueryTypes
 
 open class AWSQueryCustomizations : DefaultHTTPProtocolCustomizations() {
     override fun customRenderBodyComparison(
@@ -34,4 +37,12 @@ open class AWSQueryCustomizations : DefaultHTTPProtocolCustomizations() {
     override val baseErrorSymbol: Symbol = ClientRuntimeTypes.AWSQuery.AWSQueryError
 
     override val defaultTimestampFormat = TimestampFormatTrait.Format.DATE_TIME
+
+    override val plugins: List<Plugin> = listOf(AWSQueryPlugin())
+
+    // Every awsQuery request carries the service's version.
+    override fun renderClientProtocol(
+        ctx: ProtocolGenerator.GenerationContext,
+        writer: SwiftWriter,
+    ): String = writer.format("\$N(version: \$S)", SmithyAWSQueryTypes.HTTPClientProtocol, ctx.service.version)
 }
