@@ -24,7 +24,7 @@ import java.util.Base64
 open class HttpProtocolUnitTestRequestGenerator protected constructor(
     builder: Builder,
 ) : HttpProtocolUnitTestGenerator<HttpRequestTestCase>(builder) {
-    override val baseTestClassSymbol = SmithyTestUtilTypes.HttpRequestTestBase
+    override val testSuiteProtocolSymbol = SmithyTestUtilTypes.HTTPRequestProtocolTestSuite
 
     override fun renderTestBody(test: HttpRequestTestCase) {
         renderExpectedBlock(test)
@@ -105,38 +105,20 @@ open class HttpProtocolUnitTestRequestGenerator protected constructor(
     }
 
     private fun renderClientBlock(test: HttpRequestTestCase) {
-        val clientName = "${ctx.settings.clientBaseName}Client"
-        val region = "us-west-2"
-
-        // Create benchmark telemetry for serde benchmark tests only
+        val args = mutableListOf<String>()
+        if (!ctx.service.hasEndpointRules()) {
+            test.host.ifPresent { args.add(writer.format("host: \$S", it)) }
+        }
+        // Create & install benchmark telemetry for serde benchmark tests only
         if (test.isSerdeBenchmarkTest) {
-            writer.write(
-                "let telemetryProvider = \$N()",
-                SmithyTestUtilTypes.SerdeBenchmarkTelemetryProvider,
-            )
+            writer.write("let telemetryProvider = \$N()", SmithyTestUtilTypes.SerdeBenchmarkTelemetryProvider)
+            args.add("telemetryProvider: telemetryProvider")
         }
-        writer.openBlock("let config = try await \$1L.\$1LConfig(", ")", clientName) {
-            writer.write("awsCredentialIdentityResolver: try \$N(),", SmithyTestUtilTypes.dummyIdentityResolver)
-            writer.write("region: \$S,", region)
-            writer.write("signingRegion: \$S,", region)
-            if (!ctx.service.hasEndpointRules()) {
-                val host: String? = test.host.orElse(null)
-                val url = "https://${host ?: "example.com"}"
-                writer.write(
-                    "endpointResolver: \$L.StaticEndpointResolver(endpoint: try \$N(urlString: \$S)),",
-                    ctx.settings.moduleName,
-                    SmithyHTTPAPITypes.Endpoint,
-                    url,
-                )
-            }
-            // Install benchmark telemetry for serde benchmark tests only
-            if (test.isSerdeBenchmarkTest) {
-                writer.write("telemetryProvider: telemetryProvider,")
-            }
-            writer.write("idempotencyTokenGenerator: ProtocolTestIdempotencyTokenGenerator(),")
-            writer.write("httpClientEngine: ProtocolTestClient()")
-        }
-        writer.write("let client = \$L(config: config)", clientName)
+        writer.write("let client = try await makeClient(\$L)", args.joinToString(", "))
+    }
+
+    override fun renderSuiteHelpers() {
+        ctx.renderMakeClient(writer, ProtocolTestClientKind.REQUEST, telemetryProvider = hasSerdeBenchmarkTests)
     }
 
     private fun renderOperationBlock(test: HttpRequestTestCase) {
@@ -154,42 +136,25 @@ open class HttpProtocolUnitTestRequestGenerator protected constructor(
                 }.write("")
             writer.addImport(SwiftDependency.SMITHY.target)
             writer.write(
-                """
-                do {
-                    _ = try await client.${operation.toLowerCamelCase()}(input: input)
-                } catch TestCheckError.actual(let actual) {
-                    ${'$'}{C|}
-                }
-                """.trimIndent(),
-                Runnable { renderBodyAssert(test) },
+                "let actual = try await captureRequest { try await client.\$L(input: input) }",
+                operation.toLowerCamelCase(),
             )
+            renderAssertion(test)
         }
     }
 
-    private fun renderBodyAssert(test: HttpRequestTestCase) {
+    private fun renderAssertion(test: HttpRequestTestCase) {
         if (test.body.isPresent && test.body.get().isNotBlank()) {
-            writer.openBlock(
-                "try await self.assertEqual(expected, actual, { (expectedHttpBody, actualHttpBody) -> Void in",
-                "})",
-            ) {
-                writer.write("XCTAssertNotNil(actualHttpBody, \"The actual ByteStream is nil\")")
-                writer.write("XCTAssertNotNil(expectedHttpBody, \"The expected ByteStream is nil\")")
-                val contentType =
-                    when (ctx.service.requestWireProtocol) {
-                        WireProtocol.XML -> ".xml"
-                        WireProtocol.JSON -> ".json"
-                        WireProtocol.FORM_URL -> ".formURL"
-                        WireProtocol.CBOR -> ".cbor"
-                    }
-                writer.write(
-                    "try await self.genericAssertEqualHttpBodyData(expected: expectedHttpBody!, actual: actualHttpBody!, contentType: \$L)",
-                    contentType,
-                )
-            }
+            val contentType =
+                when (ctx.service.requestWireProtocol) {
+                    WireProtocol.XML -> ".xml"
+                    WireProtocol.JSON -> ".json"
+                    WireProtocol.FORM_URL -> ".formURL"
+                    WireProtocol.CBOR -> ".cbor"
+                }
+            writer.write("try await assertEqual(expected, actual, bodyContentType: \$L)", contentType)
         } else {
-            writer.write(
-                "try await self.assertEqual(expected, actual)",
-            )
+            writer.write("try await assertEqual(expected, actual)")
         }
     }
 

@@ -5,10 +5,10 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
-import Smithy
-import SmithyHTTPAPI
 import AwsCommonRuntimeKit
 import ClientRuntime
+import Smithy
+import SmithyHTTPAPI
 import XCTest
 
 /**
@@ -21,6 +21,28 @@ public enum HTTPBodyContentType {
     case json
     case formURL
     case cbor
+}
+
+extension HTTPBodyContentType {
+
+    /// Determines the body format from a media type, e.g. `application/json`.
+    ///
+    /// Returns `nil` for media types that are compared byte-for-byte, or if the media type is `nil`.
+    public init?(mediaType: String?) {
+        // Match anywhere in the media type, so that e.g. `application/x-amz-json-1.0` is JSON.
+        let mediaType = mediaType?.lowercased() ?? ""
+        if mediaType.contains("x-www-form-urlencoded") {
+            self = .formURL
+        } else if mediaType.contains("json") {
+            self = .json
+        } else if mediaType.contains("cbor") {
+            self = .cbor
+        } else if mediaType.contains("xml") {
+            self = .xml
+        } else {
+            return nil
+        }
+    }
 }
 
 open class HttpRequestTestBase: XCTestCase {
@@ -43,63 +65,23 @@ open class HttpRequestTestBase: XCTestCase {
                                          body: ByteStream?,
                                          host: String,
                                          resolvedHost: String?) -> ExpectedSdkHttpRequest {
-        let builder = ExpectedSdkHttpRequestBuilder()
-        builder.withMethod(method)
-
-        if let deconflictedHost = deconflictHost(host: host, resolvedHost: resolvedHost) {
-            builder.withHost(deconflictedHost)
-        }
-        builder.withPath(path)
-
-        if let queryParams = queryParams {
-            addQueryItems(queryParams: queryParams, builder: builder)
-        }
-
-        if let forbiddenQueryParams = forbiddenQueryParams {
-            addForbiddenQueryItems(queryParams: forbiddenQueryParams, builder: builder)
-        }
-
-        if let requiredQueryParams = requiredQueryParams {
-            addRequiredQueryItems(queryParams: requiredQueryParams, builder: builder)
-        }
-
-        if let headers = headers {
-            for (headerName, headerValue) in headers {
-                builder.withHeader(name: headerName, value: headerValue)
-            }
-        }
-
-        if let forbiddenHeaders = forbiddenHeaders {
-            for headerName in forbiddenHeaders {
-                builder.withForbiddenHeader(name: headerName)
-            }
-        }
-
-        if let requiredHeaders = requiredHeaders {
-            for headerName in requiredHeaders {
-                builder.withRequiredHeader(name: headerName)
-            }
-        }
-
-        if let body = body {
-            builder.withBody(body)
-        }
-
-        return builder.build()
-
+        HTTPRequestTestSupport.buildExpectedHttpRequest(
+            method: method,
+            path: path,
+            headers: headers,
+            forbiddenHeaders: forbiddenHeaders,
+            requiredHeaders: requiredHeaders,
+            queryParams: queryParams,
+            forbiddenQueryParams: forbiddenQueryParams,
+            requiredQueryParams: requiredQueryParams,
+            body: body,
+            host: host,
+            resolvedHost: resolvedHost
+        )
     }
 
     func deconflictHost(host: String, resolvedHost: String?) -> String? {
-        var deconflictedHost: String?
-        if !host.isEmpty,
-           let urlFromHost = URL(string: "http://\(host)"),
-           let parsedHost = urlFromHost.host {
-            deconflictedHost = parsedHost
-        }
-        if let resolvedHost = resolvedHost, !resolvedHost.isEmpty {
-            deconflictedHost = resolvedHost
-        }
-        return deconflictedHost
+        HTTPRequestTestSupport.deconflictHost(host: host, resolvedHost: resolvedHost)
     }
 
     public func urlPrefixFromHost(host: String) -> String? {
@@ -118,70 +100,18 @@ open class HttpRequestTestBase: XCTestCase {
         return hostOnly
     }
 
-    func addQueryItems(queryParams: [String], builder: ExpectedSdkHttpRequestBuilder) {
-        for queryParam in queryParams {
-            let queryParamComponents = queryParam.components(separatedBy: "=")
-            if queryParamComponents.count > 1 {
-                let value = queryParamComponents[1]
-
-                builder.withQueryItem(URIQueryItem(name: queryParamComponents[0],
-                                                   value: value))
-            } else {
-                builder.withQueryItem(URIQueryItem(name: queryParamComponents[0], value: nil))
-            }
-        }
-    }
-
-    func addForbiddenQueryItems(queryParams: [String], builder: ExpectedSdkHttpRequestBuilder) {
-        for queryParam in queryParams {
-            let queryParamComponents = queryParam.components(separatedBy: "=")
-            if queryParamComponents.count > 1 {
-                let value = queryParamComponents[1]
-
-                builder.withForbiddenQueryItem(URIQueryItem(name: queryParamComponents[0],
-                                                   value: value))
-            } else {
-                builder.withForbiddenQueryItem(URIQueryItem(name: queryParamComponents[0], value: nil))
-            }
-        }
-    }
-
-    func addRequiredQueryItems(queryParams: [String], builder: ExpectedSdkHttpRequestBuilder) {
-        for queryParam in queryParams {
-            let queryParamComponents = queryParam.components(separatedBy: "=")
-            if queryParamComponents.count > 1 {
-                let value = queryParamComponents[1]
-
-                builder.withRequiredQueryItem(URIQueryItem(name: queryParamComponents[0],
-                                                   value: value))
-            } else {
-                builder.withRequiredQueryItem(URIQueryItem(name: queryParamComponents[0], value: nil))
-            }
-        }
-    }
-
     /**
      Check if a Query Item with given name exists in array of `URLQueryItem`
      */
     public func queryItemExists(_ queryItemName: String, in queryItems: [URIQueryItem]?) -> Bool {
-        guard let queryItems = queryItems else {
-            return false
-        }
-
-        for queryItem in queryItems where queryItem.name == queryItemName {
-            return true
-        }
-        return false
+        queryItems?.contains { $0.name == queryItemName } ?? false
     }
 
     /**
     Check if a header with given name exists in array of `Header`
     */
     public func headerExists(_ headerName: String, in headers: [Header]) -> Bool {
-        for header in headers where header.name == headerName {
-            return true
-        }
-        return false
+        headers.contains { $0.name == headerName }
     }
 
     /**
@@ -197,51 +127,9 @@ open class HttpRequestTestBase: XCTestCase {
         file: StaticString = #filePath,
         line: UInt = #line
     ) async throws {
-        // assert headers match
-        assertHttpHeaders(expected.headers, actual.headers, file: file, line: line)
-
-        assertForbiddenHeaders(expected.forbiddenHeaders, actual.headers, file: file, line: line)
-
-        assertRequiredHeaders(expected.requiredHeaders, actual.headers, file: file, line: line)
-
-        assertQueryItems(expected.queryItems, actual.queryItems, file: file, line: line)
-
-        XCTAssertEqual(expected.endpoint.uri.path, actual.destination.path, file: file, line: line)
-        XCTAssertEqual(expected.endpoint.uri.host, actual.destination.host, file: file, line: line)
-        XCTAssertEqual(expected.method, actual.method, file: file, line: line)
-        assertForbiddenQueryItems(expected.forbiddenQueryItems, actual.queryItems, file: file, line: line)
-
-        assertRequiredQueryItems(expected.requiredQueryItems, actual.queryItems, file: file, line: line)
-
-        // assert the contents of ByteStream match, if no body was on the test, no assertions are to be made about the body
-        // https://smithy.io/2.0/additional-specs/http-protocol-compliance-tests.html#smithy-test-httprequesttests-trait
-        try await assertEqualHttpBody?(expected.body, actual.body)
-    }
-
-    private func checkStreamLengthEqualityIfUnseekableActualStreamHasBeenRead(
-        expected: ByteStream,
-        actual: ByteStream,
-        file: StaticString = #filePath,
-        line: UInt = #line
-    ) -> Bool {
-        switch actual {
-        case .stream(let actualStream):
-            if actualStream.position == actualStream.length, !actualStream.isSeekable {
-                switch expected {
-                case .stream(let expectedStream):
-                    if actualStream.length == expectedStream.length {
-                        return true // Streams are considered equal
-                    } else {
-                        XCTFail("Actual stream is a different size than expected!", file: file, line: line)
-                    }
-                default:
-                    break // This is only applicable to streams
-                }
-            }
-        default:
-            break // This is only applicable to streams
-        }
-        return false
+        try await HTTPRequestTestSupport.assertEqual(
+            expected, actual, assertEqualHttpBody, reporter: .xcTest(file: file, line: line)
+        )
     }
 
     public func genericAssertEqualHttpBodyData(
@@ -251,58 +139,9 @@ open class HttpRequestTestBase: XCTestCase {
         file: StaticString = #filePath,
         line: UInt = #line
     ) async throws {
-        let expectedData = try await expected.readData()
-        let actualData = try await actual.readData()
-
-        // Unseekable streams may have already been read by Signer middleware and cannot be read again
-        // Compare stream lengths if ByteStream is a .stream and actualData is nil
-        if checkStreamLengthEqualityIfUnseekableActualStreamHasBeenRead(
-            expected: expected, actual: actual, file: file, line: line
-        ) {
-            // Stream lengths were checked and comparing data will result in failure due to above conditions
-            return
-        }
-
-        // Compare the data
-        compareData(contentType: contentType, expectedData, actualData, file: file, line: line)
-    }
-
-    private func extractData(_ httpBody: ByteStream) throws -> Result<Data?, Error> {
-        switch httpBody {
-        case .data(let actualData):
-            return .success(actualData)
-        case .stream(let byteStream):
-            let data = try byteStream.readToEnd()
-            return .success(data)
-        case .noStream:
-            return .failure(InternalHttpRequestTestBaseError("ByteStream is not Data Type"))
-        }
-    }
-
-    private func compareData(contentType: HTTPBodyContentType, _ expected: Data?, _ actual: Data?, file: StaticString, line: UInt) {
-        if let expected, let actual {
-            let message = {
-                let expectedStr = String(data: expected, encoding: .utf8) ?? "<not UTF-8>"
-                let actualStr = String(data: actual, encoding: .utf8) ?? "<not UTF-8>"
-                return "\nActual: \(actualStr)\nExpected: \(expectedStr)"
-            }
-            switch contentType {
-            case .xml:
-                XCTAssertXMLDataEqual(actual, expected, message(), file: file, line: line)
-            case .json:
-                XCTAssertJSONDataEqual(actual, expected, message(), file: file, line: line)
-            case .formURL:
-                XCTAssertFormURLDataEqual(actual, expected, message(), file: file, line: line)
-            case .cbor:
-                XCTAssertCBORDataEqual(actual, expected, message(), file: file, line: line)
-            }
-        } else if expected != nil && actual == nil {
-            XCTFail("actual data in ByteStream is nil but expected is not", file: file, line: line)
-        } else if expected == nil && actual != nil {
-            XCTFail("expected data in ByteStream is nil but actual is not", file: file, line: line)
-        } else {
-            // expected and actual bodies are both nil, no operation
-        }
+        try await HTTPRequestTestSupport.genericAssertEqualHttpBodyData(
+            expected: expected, actual: actual, contentType: contentType, reporter: .xcTest(file: file, line: line)
+        )
     }
 
     /**
@@ -316,37 +155,7 @@ open class HttpRequestTestBase: XCTestCase {
         file: StaticString = #filePath,
         line: UInt = #line
     ) {
-        guard let expected = expected else {
-            return
-        }
-
-        guard let actual = actual else {
-            XCTFail("There are expected headers and no actual headers.", file: file, line: line)
-            return
-        }
-
-        expected.headers.forEach { header in
-            XCTAssert(actual.exists(name: header.name), "Header '\(header.name)' does not exist", file: file, line: line)
-
-            guard actual.values(for: header.name) != header.value else {
-                XCTAssertEqual(actual.values(for: header.name), header.value, file: file, line: line)
-                return
-            }
-
-            let actualValue = actual.values(for: header.name)?
-                .joined(separator: ", ")
-                .components(separatedBy: .whitespaces)
-                .joined()
-
-            XCTAssertNotNil(actualValue, "The actual header value for \(header.name) is not present", file: file, line: line)
-
-            let expectedValue = header.value
-                .joined(separator: ", ")
-                .components(separatedBy: .whitespaces)
-                .joined()
-
-            XCTAssert(actualValue == expectedValue, "Actual header '\(header.name)': '\(String(describing: actualValue))') Expected header: '\(String(describing: expectedValue))'", file: file, line: line)
-        }
+        HTTPRequestTestSupport.assertHttpHeaders(expected, actual, reporter: .xcTest(file: file, line: line))
     }
 
     public func assertForbiddenHeaders(
@@ -355,20 +164,7 @@ open class HttpRequestTestBase: XCTestCase {
         file: StaticString = #filePath,
         line: UInt = #line
     ) {
-        guard let expected = expected else {
-            return
-        }
-
-        for forbiddenHeaderName in expected {
-            XCTAssertFalse(actual.exists(name: forbiddenHeaderName),
-                           """
-                           forbidden header found: \(forbiddenHeaderName):
-                           \(String(describing: actual.value(for: forbiddenHeaderName)))
-                           """,
-                           file: file,
-                           line: line
-            )
-        }
+        HTTPRequestTestSupport.assertForbiddenHeaders(expected, actual, reporter: .xcTest(file: file, line: line))
     }
 
     public func assertRequiredHeaders(
@@ -377,20 +173,7 @@ open class HttpRequestTestBase: XCTestCase {
         file: StaticString = #filePath,
         line: UInt = #line
     ) {
-        guard let expected = expected else {
-            return
-        }
-
-        for requiredHeaderName in expected {
-            XCTAssertTrue(actual.exists(name: requiredHeaderName),
-                          """
-                          required header not found: \(requiredHeaderName):
-                          \(String(describing: actual.value(for: requiredHeaderName)))
-                          """,
-                          file: file,
-                          line: line
-            )
-        }
+        HTTPRequestTestSupport.assertRequiredHeaders(expected, actual, reporter: .xcTest(file: file, line: line))
     }
 
     public func assertQueryItems(
@@ -399,32 +182,7 @@ open class HttpRequestTestBase: XCTestCase {
         file: StaticString = #filePath,
         line: UInt = #line
     ) {
-        guard let expectedQueryItems = expected else {
-            return
-        }
-        guard let actualQueryItems = actual else {
-            XCTFail("actual query items in Endpoint is nil but expected are not", file: file, line: line)
-            return
-        }
-
-        for expectedQueryItem in expectedQueryItems {
-            let values = actualQueryItems.filter {$0.name == expectedQueryItem.name}.map { $0.value }
-            XCTAssertNotNil(
-                values,
-                "expected query parameter \(expectedQueryItem.name); no values found",
-                file: file,
-                line: line
-            )
-            XCTAssertTrue(values.contains(expectedQueryItem.value),
-                          """
-                          expected query item value not found for \"\(expectedQueryItem.name)\".
-                          Expected Value: \(expectedQueryItem.value ?? "nil")
-                          Actual Values: \(values)
-                          """,
-                          file: file,
-                          line: line
-            )
-        }
+        HTTPRequestTestSupport.assertQueryItems(expected, actual, reporter: .xcTest(file: file, line: line))
     }
 
     public func assertForbiddenQueryItems(
@@ -433,21 +191,7 @@ open class HttpRequestTestBase: XCTestCase {
         file: StaticString = #filePath,
         line: UInt = #line
     ) {
-        guard let forbiddenQueryItems = expected else {
-            return
-        }
-        guard let actualQueryItems = actual else {
-            return
-        }
-
-        for forbiddenQueryItem in forbiddenQueryItems {
-            XCTAssertFalse(actualQueryItems.contains(where: {$0.name == forbiddenQueryItem.name &&
-                $0.value == forbiddenQueryItem.value}),
-                           "forbidden query parameter item found:\(forbiddenQueryItem)",
-            file: file,
-            line: line
-            )
-        }
+        HTTPRequestTestSupport.assertForbiddenQueryItems(expected, actual, reporter: .xcTest(file: file, line: line))
     }
 
     public func assertRequiredQueryItems(
@@ -456,29 +200,7 @@ open class HttpRequestTestBase: XCTestCase {
         file: StaticString = #filePath,
         line: UInt = #line
     ) {
-        guard let requiredQueryItems = expected else {
-            return
-        }
-        guard let actualQueryItems = actual else {
-            XCTFail("actual query items in Endpoint is nil but required are not", file: file, line: line)
-            return
-        }
-
-        for requiredQueryItem in requiredQueryItems {
-            XCTAssertTrue(actualQueryItems.contains(where: {$0.name == requiredQueryItem.name &&
-                $0.value == requiredQueryItem.value}),
-                          "expected required query parameter not found:\(requiredQueryItem)",
-                          file: file,
-                          line: line
-            )
-        }
-    }
-
-    struct InternalHttpRequestTestBaseError: Error {
-        let localizedDescription: String
-        public init(_ description: String) {
-            self.localizedDescription = description
-        }
+        HTTPRequestTestSupport.assertRequiredQueryItems(expected, actual, reporter: .xcTest(file: file, line: line))
     }
 }
 

@@ -21,7 +21,6 @@ import software.amazon.smithy.swift.codegen.integration.ProtocolGenerator
 import software.amazon.smithy.swift.codegen.swiftmodules.ClientRuntimeTypes
 import software.amazon.smithy.swift.codegen.swiftmodules.SmithyHTTPAPITypes
 import software.amazon.smithy.swift.codegen.swiftmodules.SmithyTestUtilTypes
-import software.amazon.smithy.swift.codegen.swiftmodules.XCTestTypes
 import software.amazon.smithy.swift.codegen.utils.toLowerCamelCase
 
 /**
@@ -38,7 +37,9 @@ class EndpointTestGenerator(
         }
 
         writer.addImport(ctx.settings.moduleName, isTestable = true)
-        writer.addImport(SwiftDependency.XCTest.target)
+        writer.addImport(SwiftDependency.SWIFT_TESTING.target)
+        // Unlike XCTest, Swift Testing does not re-export Foundation.
+        writer.addImport("Foundation")
 
         // used to filter out test params that are not valid
         val endpointParamsMembers =
@@ -48,15 +49,17 @@ class EndpointTestGenerator(
                 ?.toSet() ?: emptySet()
 
         var count = 0
-        writer.openBlock("class EndpointResolverTest: \$N {", "}", XCTestTypes.XCTestCase) {
+        writer.write("@Suite")
+        writer.openBlock("struct EndpointResolverTest {", "}") {
             writer.write("")
-            writer.openBlock("override class func setUp() {", "}") {
+            writer.openBlock("init() {", "}") {
                 writer.write("\$N.initialize()", SmithyTestUtilTypes.TestInitializer)
             }
             writer.write("")
 
             endpointTest.testCases.forEach { testCase ->
                 writer.write("/// \$L", testCase.documentation)
+                writer.write("@Test")
                 writer.openBlock("func testResolve${++count}() throws {", "}") {
                     writer.openBlock("let endpointParams = \$N(", ")", EndpointTypes.EndpointParams) {
                         val applicableParams =
@@ -82,16 +85,14 @@ class EndpointTestGenerator(
                     writer.write("let resolver = try \$N()", EndpointTypes.DefaultEndpointResolver).write("")
 
                     testCase.expect.error.ifPresent { error ->
-                        writer.openBlock(
-                            "XCTAssertThrowsError(try resolver.resolve(params: endpointParams)) { error in",
-                            "}",
-                        ) {
-                            writer.openBlock("switch error {", "}") {
-                                writer.dedent().write("case \$N.unresolved(let message):", ClientRuntimeTypes.Core.EndpointError)
-                                writer.indent().write("XCTAssertEqual(\$S, message)", error)
-                                writer.dedent().write("default:")
-                                writer.indent().write("XCTFail()")
-                            }
+                        // Errors other than EndpointError.unresolved are thrown out of the test, failing it.
+                        writer.write("do {")
+                        writer.indent {
+                            writer.write("_ = try resolver.resolve(params: endpointParams)")
+                            writer.write("Issue.record(\"Expected endpoint resolution to fail\")")
+                        }
+                        writer.openBlock("} catch \$N.unresolved(let message) {", "}", ClientRuntimeTypes.Core.EndpointError) {
+                            writer.write("#expect(message == \$S)", error)
                         }
                     }
                     testCase.expect.endpoint.ifPresent { endpoint ->
@@ -115,7 +116,7 @@ class EndpointTestGenerator(
                                 SmithyHTTPAPITypes.Endpoint,
                                 endpoint.url,
                             ).write("")
-                        writer.write("XCTAssertEqual(expected, actual)")
+                        writer.write("#expect(actual == expected)")
                     }
                 }
                 writer.write("")

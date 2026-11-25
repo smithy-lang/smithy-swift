@@ -3,12 +3,11 @@
  * SPDX-License-Identifier: Apache-2.0.
  */
 
+import ClientRuntime
+import Foundation
 import Smithy
 import SmithyHTTPAPI
-import Foundation
-import ClientRuntime
 import XCTest
-import class AwsCommonRuntimeKit.ByteBuffer
 
 /**
  Includes Utility functions for Http Protocol Response Deserialization Tests
@@ -22,14 +21,6 @@ open class HttpResponseTestBase: XCTestCase {
                                   headers: [String: String]? = nil,
                                   content: ByteStream?) -> HTTPResponse? {
 
-        var internalHeaders: Headers = Headers()
-        if let headers = headers {
-            internalHeaders = Headers(headers)
-        }
-
-        return HTTPResponse(headers: internalHeaders,
-                            body: content ?? .noStream,
-                            statusCode: HTTPStatusCode(rawValue: Int(code)) ?? HTTPStatusCode.badRequest)
-
+        HTTPResponseTestSupport.buildHttpResponse(code: code, headers: headers, content: content)
     }
 }

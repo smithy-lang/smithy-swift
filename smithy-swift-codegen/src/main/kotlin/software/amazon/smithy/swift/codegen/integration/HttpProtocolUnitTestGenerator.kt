@@ -11,6 +11,7 @@ import software.amazon.smithy.model.shapes.OperationShape
 import software.amazon.smithy.model.shapes.ServiceShape
 import software.amazon.smithy.protocoltests.traits.HttpMessageTestCase
 import software.amazon.smithy.swift.codegen.SwiftWriter
+import software.amazon.smithy.swift.codegen.utils.isSerdeBenchmarkTest
 
 /**
  * Abstract base implementation for protocol test generators to extend in order to generate HttpMessageTestCase
@@ -31,22 +32,41 @@ abstract class HttpProtocolUnitTestGenerator<T : HttpMessageTestCase>
         protected val httpProtocolCustomizable = builder.httpProtocolCustomizable!!
         protected val httpBindingResolver = builder.httpBindingResolver!!
         protected val serviceName: String = builder.serviceName!!
-        abstract val baseTestClassSymbol: Symbol
 
         /**
-         * Render a test class and unit tests for the specified [testCases]
+         * The protocol that the generated Swift Testing suite conforms to, which provides test helpers.
+         */
+        abstract val testSuiteProtocolSymbol: Symbol
+
+        /**
+         * True if any test in this suite is a serde benchmark.
+         */
+        protected val hasSerdeBenchmarkTests: Boolean
+            get() = testCases.any { it.isSerdeBenchmarkTest }
+
+        /**
+         * Render a Swift Testing suite and unit tests for the specified [testCases]
          */
         fun renderTestClass(testClassName: String) {
             writer.write("")
+            // Serde benchmarks measure performance, so they must not run concurrently with each other.
+            val suiteTraits = if (hasSerdeBenchmarkTests) "(.serialized)" else ""
+            writer.write("@Suite\$L", suiteTraits)
             writer.openBlock(
-                "class \$L: \$N {",
+                "struct \$L: \$N {",
                 "}",
                 testClassName,
-                baseTestClassSymbol,
+                testSuiteProtocolSymbol,
             ) {
                 testCases.forEach { renderTestFunction(it) }
+                renderSuiteHelpers()
             }
         }
+
+        /**
+         * Render private helper methods shared by the tests in the suite, if any.
+         */
+        protected open fun renderSuiteHelpers() {}
 
         /**
          * Write a single unit test function using the given [writer]
@@ -56,6 +76,7 @@ abstract class HttpProtocolUnitTestGenerator<T : HttpMessageTestCase>
             test.documentation.ifPresent {
                 writer.writeDocs(it)
             }
+            writer.write("@Test")
             writer.openBlock("func test_${test.id}() async throws {", "}") {
                 renderTestBody(test)
             }

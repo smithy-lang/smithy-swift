@@ -12,12 +12,12 @@ object SmithyTestUtilTypes {
     val ProtocolTestRetryStrategyOptions = runtimeSymbol("ProtocolTestRetryStrategyOptions", SwiftDeclaration.ENUM)
     val SerdeBenchmarker = runtimeSymbol("SerdeBenchmarker", SwiftDeclaration.STRUCT)
     val SerdeBenchmarkTelemetryProvider = runtimeSymbol("SerdeBenchmarkTelemetryProvider", SwiftDeclaration.CLASS)
-    val HttpRequestTestBase = runtimeSymbol("HttpRequestTestBase", SwiftDeclaration.CLASS)
-    val HttpResponseTestBase = runtimeSymbol("HttpResponseTestBase", SwiftDeclaration.CLASS)
+    val HTTPRequestProtocolTestSuite = runtimeSymbol("HTTPRequestProtocolTestSuite", SwiftDeclaration.PROTOCOL)
+    val HTTPResponseProtocolTestSuite = runtimeSymbol("HTTPResponseProtocolTestSuite", SwiftDeclaration.PROTOCOL)
     val ProtocolTestClient = runtimeSymbol("ProtocolTestClient", SwiftDeclaration.CLASS)
     val ProtocolResponseTestClient = runtimeSymbol("ProtocolResponseTestClient", SwiftDeclaration.CLASS)
     val ProtocolTestIdempotencyTokenGenerator = runtimeSymbol("ProtocolTestIdempotencyTokenGenerator", SwiftDeclaration.CLASS)
-    val EventStreamTestUtil = runtimeSymbol("EventStreamTestUtil", SwiftDeclaration.ENUM)
+    val EventStreamProtocolTestSuite = runtimeSymbol("EventStreamProtocolTestSuite", SwiftDeclaration.PROTOCOL)
     val EventStreamTestInterceptorProvider = runtimeSymbol("EventStreamTestInterceptorProvider", SwiftDeclaration.STRUCT)
 }
 
