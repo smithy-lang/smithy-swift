@@ -343,6 +343,8 @@ var runtimeTargets: [PackageDescription.Target] {
                 "SmithyJSON",
                 "SmithyHTTPAPI",
                 "SmithyEventStreams",
+                "SmithyEventStreamsAPI",
+                "SmithyEventStreamsAuthAPI",
             ]
         ),
         .target(

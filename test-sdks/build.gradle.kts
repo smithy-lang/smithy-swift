@@ -31,6 +31,8 @@ data class TestSDK(
 
 val testSDKs = listOf(
     TestSDK("AWSJSON"),
+    // Its operations come from the protocol test corpus, & carry event stream tests ported to awsJson1_0.
+    TestSDK("AWSJSONEventStream", removeUnusedShapes = false),
     TestSDK("EndpointBDD"),
     TestSDK("EventStream"),
     TestSDK("JSONName"),
