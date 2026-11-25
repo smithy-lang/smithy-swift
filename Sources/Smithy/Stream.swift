@@ -50,10 +50,40 @@ public protocol WriteableStream: AnyObject, Sendable {
     /// - Parameter data: data to write
     func write(contentsOf data: Data) throws
 
+    /// Writes the contents of `data` to the stream asynchronously.
+    ///
+    /// Unlike the synchronous `write(contentsOf:)`, an async write lets a stream apply
+    /// backpressure: a conforming stream may suspend the caller until the data has been
+    /// consumed (or until buffered data drops below a high-water mark), so a fast producer
+    /// cannot grow the stream's buffer without bound.
+    ///
+    /// A default implementation is provided that simply calls the synchronous
+    /// `write(contentsOf:)`, so existing conformers compile unchanged and gain a (non-suspending)
+    /// async entry point for free.  Streams that support backpressure should override this.
+    ///
+    /// - Note: This is intentionally a distinct method name (not an `async` overload of
+    ///   `write(contentsOf:)`). Overloading the existing synchronous method with an `async`
+    ///   variant of the same name would be source-breaking: in an `async` context Swift prefers
+    ///   the async overload, so existing call sites that write `try stream.write(contentsOf:)`
+    ///   would suddenly require `try await`. The `writeAsync` name mirrors the existing
+    ///   `read` / `readAsync` and `readToEnd` / `readToEndAsync` convention and avoids that hazard.
+    /// - Parameter data: data to write
+    func writeAsync(contentsOf data: Data) async throws
+
     /// Closes the stream
     func close()
 
     func closeWithError(_ error: Error)
+}
+
+public extension WriteableStream {
+    /// Default async write: bridges to the synchronous `write(contentsOf:)`.
+    ///
+    /// This default keeps the new `writeAsync(contentsOf:)` requirement source-compatible for all
+    /// existing conformers — they need no code change and inherit this implementation.
+    func writeAsync(contentsOf data: Data) async throws {
+        try self.write(contentsOf: data)
+    }
 }
 
 /// Protocol that provides reading and writing data to a stream
