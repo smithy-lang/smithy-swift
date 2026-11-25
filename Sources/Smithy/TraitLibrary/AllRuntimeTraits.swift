@@ -36,6 +36,7 @@ public let allRuntimeTraitTypes: [any Trait.Type] = [
     SparseTrait.self,
     StreamingTrait.self,
     TimestampFormatTrait.self,
+    XMLAttributeTrait.self,
     XMLFlattenedTrait.self,
     XMLNameTrait.self,
     UnitTypeTrait.self, // UnitTypeTrait will only ever appear in Prelude.unitSchema
