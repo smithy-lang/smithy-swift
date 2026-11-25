@@ -8,6 +8,7 @@
 public enum PlatformOperatingSystem: String {
     case windows
     case linux
+    case freebsd
     case iOS
     case macOS
     case watchOS
@@ -19,6 +20,8 @@ public enum PlatformOperatingSystem: String {
 public var currentOS: PlatformOperatingSystem {
     #if os(Linux)
     return .linux
+    #elseif os(FreeBSD)
+    return .freebsd
     #elseif os(macOS)
     return .macOS
     #elseif os(iOS)
