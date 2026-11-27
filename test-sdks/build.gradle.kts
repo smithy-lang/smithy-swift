@@ -50,6 +50,8 @@ val testSDKs = listOf(
     TestSDK("RpcV2CborCorpus", service = "smithy.protocoltests.corpus#RpcV2CborCorpusTests", removeUnusedShapes = false),
     // The awsQuery protocol tests from smithy-aws-protocol-tests, run against schema-based serde.
     TestSDK("AWSQueryProtocol", true, service = "aws.protocoltests.query#AwsQuery"),
+    // The ec2Query protocol tests from smithy-aws-protocol-tests, run against schema-based serde.
+    TestSDK("EC2QueryProtocol", true, service = "aws.protocoltests.ec2#AwsEc2"),
     TestSDK("StringSerializer"),
     TestSDK("UnionDebugDescription"),
     TestSDK("Waiters"),
