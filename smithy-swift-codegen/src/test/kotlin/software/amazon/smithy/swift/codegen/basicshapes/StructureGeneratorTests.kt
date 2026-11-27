@@ -310,7 +310,6 @@ public struct MyError: ClientRuntime.ModeledError, ClientRuntime.ServiceError, C
     public static var isThrottling: Swift.Bool { false }
     public var httpResponse = SmithyHTTPAPI.HTTPResponse()
     public var message: Swift.String?
-    public var requestID: Swift.String?
 
     public init(
         baz: Swift.Int? = nil,

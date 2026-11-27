@@ -71,7 +71,6 @@ class HTTPResponseBindingErrorInitGenerator(
                     httpResponseTraitPayload(ctx, responseBindings, structureShape, writer)
                     HTTPResponseTraitResponseCode(ctx, responseBindings, writer).render()
                     writer.write("value.httpResponse = baseError.httpResponse")
-                    writer.write("value.requestID = baseError.requestID")
                     writer.write("value.message = baseError.message")
                     writer.declareSection(XMLHttpResponseBindingErrorInitMemberAssignment)
                     writer.write("return value")
