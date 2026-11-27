@@ -268,7 +268,7 @@ class StructureGenerator(
         writer.write("public static var isThrottling: \$N { \$L }", SwiftTypes.Bool, isThrottling)
         writer.write("public var httpResponse = \$N()", SmithyHTTPAPITypes.HTTPResponse)
         writer.write("public var message: \$T", SwiftTypes.String)
-        writer.write("public var requestID: \$T", SwiftTypes.String)
+        // requestID & requestID2 are provided by HTTPError, from httpResponse
         writer.declareSection(AdditionalErrorMembers)
     }
 }
