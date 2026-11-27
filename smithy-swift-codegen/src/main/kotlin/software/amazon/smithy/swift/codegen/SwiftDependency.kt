@@ -72,6 +72,7 @@ class SwiftDependency(
         val SMITHY_FORM_URL = smithySwiftDependency("SmithyFormURL")
         val SMITHY_WAITERS_API = smithySwiftDependency("SmithyWaitersAPI")
         val SMITHY_RESTJSON1 = smithySwiftDependency("SmithyRestJSON1")
+        val SMITHY_RESTXML = smithySwiftDependency("SmithyRestXML")
         val SMITHY_AWSJSON = smithySwiftDependency("SmithyAWSJSON")
         val SMITHY_AWS_QUERY = smithySwiftDependency("SmithyAWSQuery")
         val SMITHY_EC2_QUERY = smithySwiftDependency("SmithyEC2Query")

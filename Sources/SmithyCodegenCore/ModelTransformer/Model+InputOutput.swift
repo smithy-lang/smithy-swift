@@ -7,6 +7,8 @@
 
 import enum Smithy.Node
 @_spi(SchemaBasedSerde)
+import class Smithy.OriginalShapeIDTrait
+@_spi(SchemaBasedSerde)
 import enum Smithy.Prelude
 @_spi(SchemaBasedSerde)
 import struct Smithy.ShapeID
@@ -54,9 +56,19 @@ extension Model {
             // Add UsedAsInput and UsedAsOutput traits to the input/output structures
             // These traits allow us to identify inputs/outputs by trait, but allow us to
             // leave the Smithy input & output traits as set on the original model.
-            let newInput = newStruct(newID: newInputShapeID, newTraits: [UsedAsInputTrait()], original: inputShape)
+            // Add the OriginalShapeID trait so that protocols which serialize the input or output's
+            // name, i.e. restXml, can recover the name as modeled.
+            let newInput = newStruct(
+                newID: newInputShapeID,
+                newTraits: [UsedAsInputTrait(), OriginalShapeIDTrait(originalID: inputShape.id)],
+                original: inputShape
+            )
             let newInputShapeMembers = try renamedMembers(newID: newInputShapeID, original: inputShape)
-            let newOutput = newStruct(newID: newOutputShapeID, newTraits: [UsedAsOutputTrait()], original: outputShape)
+            let newOutput = newStruct(
+                newID: newOutputShapeID,
+                newTraits: [UsedAsOutputTrait(), OriginalShapeIDTrait(originalID: outputShape.id)],
+                original: outputShape
+            )
             let newOutputShapeMembers = try renamedMembers(newID: newOutputShapeID, original: outputShape)
 
             // Add the new input & output and their members to the new shape dictionary.

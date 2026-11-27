@@ -32,6 +32,7 @@ let package = Package(
         .library(name: "Smithy", targets: ["Smithy"]),
         .library(name: "SmithySerialization", targets: ["SmithySerialization"]),
         .library(name: "SmithyRestJSON1", targets: ["SmithyRestJSON1"]),
+        .library(name: "SmithyRestXML", targets: ["SmithyRestXML"]),
         .library(name: "SmithyAWSJSON", targets: ["SmithyAWSJSON"]),
         .library(name: "SmithyAWSQuery", targets: ["SmithyAWSQuery"]),
         .library(name: "SmithyEC2Query", targets: ["SmithyEC2Query"]),
@@ -335,6 +336,18 @@ var runtimeTargets: [PackageDescription.Target] {
                 "SmithyEventStreams",
                 "SmithySerialization",
                 "SmithyJSON",
+                "SmithyHTTPAPI",
+            ]
+        ),
+        .target(
+            name: "SmithyRestXML",
+            dependencies: [
+                "ClientRuntime",
+                "Smithy",
+                "SmithyEventStreams",
+                "SmithyEventStreamsAuthAPI",
+                "SmithySerialization",
+                "SmithyXML",
                 "SmithyHTTPAPI",
             ]
         ),

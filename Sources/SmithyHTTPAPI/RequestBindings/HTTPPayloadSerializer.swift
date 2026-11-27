@@ -45,7 +45,7 @@ public final class HTTPPayloadSerializer: NoOpByDefaultShapeSerializer {
 
     public func writeStruct<S: SerializableStruct>(_ schema: Schema, _ value: S) throws {
         let serializer = try codec.makeSerializer()
-        try serializer.writeStruct(schema.target!, value)
+        try serializer.writeStruct(codec.writesPayloadWithMemberSchema ? schema : schema.target!, value)
         mediaType = serializer.mediaType
         self.data = try serializer.data
     }
