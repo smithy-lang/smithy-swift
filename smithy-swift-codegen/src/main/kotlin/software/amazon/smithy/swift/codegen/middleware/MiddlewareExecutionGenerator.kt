@@ -38,7 +38,7 @@ class MiddlewareExecutionGenerator(
     ) {
         val inputShape = MiddlewareShapeUtils.inputSymbol(symbolProvider, ctx.model, op)
         val outputShape = MiddlewareShapeUtils.outputSymbol(symbolProvider, ctx.model, op)
-        val plugins = httpProtocolCustomizable.plugins
+        val plugins = httpProtocolCustomizable.plugins(ctx)
         if (isSchemaBased) {
             writer.write("var config = config")
             val pluginInits = plugins.map { writer.format("\$N()", it.className) }

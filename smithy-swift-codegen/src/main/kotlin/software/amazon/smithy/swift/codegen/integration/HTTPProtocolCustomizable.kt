@@ -65,6 +65,12 @@ interface HTTPProtocolCustomizable {
     val plugins: List<Plugin>
         get() = listOf()
 
+    /**
+     * The plugins installed on a client for a service, for customizations that apply only to some services.
+     * Defaults to [plugins].
+     */
+    fun plugins(ctx: ProtocolGenerator.GenerationContext): List<Plugin> = plugins
+
     fun serviceErrorCustomRenderer(ctx: ProtocolGenerator.GenerationContext): ServiceErrorCustomRenderer? = null
 
     val endpointMiddlewareSymbol: Symbol
