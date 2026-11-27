@@ -48,6 +48,8 @@ val testSDKs = listOf(
     TestSDK("RestJSONEventStreamSchemaBased", true),
     // Its operations are shared with the rpcv2Json corpus service & carry tests for both protocols.
     TestSDK("RpcV2CborCorpus", service = "smithy.protocoltests.corpus#RpcV2CborCorpusTests", removeUnusedShapes = false),
+    // The awsQuery protocol tests from smithy-aws-protocol-tests, run against schema-based serde.
+    TestSDK("AWSQueryProtocol", true, service = "aws.protocoltests.query#AwsQuery"),
     TestSDK("StringSerializer"),
     TestSDK("UnionDebugDescription"),
     TestSDK("Waiters"),

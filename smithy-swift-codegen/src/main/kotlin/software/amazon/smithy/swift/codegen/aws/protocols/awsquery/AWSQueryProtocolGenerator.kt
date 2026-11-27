@@ -17,6 +17,7 @@ import software.amazon.smithy.swift.codegen.integration.HttpBindingResolver
 import software.amazon.smithy.swift.codegen.integration.ProtocolGenerator
 import software.amazon.smithy.swift.codegen.integration.middlewares.ContentTypeMiddleware
 import software.amazon.smithy.swift.codegen.integration.middlewares.OperationInputBodyMiddleware
+import software.amazon.smithy.swift.codegen.integration.serde.SerdeUtils
 import software.amazon.smithy.swift.codegen.middleware.MiddlewareRenderable
 import software.amazon.smithy.swift.codegen.protocols.core.SmithyHTTPBindingProtocolGenerator
 
@@ -56,7 +57,19 @@ open class AWSQueryProtocolGenerator(
     ) {
         super.addProtocolSpecificMiddleware(ctx, operation)
         operationMiddleware.removeMiddleware(operation, "OperationInputBodyMiddleware")
-        operationMiddleware.appendMiddleware(operation, OperationInputBodyMiddleware(ctx, true))
+        if (SerdeUtils.useSchemaBased(ctx)) {
+            // Remove these middlewares, they are handled by applying the ClientProtocol & Operation
+            // to the orchestrator
+            operationMiddleware.removeMiddleware(operation, "DeserializeMiddleware")
+
+            // Remove these middlewares; the path is set by a plugin, and awsQuery binds no members
+            // to the query string or headers
+            operationMiddleware.removeMiddleware(operation, "OperationInputUrlPathMiddleware")
+            operationMiddleware.removeMiddleware(operation, "OperationInputQueryItemMiddleware")
+            operationMiddleware.removeMiddleware(operation, "OperationInputHeadersMiddleware")
+        } else {
+            operationMiddleware.appendMiddleware(operation, OperationInputBodyMiddleware(ctx, true))
+        }
 
         val resolver = getProtocolHttpBindingResolver(ctx, defaultContentType)
         operationMiddleware.removeMiddleware(operation, "ContentTypeMiddleware")
