@@ -154,7 +154,7 @@ public final class Deserializer: ShapeDeserializer {
     // MARK: - Aggregate types
 
     public func readStruct<T: DeserializableStruct>(_ schema: Schema, _ value: inout T) throws {
-        let structureSchema = schema.type == .member ? (schema.target ?? schema) : schema
+        let structureSchema = schema.containerType != nil ? (schema.target ?? schema) : schema
         let lookup = try structureSchema.getOrCreateExtension(XMLMemberLookupExtension.self)
 
         // Pre-fill members that have the required trait but no default with a zero/false/empty value.
