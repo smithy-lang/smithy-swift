@@ -43,5 +43,6 @@ public let allRuntimeTraitTypes: [any Trait.Type] = [
     UnitTypeTrait.self, // UnitTypeTrait will only ever appear in Prelude.unitSchema
 
     // Synthetic traits
+    OriginalShapeIDTrait.self,
     TargetsUnitTrait.self,
 ]

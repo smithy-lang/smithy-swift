@@ -15,6 +15,13 @@ public protocol Codec: Sendable {
     var emptyResponse: Data? { get }
     var serializerMediaType: String? { get }
     var deserializerMediaType: String? { get }
+
+    /// `true` if a structure bound to the HTTP payload is written with the payload member's schema, rather
+    /// than the schema of the member's target.
+    ///
+    /// A codec whose format names the payload for the member, i.e. XML, which names the root element for
+    /// the payload member's `xmlName` if it has one, needs the member's schema.
+    var writesPayloadWithMemberSchema: Bool { get }
 }
 
 public extension Codec {
@@ -23,4 +30,5 @@ public extension Codec {
     var emptyResponse: Data? { nil }
     var serializerMediaType: String? { nil }
     var deserializerMediaType: String? { nil }
+    var writesPayloadWithMemberSchema: Bool { false }
 }

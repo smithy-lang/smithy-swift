@@ -6,6 +6,8 @@
 //
 
 @_spi(SchemaBasedSerde)
+import class Smithy.OriginalShapeIDTrait
+@_spi(SchemaBasedSerde)
 import class Smithy.Schema
 @_spi(SchemaBasedSerde)
 import protocol Smithy.SchemaExtension
@@ -49,8 +51,9 @@ final class XMLNameExtension: SchemaExtension {
 /// Stores the UTF-8 bytes used to write a shape as the root element of an XML document.
 ///
 /// The root element is named by, in order of precedence, the `xmlName` of the member being written
-/// (for an HTTP payload member), the `xmlName` of the shape, or the shape's name.  Its namespace is the
-/// member's `xmlNamespace`, else the shape's.
+/// (for an HTTP payload member), the `xmlName` of the shape, or the shape's name as modeled.  For a
+/// synthesized operation input, the name as modeled is the one recorded by its `OriginalShapeIDTrait`.
+/// Its namespace is the member's `xmlNamespace`, else the shape's.
 final class XMLRootNameExtension: SchemaExtension {
 
     static let uniqueIndex = schemaExtensionUniqueIndexCounter.getNextIndex()
@@ -66,6 +69,7 @@ final class XMLRootNameExtension: SchemaExtension {
         let shape = schema.containerType != nil ? (schema.target ?? schema) : schema
         let name = schema.getTrait(XMLNameTrait.self)?.name
             ?? shape.getTrait(XMLNameTrait.self)?.name
+            ?? shape.getTrait(OriginalShapeIDTrait.self)?.originalID.name
             ?? shape.id.name
         self.name = Serializer.escaped(name, isAttribute: true)
         let namespace = schema.getTrait(XMLNamespaceTrait.self) ?? shape.getTrait(XMLNamespaceTrait.self)

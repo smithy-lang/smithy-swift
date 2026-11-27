@@ -52,6 +52,9 @@ val testSDKs = listOf(
     TestSDK("AWSQueryProtocol", true, service = "aws.protocoltests.query#AwsQuery"),
     // The ec2Query protocol tests from smithy-aws-protocol-tests, run against schema-based serde.
     TestSDK("EC2QueryProtocol", true, service = "aws.protocoltests.ec2#AwsEc2"),
+    // The restXml protocol tests from smithy-aws-protocol-tests, run against schema-based serde.
+    TestSDK("RestXMLProtocol", true, service = "aws.protocoltests.restxml#RestXml"),
+    TestSDK("RestXMLWithNamespaceProtocol", true, service = "aws.protocoltests.restxml.xmlns#RestXmlWithNamespace"),
     TestSDK("StringSerializer"),
     TestSDK("UnionDebugDescription"),
     TestSDK("Waiters"),
