@@ -293,7 +293,7 @@ final class DeserializerTests: XCTestCase {
         XCTAssertEqual(subject.elementName, "GetThingResponse")
 
         var shape = TestShape()
-        try try subject.child(named: "GetThingResult").readStruct(TestShape.schema, &shape)
+        try subject.child(named: "GetThingResult").readStruct(TestShape.schema, &shape)
 
         XCTAssertEqual(shape.string, "result")
     }
@@ -302,7 +302,7 @@ final class DeserializerTests: XCTestCase {
         let subject = try Deserializer(data: Data("<GetThingResponse><ResponseMetadata/></GetThingResponse>".utf8))
 
         var shape = TestShape()
-        try try subject.child(named: "GetThingResult").readStruct(TestShape.schema, &shape)
+        try subject.child(named: "GetThingResult").readStruct(TestShape.schema, &shape)
 
         XCTAssertEqual(shape.required, "")
     }
@@ -317,7 +317,7 @@ final class DeserializerTests: XCTestCase {
         let subject = try Deserializer(data: Data(xml.utf8))
 
         var error = ErrorShape()
-        try try subject.child(named: "Error").readStruct(ErrorShape.schema, &error)
+        try subject.child(named: "Error").readStruct(ErrorShape.schema, &error)
 
         XCTAssertEqual(error.code, "InvalidThing")
         XCTAssertEqual(error.message, "Bad thing")
@@ -333,7 +333,7 @@ final class DeserializerTests: XCTestCase {
         let subject = try Deserializer(data: Data(xml.utf8))
 
         var error = ErrorShape()
-        try try subject.child(named: "Errors").child(named: "Error").readStruct(ErrorShape.schema, &error)
+        try subject.child(named: "Errors").child(named: "Error").readStruct(ErrorShape.schema, &error)
 
         XCTAssertEqual(error.code, "InvalidThing")
         XCTAssertEqual(error.message, "Bad thing")
@@ -397,10 +397,13 @@ final class DeserializerTests: XCTestCase {
         // Long strings & many items, so values & elements straddle the boundaries between parsed chunks.
         let longString = String(repeating: "abcdefghij", count: 5_000)
         let items = (0..<2_000).map { "item\($0)" }
-        let xml = "<TestShape><string>\(longString)</string>" +
-            items.map { "<flatItem>\($0)</flatItem>" }.joined() +
-            "<map>" + items.map { "<entry><key>\($0)</key><value>\($0)</value></entry>" }.joined() + "</map>" +
-            "<integer>5</integer></TestShape>"
+        // Built in steps; one long concatenation is too slow for some compilers to type-check.
+        let flatItems = items.map { "<flatItem>\($0)</flatItem>" }.joined()
+        let mapEntries = items.map { "<entry><key>\($0)</key><value>\($0)</value></entry>" }.joined()
+        var xml = "<TestShape><string>\(longString)</string>"
+        xml += flatItems
+        xml += "<map>\(mapEntries)</map>"
+        xml += "<integer>5</integer></TestShape>"
         XCTAssertGreaterThan(xml.utf8.count, 100_000)
 
         let shape = try deserialize(xml)
