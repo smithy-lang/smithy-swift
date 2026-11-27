@@ -32,6 +32,7 @@ public let allRuntimeTraitTypes: [any Trait.Type] = [
     MediaTypeTrait.self,
     OutputTrait.self,
     RequiredTrait.self,
+    S3UnwrappedXMLOutputTrait.self,
     SensitiveTrait.self,
     SparseTrait.self,
     StreamingTrait.self,
