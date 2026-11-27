@@ -97,7 +97,7 @@ public final class Serializer: ShapeSerializer {
 
         // Attributes must be in the start tag, before any content.  If the structure has attribute members,
         // they are written in a pass of their own, during which all other members are skipped.
-        let structure = schema.type == .member ? (schema.target ?? schema) : schema
+        let structure = schema.containerType != nil ? (schema.target ?? schema) : schema
         if try structure.getOrCreateExtension(XMLAttributeMembersExtension.self).hasAttributeMembers {
             isWritingAttributes = true
             defer { isWritingAttributes = false }

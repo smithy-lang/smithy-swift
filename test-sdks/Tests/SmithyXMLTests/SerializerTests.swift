@@ -459,6 +459,21 @@ final class SerializerTests: XCTestCase {
             "<name>Phreddy</name></PayloadWithXmlNamespaceAndPrefix>")
     }
 
+    func test_payload_itNamesThePayloadRootForTheTargetWhenTheMemberSchemaHasTheTargetsType() throws {
+        // Generated member schemas have the type of their target, not .member.
+        let payload = structure("NestedPayload", [("name", [], Prelude.stringSchema)])
+        let memberSchema = Schema(
+            id: .init("test", "HttpPayloadWithStructureRequest", "nested"),
+            type: .structure,
+            containerType: .structure,
+            target: payload,
+            index: 0
+        )
+        let body = TestStruct(payload) { schema, serializer in try serializer.writeString(schema.members[0], "Phreddy") }
+
+        XCTAssertEqual(try serializePayload(memberSchema, body), "<NestedPayload><name>Phreddy</name></NestedPayload>")
+    }
+
     func test_payload_itWritesAttributesOnThePayloadRoot() throws {
         let payload = structure("XmlAttributesPayloadRequest", [
             ("foo", [], Prelude.stringSchema),

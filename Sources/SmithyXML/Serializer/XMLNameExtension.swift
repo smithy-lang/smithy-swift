@@ -63,7 +63,7 @@ final class XMLRootNameExtension: SchemaExtension {
     let namespace: [UInt8]?
 
     init(schema: Schema) throws {
-        let shape = schema.type == .member ? (schema.target ?? schema) : schema
+        let shape = schema.containerType != nil ? (schema.target ?? schema) : schema
         let name = schema.getTrait(XMLNameTrait.self)?.name
             ?? shape.getTrait(XMLNameTrait.self)?.name
             ?? shape.id.name
